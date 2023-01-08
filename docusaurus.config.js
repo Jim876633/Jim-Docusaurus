@@ -1,7 +1,7 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require("prism-react-renderer/themes/github");
+const lightCodeTheme = require("prism-react-renderer/themes/oceanicNext");
 const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 
 /** @type {import('@docusaurus/types').Config} */
@@ -94,29 +94,8 @@ const config = {
                         title: "Community",
                         items: [
                             {
-                                label: "Stack Overflow",
-                                href: "https://stackoverflow.com/questions/tagged/docusaurus",
-                            },
-                            {
-                                label: "Discord",
-                                href: "https://discordapp.com/invite/docusaurus",
-                            },
-                            {
-                                label: "Twitter",
-                                href: "https://twitter.com/docusaurus",
-                            },
-                        ],
-                    },
-                    {
-                        title: "More",
-                        items: [
-                            // {
-                            //     label: "Blog",
-                            //     to: "/blog",
-                            // },
-                            {
                                 label: "GitHub",
-                                href: "https://github.com/facebook/docusaurus",
+                                href: "https://github.com/Jim876633",
                             },
                         ],
                     },
@@ -126,6 +105,9 @@ const config = {
             prism: {
                 theme: lightCodeTheme,
                 darkTheme: darkCodeTheme,
+            },
+            colorMode: {
+                respectPrefersColorScheme: true,
             },
         }),
 };
