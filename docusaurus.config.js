@@ -12,7 +12,7 @@ const config = {
     baseUrl: "/Jim-Docusaurus/",
     onBrokenLinks: "throw",
     onBrokenMarkdownLinks: "warn",
-    favicon: "img/favicon.ico",
+    favicon: "img/favicon-32x32.png",
     deploymentBranch: "gh-pages",
     // GitHub pages deployment config.
     // If you aren't using GitHub pages, you don't need these.
@@ -60,7 +60,8 @@ const config = {
                 title: "Jim's note",
                 logo: {
                     alt: "My Site Logo",
-                    src: "img/logo.svg",
+                    src: "img/logo.png",
+                    srcDark: "img/logo-darkmode.png",
                 },
                 items: [
                     {
