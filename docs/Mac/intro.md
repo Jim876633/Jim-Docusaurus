@@ -1,7 +1,7 @@
 ---
 title: 入坑 Mac 了 ！！
 sidebar_position: 1
-tags: ["Mac", "快捷鍵"]
+tags: ["Mac"]
 hide_title: true
 ---
 
