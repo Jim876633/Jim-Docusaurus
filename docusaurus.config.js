@@ -62,6 +62,12 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      metadata: [
+        {
+          name: "google-site-verification",
+          content: "Xow6fHBMZxltxfkcAm44dklblf6FUas98iNOJ1QhcKg",
+        },
+      ],
       navbar: {
         title: "Jim's note",
         logo: {
