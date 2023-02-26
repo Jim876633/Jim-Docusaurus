@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkmy_website=self.webpackChunkmy_website||[]).push([[955],{4740:s=>{s.exports=JSON.parse('{"label":"Mac","permalink":"/Jim-Docusaurus/tags/mac","allTagsPath":"/Jim-Docusaurus/tags","count":1,"items":[{"id":"Mac/intro","title":"\u5165\u5751 Mac \u4e86 \uff01\uff01","description":"\u5951\u6a5f","permalink":"/Jim-Docusaurus/Mac/intro"}]}')}}]);
