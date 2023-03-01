@@ -1,0 +1,32 @@
+---
+title: Mac m1 晶片下載 node 15 以下問題
+sidebar_position: 3
+tags: ["Mac", "Node", "issue"]
+---
+
+import { Img } from "../../src/components/width";
+import image_1 from "./img/node-problem-1.png";
+
+因為公司專案用的 Node 版本是 15 以下，所以之前在 Windows 裝就直接用 `nvm install 14` 來裝，再用 `nvm use 14` 來切換。
+
+殊不知用 Mac 安裝直接無限跑亂碼，一開始我還以為只是跑比較久，到後來越看越不對勁，一直在重複的檔案夾切換，然後跑一堆看不懂的東西，搞得我以為電腦要壞了。
+
+查了好久才知道好像是 M1 晶片只支援 Node 15 之後的，Node 15 之前的需要轉換成 Intel 晶片的 x86 架構，才可以支援安裝。
+
+解法就是使用 **Rosetta** 來轉譯。如果是用 iTerm ，直接在 info 的地方就可以選擇用 Rosetta 開啟，
+
+<Img src={image_1} width="min(300px,100%)" />
+
+或是使用
+
+```
+arch -x86_64 zsh
+```
+
+來進行切換，就可以下載 Node 15 以下的版本了！
+
+## 參考資料
+
+https://stackoverflow.com/questions/65342769/install-node-on-m1-mac
+
+https://medium.com/%E6%8A%80%E8%A1%93%E7%AD%86%E8%A8%98/macbook-with-m1-chip-%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC%E8%B8%A9%E9%9B%B7%E7%B4%80%E9%8C%84-3779e1b7d916
