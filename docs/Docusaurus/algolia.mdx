@@ -1,0 +1,176 @@
+---
+title: 在 Docusaurus 導入 Algolia 搜尋
+sidebar_position: 2
+tags: ["Docusaurus", "Algolia"]
+---
+
+import { Img } from "../../src/components/width";
+import image_1 from "./img/algolia-1.png";
+import image_2 from "./img/algolia-2.png";
+
+## 前言
+
+之前在很多網站都會看到相同的搜尋欄，使用起來很好看也很方便，就想在我的 Docusaurus 加上搜尋欄，[官方](https://docusaurus.io/docs/search#using-algolia-docsearch)有介紹一些 DocSearch 的方法，我選擇使用最多人用，也是官方推薦的 **Algolia** 來實作搜尋功能，以下將介紹整個流程以及我有遇到的問題。
+
+## 官方推薦
+
+官方目前推薦導入 Algolia 的方法是在 [DocSearch](https://docsearch.algolia.com/) 的網站登記你的網址去申請，申請過了就可以直接使用 DocSearch 的分析平台，會自動幫你爬蟲，再來就只要 [在 Docusaurus 加入 Algolia](#在-docusaurus-加入-algolia) 就完成了！。
+
+不過審核的機制蠻嚴格的，他會判斷你的文章是否符合技術文，也就是一般的 blog 是無法通過的，還會判斷你有沒有空白頁面等等，詳細的可以看官方的[申請規則](https://docsearch.algolia.com/docs/who-can-apply#the-checklist)
+
+總之，因為我的文章還太少，很多也不是技術文，申請過了幾天就被通知不符合資格 TT
+
+不過官方也說了，如果申請失敗的話也可以自己導入 DocSearch 爬蟲，所以接下來的步驟都是跟著官方的 [run your own](https://docsearch.algolia.com/docs/legacy/run-your-own) 去實做的。
+
+:::caution
+進到網頁可以看到網站已經是 **legacy**，也就是這個網站已經不會再維護了，不知道之後自己的導入的方法會不會失效，趁現在還能用趕快試試！
+:::
+
+## 註冊帳號
+
+首先，要先到 [Algolia](https://www.algolia.com/pricing/) 的網站註冊一個帳號，詳細的可以參考 [在 Docusaurus 中使用 Algolia 實作搜尋功能](https://weiyun0912.github.io/Wei-Docusaurus/docs/Docusaurus/Algolia/)，申請完後就可以進入 DashBoard ，之後用來管理搜尋的平台。
+
+跟著步驟建立 API_KEY 後，總共會得到 `APPLICATION_ID`、`API_KEY`、`index_name`，這三個 key ，也就是連接 Alogolia 最重要的資訊，
+
+:::info
+在建立 `API_KEY` 時會要你選擇你所想要的 ACL (Access control list) ，就跟著[官方推薦](https://docsearch.algolia.com/docs/legacy/run-your-own/#set-up-your-environment)的選擇就可以了。
+:::
+
+## 在 Docusaurus 加入 Algolia
+
+Docusaurus 已經有內建 Algolia 了，只要在 `docusaurus.config.js` 中加入
+
+```javascript title="docusaurus.config.js" {3-7} showLineNumbers
+const config = {
+  themeConfig: {
+    algolia: {
+      apiKey: process.env.API_KEY,
+      indexName: YOUR_INDEX_NAME,
+      appId: process.env.APPLICATION_ID,
+    },
+  },
+};
+```
+
+我這邊是使用 `.env` 檔放 `API_KEY` 以及 `APPLICATION_ID` 的，不過就算直接打也沒關係，[官方](https://docusaurus.io/blog/2021/11/21/algolia-docsearch-migration#:~:text=These%20keys%20are%20not%20secrets%20and%20can%20be%20added%20to%20your%20Git%20repository.)也說這兩個 key 是可以 Push 到 Github 的。
+
+不過如果跟我一樣不想放到 repo 的可以參考 [在 Github Pages 設定環境變數](#在-github-pages-設定環境變數)。
+
+設定完後可以在本地端開啟 Docusaurus，就可以看到右上角出現搜尋框了。不過這時候因為還沒讓 Alogolia 爬資料，所以輸入文字也不會跑出結果。
+
+## 在 Docker 執行 DocSearch 爬蟲
+
+官方提供[兩個方法](https://docsearch.algolia.com/docs/legacy/run-your-own/#run-the-crawl-from-the-docker-image)，我這邊使用 Docker 來執行，總共有五個步驟要做。
+
+### Docker
+
+如果沒有下載過 Docker 的可以去[官網下載](https://www.docker.com/)，我是用 M1 晶片所以下載 Apple Chip 的版本，記得不要下載錯版本，下載完後可以先開啟進行基本的設定。
+
+### Jq
+
+Docker 下載完後，還需要下載 [jq](https://github.com/stedolan/jq/wiki/Installation)，目的是把等一下要設定的 JSON 檔轉換成 command-line，如果使用 Mac 只要輸入指令
+
+```
+brew install jq
+```
+
+就可以下載了，Windows 的好像比較麻煩，可以參考 [Windows 安裝 jq](https://weiyun0912.github.io/Wei-Docusaurus/docs/Docusaurus/Algolia/#:~:text=%E6%8E%A5%E8%91%97-,%E4%BD%BF%E7%94%A8%20chocolatey%20%E5%AE%89%E8%A3%9D%20jq,-%EF%BC%8C%E5%85%88%E4%BE%86%E5%AE%89%E8%A3%9D%20chocolatery)。
+
+### Config.json
+
+安裝完後，在你的 Docusaurus 資料夾底下新增一個 `config.json` 的檔案，然後複製 [docusaurus-2.json](https://github.com/algolia/docsearch-configs/blob/master/configs/docusaurus-2.json)，這是 Alogolia 提供的設定檔，裡面也有很多不同網站的設定檔，像我是用 Docusaurus 2.3 的版本，如果使用 2 以前的版本，就要使用 [docusaurus.json](https://github.com/algolia/docsearch-configs/blob/master/configs/docusaurus.json) 的設定。
+
+複製完後只要改 `index_name`、`start_urls`、`sitemap_urls` 就可以了。
+
+- index_name : Algolia 設定的 index name。
+- start_urls : 部署的網址。
+- sitemap_urls : 部署網址的 sitemap (Docusaurus 已經有內建 sitemap 了，只要在網址後加入 `/sitemap.xml` 就可以了)。
+
+```json title=config.json
+{
+  "index_name": "Jim-Docusaurus",
+  "start_urls": ["https://jim876633.github.io/Jim-Docusaurus/"],
+  "sitemap_urls": ["https://jim876633.github.io/Jim-Docusaurus/sitemap.xml"]
+  ...
+}
+```
+
+### Env
+
+一樣在你的 Docusaurus 資料夾底下，新增一個 `.env` 的檔案，在裡面放你的 `APPLICATION_ID` 以及 `API_KEY`。
+
+```env title=.env
+APPLICATION_ID=YOUR_APPLICATION_ID
+API_KEY=YOUR_API_KEY
+```
+
+### Run docker
+
+上面步驟都完成後，還要記得先 **Deploy** 上去，才能執行 Docker，不然會抓不到 Docusaurus 的設定。
+
+部署完後，就在你的 Docusaurus 資料夾執行
+
+```
+docker run -it --env-file=.env -e "CONFIG=$(cat config.json | jq -r tostring)" algolia/docsearch-scraper
+```
+
+如果你是使用 Mac M1 晶片可能會跑出錯誤
+
+```
+WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
+```
+
+可以參考 [WARNING: The requested image’s platform (linux/amd64) does not match the detected host platform (linux/arm64/v8)](https://collabnix.com/warning-the-requested-images-platform-linux-amd64-does-not-match-the-detected-host-platform-linux-arm64-v8/) 來解決。
+
+執行成功的話就會看到 DocSearch 正在爬所有的文章內容。
+
+<Img src={image_1} />
+
+就完成了在 Docusaurus 導入 Algolia 搜尋欄啦！！
+
+## 額外補充
+
+### Dotenv
+
+在本地端要抓 .env 檔，需要安裝 `dotenv`
+
+```
+npm install dovenv
+```
+
+然後在要使用的檔案加入 `require("dotenv").config()` 就可以使用 `process.env.YOUR_KEY` 來讀取 `.env` 檔了。
+
+### 在 Github Pages 設定環境變數
+
+首先先到你的 Repository >> Setting >> Secrets and variables >> Actions >> Variables 新增 `API_KEY` 跟 `APPLICATION_ID`
+
+<Img src={image_2} />
+
+然後在 `deploy.yml` 腳本加入 env 設定
+
+```yml
+on:
+  push:
+    branches:
+      - main
+env:
+  # Setting an environment variable with the value of a configuration variable
+  API_KEY: ${{ vars.API_KEY }}
+  APPLICATION_ID: ${{vars.APPLICATION_ID}}
+```
+
+這樣在部署 Github Pages 時就可以抓到設定的環境變數了。
+
+### Docker run 失敗
+
+如果在 Docker run 的步驟跑出 `algoliasearch.exceptions.RequestException: Index not allowed with this API key`，代表你的 API key 沒有被允許使用在設定的 index。
+
+如果已經確認過 `API_KEY` 有設定 Indices 欄位的 index name，但還是報錯的話，就把 Indices 欄位設置為空，也就是允許所有 index name 都可以使用你的 `API_KEY`，再重新跑一次，就可以解決了！
+
+不過我還是不知道為什麼設定了會報錯，有人知道的話可以跟我說，我會很感謝你的～～
+
+## 參考資料
+
+[Add a search bar to your Docusaurus 2 website using Algolia DocSearch](https://www.youtube.com/watch?v=xXwvDVGBlqQ&ab_channel=FedericoTartarini)
+
+[在 Docusaurus 中使用 Algolia 實作搜尋功能](https://weiyun0912.github.io/Wei-Docusaurus/docs/Docusaurus/Algolia/)
