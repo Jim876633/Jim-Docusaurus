@@ -7,6 +7,7 @@ tags: ["Docusaurus", "Algolia"]
 import { Img } from "../../src/components/width";
 import image_1 from "./img/algolia-1.png";
 import image_2 from "./img/algolia-2.png";
+import image_3 from "./img/algolia-3.png";
 
 ## 前言
 
@@ -14,9 +15,9 @@ import image_2 from "./img/algolia-2.png";
 
 ## 官方推薦
 
-官方目前推薦導入 Algolia 的方法是在 [DocSearch](https://docsearch.algolia.com/) 的網站登記你的網址去申請，申請過了就可以直接使用 DocSearch 的分析平台，會自動幫你爬蟲，再來就只要 [在 Docusaurus 加入 Algolia](#在-docusaurus-加入-algolia) 就完成了！。
+官方目前推薦導入 Algolia 的方法是在 [DocSearch](https://docsearch.algolia.com/) 的網站登記你的網址去申請，申請過了就可以直接使用 DocSearch 的分析平台，會自動幫你爬蟲，再來就只要 [在 Docusaurus 加入 Algolia](#在-docusaurus-加入-algolia) 就完成了！
 
-不過審核的機制蠻嚴格的，他會判斷你的文章是否符合技術文，也就是一般的 blog 是無法通過的，還會判斷你有沒有空白頁面等等，詳細的可以看官方的[申請規則](https://docsearch.algolia.com/docs/who-can-apply#the-checklist)
+不過審核的機制蠻嚴格的，他會判斷你的文章是否符合技術文，也就是一般的 blog 是無法通過的，還會判斷你有沒有空白頁面等等，詳細的可以看官方的[申請規則](https://docsearch.algolia.com/docs/who-can-apply#the-checklist)。
 
 總之，因為我的文章還太少，很多也不是技術文，申請過了幾天就被通知不符合資格 TT
 
@@ -169,8 +170,63 @@ env:
 
 不過我還是不知道為什麼設定了會報錯，有人知道的話可以跟我說，我會很感謝你的～～
 
+### 使用 GitHub Actions 自動 run docker
+
+雖然 run docker 後可以讓 DocSearch 爬我們的文章，不過如果你新增新的文章，他不會自動再幫你重新爬蟲，所以我的想法是使用 Github Actions 去讓他每次 Push commit 就 run docker。
+
+> _題外話，如果使用提供網址的官方平台，可以直接設定多久爬一次，可惡好想用。_
+
+本來想說直接把 docker run 那串指令直接放在 GitHub Actions ，殊不知踩了很多雷。
+
+後來找到 [透過 GitHub Action 自動執行 DocSearch 的爬蟲](https://ouch1978.github.io/docs/docusaurus/configuration/automatically-run-docsearch-scraper-from-github-action) 這篇文章，總算成功在 GitHub Actions run docker 了。
+
+首先，要另外設定兩個 Acions Secrets `ALGOLIA_API_KEY`、`ALGOLIA_APPLICATION_ID`
+
+- `ALGOLIA_API_KEY` : API key 首頁的 `Admin API Key`
+- `ALGOLIA_APPLICATION_ID` : 跟前面的 `APPLICATION_ID` 一樣
+
+<Img src={image_3} />
+
+然後在 `deploy.yml` 腳本加上 run docker 的指令
+
+```yml {23-27}showLineNumbers
+jobs:
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --frozen-lockfile
+      - name: Build website
+        run: npm run build
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+          user_name: Jim876633
+          user_email: jim30223@gmail.com
+      - name: Run the Docker container
+        env:
+          ALGOLIA_APPLICATION_ID: ${{ secrets.ALGOLIA_APPLICATION_ID }}
+          ALGOLIA_API_KEY: ${{ secrets.ALGOLIA_API_KEY }}
+        run: docker run -e ALGOLIA_APPLICATION_ID -e ALGOLIA_API_KEY  -e "CONFIG=$(cat config.json)" algolia/docsearch-scraper
+```
+
+跟前面 run docker 的地方不同的是，`--env-file=.env` 要改成 `-e ALGOLIA_APPLICATION_ID -e ALGOLIA_API_KEY` 然後 config 的地方不需要使用 `jq` 轉換 JSON。
+
+這樣就可以自動部署自動爬蟲啦！太輕鬆啦！
+
 ## 參考資料
 
 [Add a search bar to your Docusaurus 2 website using Algolia DocSearch](https://www.youtube.com/watch?v=xXwvDVGBlqQ&ab_channel=FedericoTartarini)
 
 [在 Docusaurus 中使用 Algolia 實作搜尋功能](https://weiyun0912.github.io/Wei-Docusaurus/docs/Docusaurus/Algolia/)
+
+[透過 GitHub Action 自動執行 DocSearch 的爬蟲](https://ouch1978.github.io/docs/docusaurus/configuration/automatically-run-docsearch-scraper-from-github-action)
