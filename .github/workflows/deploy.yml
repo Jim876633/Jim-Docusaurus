@@ -43,4 +43,4 @@ jobs:
           user_name: Jim876633
           user_email: jim30223@gmail.com
       - name: Run the Docker container
-        run: docker run -it -e "CONFIG=$(cat config.json | jq -r tostring)" algolia/docsearch-scraper
+        run: docker run -e "CONFIG=$(cat config.json | jq -r tostring)" algolia/docsearch-scraper
