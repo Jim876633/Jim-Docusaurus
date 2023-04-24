@@ -42,3 +42,5 @@ jobs:
           # You can swap them out with your own user credentials.
           user_name: Jim876633
           user_email: jim30223@gmail.com
+      - name: Run the Docker container
+        run: docker run -it --env-file=.env -e "CONFIG=$(cat config.json | jq -r tostring)" algolia/docsearch-scraper
