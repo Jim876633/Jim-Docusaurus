@@ -1,0 +1,199 @@
+---
+title: 如何在 docusaurus 增加留言區
+sidebar_position: 3
+tags: ["docusaurus", "giscus", "comment"]
+---
+
+import { Img } from "../../src/components/width";
+import image_1 from "./img/giscus-1.png";
+import image_2 from "./img/giscus-2.png";
+import image_3 from "./img/giscus-3.png";
+import image_4 from "./img/giscus-4.png";
+
+import image_6 from "./img/giscus-6.png";
+import image_7 from "./img/giscus-7.png";
+import image_8 from "./img/giscus-8.png";
+import image_9 from "./img/giscus-9.png";
+import image_10 from "./img/giscus-10.png";
+import image_11 from "./img/giscus-11.png";
+import image_12 from "./img/giscus-12.png";
+
+雖然一開始打文章只是為了自己的學習紀錄，不過呢～還是會希望有人看了文章能得到幫助，想說可以建個留言區，這樣就可以看到使用者的回饋。
+
+不過官方並沒有提供內建的留言系統，爬了一下文發現大家都用 **giscus** 來建立留言區，giscus 是一個可連接 GitHub Discussion 的應用程式，這一篇就是來帶大家一步步的建立自己的留言區。
+
+## Step1: Docusaurus swizzle
+
+首先，因為要建立留言區在每篇文章底部，所以需要得到 docusaurus 的 Layout 原始 components，才能把 giscus 的元件加在底部。
+
+而 docusaurus 有提供 [swizzling](https://docusaurus.io/docs/swizzling) 的方法，可以把原本看不到的頁面 components 轉換出來，輸入指令
+
+```
+npm run swizzle
+```
+
+這邊選擇 `@docusaurus/theme-classic`，我們要的頁面樣式在這一區。
+
+<Img src={image_1} />
+
+然後選擇 `DocItem/Layout`，可以看到後面有括號 **（Unsafe）**，代表 docusaurus 不建議轉換這個部分的程式碼，因為是核心功能，所以可能會不小心刪掉主要頁面。
+
+不過因為我們需要把留言區加在主要頁面底下，所以還是按下 enter 就對了哈哈。
+
+<Img src={image_2} width='80%' />
+
+再來有兩個轉換方式，一個是 `Warp`一個是 `Eject`。
+
+<Img src={image_3} />
+
+`Warp` 指的是把整個 Layout 變成一個 wrap 的 component，轉換完會是像這樣：
+
+<Img src={image_4} width='80%' />
+
+這個比較不會改動到裡面細部的功能，但是我們需要加入在特定的位置，所以選擇 `Eject`。
+
+按下 YES 之後，就會把原始程式碼轉換出來，檔案會在你的 `src/theme/DocItem/Layout` 底下，打開 `index.js` 會看到完整的頁面元件。
+
+<Img src={image_6} />
+
+我們要加的留言區就是要放在 `DocItemPaginator` 元件的後面。
+
+<Img src={image_7} width='80%' />
+
+## Step2: 生成 giscus 元件
+
+接下來到 [giscus](https://giscus.app/zh-TW) 建立客製化元件，看你需要什麼功能，並且選擇你要連接的 Repo。
+
+這邊需要先在 GitHub 載入 giscus，總共有兩個步驟：
+
+### 1. 打開 Discussion
+
+因為 giscus 是連接 Repo 的 Discussion，所以要先到 Settings > General > Features 打開 Discussions。
+
+<Img src={image_8} />
+
+然後就可在你的 Repo 看到 Discussion 的欄位。
+
+<Img src={image_9} />
+
+### 2. 載入 giscus
+
+再來要在 GitHub 載入 [giscus](https://github.com/apps/giscus)。
+
+可以選擇要在全部的 Repo 都載入 giscus 還是特定的 Repo，我這邊是選擇特定的 Repo。
+
+<Img src={image_10} width='50%' />
+
+載入完後就可以回到 [giscus](https://giscus.app/zh-TW) 生成客製化元件，選擇完後會長這樣：
+
+```html
+<script
+  src="https://giscus.app/client.js"
+  data-repo="[在此輸入儲存庫名稱]"
+  data-repo-id="[在此輸入儲存庫 ID]"
+  data-category="[在此輸入分類名稱]"
+  data-category-id="[在此輸入分類 ID]"
+  data-mapping="pathname"
+  data-strict="0"
+  data-reactions-enabled="1"
+  data-emit-metadata="0"
+  data-input-position="top"
+  data-theme="preferred_color_scheme"
+  data-lang="zh-TW"
+  data-loading="lazy"
+  crossorigin="anonymous"
+  async
+></script>
+```
+
+是一個 `<script>`，但是我們需要引入 component，所以根據 [giscus-component](https://github.com/giscus/giscus-component) 的指示，轉換成：
+
+```jsx
+<Giscus
+  id='comments'
+  repo='[在此輸入儲存庫名稱]'
+  repoId='[在此輸入儲存庫 ID]'
+  category='[在此輸入分類名稱]'
+  categoryId='[在此輸入分類 ID]'
+  mapping='pathname'
+  reactionsEnabled='1'
+  emitMetadata='0'
+  inputPosition='top'
+  theme='preferred_color_scheme'
+  lang='zh-TW'
+  loading='lazy'
+/>
+```
+
+_P.S.之後再來寫一個轉換方便的小工具好了～_
+
+## Step3: 載入 giscus 元件
+
+生成完元件後，要在 docusaurus 載入元件，因為 docusaurus 是用 react 做的，所以需要 install `@giscus/react`，如果你是使用其他框架也可以下載 `@giscus/vue` 或 `@giscus/svelte`。
+
+```
+npm i @giscus/react
+```
+
+下載完後，在先前轉換的 `src/theme/DocItem/Layout/index.js` 裡面引入 `Giscus` component。
+
+```jsx {4-5,12,23-37} showLineNumbers
+import React from "react";
+...
+import styles from "./styles.module.css";
+import Giscus from "@giscus/react";
+import { useColorMode } from "@docusaurus/theme-common";
+
+function useDocTOC() {
+...
+}
+export default function DocItemLayout({ children }) {
+  const docTOC = useDocTOC();
+  const { colorMode } = useColorMode();
+  return (
+    <div className='row'>
+      <div className={clsx("col", !docTOC.hidden && styles.docItemCol)}>
+        <DocVersionBanner />
+        <div className={styles.docItemContainer}>
+          <article>
+            ...
+          </article>
+          <DocItemPaginator />
+        </div>
+        <br />
+        <Giscus
+          id='comments'
+          repo='[在此輸入儲存庫名稱]'
+          repoId='[在此輸入儲存庫 ID]'
+          category='[在此輸入分類名稱]'
+          categoryId='[在此輸入分類 ID]'
+          mapping='pathname'
+          reactionsEnabled='1'
+          emitMetadata='0'
+          inputPosition='top'
+          theme={colorMode}
+          lang='zh-TW'
+          loading='lazy'
+        />
+      </div>
+      {docTOC.desktop && <div className='col col--3'>{docTOC.desktop}</div>}
+    </div>
+  );
+}
+```
+
+這邊 `theme` 的部分我希望跟 Docusaurus 的主色一樣，所以引入 `@docusaurus/theme-common`，用 `useColor` 得到 Docusaurus 的 Theme color 這樣留言區的顏色就會跟主色一樣囉！
+
+然後重新跑 `npm run start` 就會在每篇文章底下看到留言區囉 🥳
+
+<Img src={image_11} />
+
+可以測試看看在底下留言，然後到 Discussions 區塊去確認有沒有留言成功
+
+<Img src={image_12} />
+
+有問題都可以在底下留言喔～～
+
+## 參考資料
+
+[How to add Giscus to your Docs site built with Docusaurus](https://dipakparmar.medium.com/how-to-add-giscus-to-your-docs-site-built-with-docusaurus-d57fa7f8e2f3)
