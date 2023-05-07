@@ -1,7 +1,7 @@
 ---
 title: 介紹、建立步驟
 sidebar_position: 1
-tags: ["docusaurus"]
+tags: ["Docusaurus"]
 ---
 
 # Docusaurus 介紹、開始建構網站
@@ -18,8 +18,8 @@ tags: ["docusaurus"]
 npx create-docusaurus@latest my-website classic
 ```
 
--   `my-website` 可以更改成自己取的專案名
--   `classic` 是官網推薦的樣板，可以快一點了解專案怎麼運作的。
+- `my-website` 可以更改成自己取的專案名
+- `classic` 是官網推薦的樣板，可以快一點了解專案怎麼運作的。
 
 如果想用 `TypeScript` 只要在後面加 `--typeScript` 就可以了
 
@@ -54,12 +54,12 @@ my-website
 └── sidebars.js
 ```
 
--   `/blog/`：blog 區塊
--   `/doc/`：文檔區塊
--   `/src/`：跟 React 的 src 差不多，page 跟 components 會在這個區塊。
--   `/static/`：build 後會在根資料夾，放靜態的檔案 EX：logo.svg。
--   `/docusaurus.config.js/`：很重要的地方，裡面包含所有 Docusaurus 的設定，包括模板樣式、部屬設定
--   `/sidebars.js/`：主要是給 doc 設定側邊選單的地方。
+- `/blog/`：blog 區塊
+- `/doc/`：文檔區塊
+- `/src/`：跟 React 的 src 差不多，page 跟 components 會在這個區塊。
+- `/static/`：build 後會在根資料夾，放靜態的檔案 EX：logo.svg。
+- `/docusaurus.config.js/`：很重要的地方，裡面包含所有 Docusaurus 的設定，包括模板樣式、部屬設定
+- `/sidebars.js/`：主要是給 doc 設定側邊選單的地方。
 
 更多詳細的項目可以參考 [Installation](https://docusaurus.io/docs/installation)
 
