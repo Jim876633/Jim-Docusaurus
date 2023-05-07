@@ -49,6 +49,7 @@ export default function DocItemLayout({ children }) {
           </article>
           <DocItemPaginator />
         </div>
+        <br />
         <Giscus
           id="comments"
           repo="Jim876633/Jim-Docusaurus"
