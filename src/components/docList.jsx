@@ -36,7 +36,7 @@ function DocList() {
   }
 
   return (
-    <div>
+    <div id='jim-doc-list'>
       {data.map((doc) => (
         <li key={doc.id} style={{}}>
           {doc.date} 更新文章 <a href={doc.href}>{doc.title}</a> - {doc.label}
