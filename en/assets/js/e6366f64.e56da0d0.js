@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmy_website=self.webpackChunkmy_website||[]).push([[6393],{8417:e=>{e.exports=JSON.parse('{"title":"React","slug":"/category/react","permalink":"/Jim-Docusaurus/en/category/react","navigation":{"previous":{"title":"Intro","permalink":"/Jim-Docusaurus/en/"},"next":{"title":"React router","permalink":"/Jim-Docusaurus/en/React/congratulations"}}}')}}]);
