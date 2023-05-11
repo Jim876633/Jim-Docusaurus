@@ -34,7 +34,7 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         gtag: {
-          trackingID: "	GTM-MQ3VJV3",
+          trackingID: "G-PW7J7LMHR0",
           anonymizeIP: true,
         },
         docs: {
@@ -67,7 +67,10 @@ const config = {
         {
           name: "google-site-verification",
           content: "Xow6fHBMZxltxfkcAm44dklblf6FUas98iNOJ1QhcKg",
-        },
+        }, {
+          name: "Jim's Blog",
+          content: 'Jim docusaurus blog'
+        }
       ],
       navbar: {
         title: "Jim's note",
