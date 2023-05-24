@@ -4,8 +4,8 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import React from "react";
+import { Spin } from 'antd';
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
 import { useDocsSidebar } from "@docusaurus/theme-common/internal";
 
 const queryClient = new QueryClient();
@@ -30,11 +30,9 @@ function DocList() {
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   });
-
   if (isLoading) {
-    return <div>loading...</div>;
+    return <Spin/>
   }
-
   return (
     <div id='jim-doc-list'>
       {data.map((doc) => (
