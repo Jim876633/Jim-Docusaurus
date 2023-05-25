@@ -4,7 +4,7 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import React from "react";
-import { Spin } from 'antd';
+import { Spin, Tag } from 'antd';
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useDocsSidebar } from "@docusaurus/theme-common/internal";
 
@@ -35,12 +35,15 @@ function DocList() {
   }
   return (
     <div id='jim-doc-list'>
+      <Tag color="var(--tag-color)">Latest 10 article</Tag>
+      <br/>
+      <div style={{marginTop: '1rem'}}>
       {data.map((doc) => (
-        <li key={doc.id} style={{}}>
+        <li key={doc.id} >
           {doc.date} 更新文章 <a href={doc.href}>{doc.title}</a> - {doc.label}
         </li>
       ))}
-      ...
+      </div>
     </div>
   );
 }
