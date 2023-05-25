@@ -31,7 +31,10 @@ function DocList() {
     staleTime: Infinity,
   });
   if (isLoading) {
-    return <Spin/>
+    return <>
+      <Spin/>
+      <br/>
+    </>
   }
   return (
     <div id='jim-doc-list'>
@@ -100,6 +103,7 @@ async function fetchDocs(docsList) {
     }
   });
   docs.sort((a, b) => b.timeStamp - a.timeStamp);
-  const lastTenDocs = docs.slice(0, 10);
+  const pureDocs = docs.filter(d => d.label !== 'Intro');
+  const lastTenDocs = pureDocs.slice(0, 10);
   return lastTenDocs;
 }
