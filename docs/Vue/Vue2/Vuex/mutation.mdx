@@ -1,7 +1,7 @@
 ---
-title: 【Vue2】Vuex Mutation 深入理解
+title: 【Vue2】Vuex Mutations 深入理解
 sidebar_position: 3
-tags: ["Vue", "Vue2", "Vuex", "Mutation"]
+tags: ["Vue", "Vue2", "Vuex", "Mutations"]
 ---
 
 import CodeSandbox from "@site/src/components/CodeSandbox.jsx";
@@ -31,7 +31,7 @@ store.commit("increment", 10);
 
 ## mapMutations
 
-引入 state 時，可以使用 `mapState` 來簡化程式碼，而 mutation 一樣可以用 `mapMutations` 來簡化：
+引入 state 時，可以使用 `mapState` 來簡化程式碼，而 mutations 一樣可以用 `mapMutations` 來簡化：
 
 ```html title=App.vue
 <script>
@@ -44,9 +44,9 @@ store.commit("increment", 10);
 </script>
 ```
 
-## mutation 一定是同步的
+## mutations 一定是同步的
 
-在官方文件中說 mutation 函式**一定**要是同步（Synchronous）函式，不能放像是接 api 或是 setTimeout 等等的非同步（Asynchronous）函式。
+在官方文件中說 mutations 函式**一定**要是同步（Synchronous）函式，不能放像是接 api 或是 setTimeout 等等的非同步（Asynchronous）函式。
 
 不過呢，如果你好奇試試看，會發現咦～還是跑的動啊，看起來也沒問題啊，像是下面的例子：
 
@@ -57,7 +57,7 @@ store.commit("increment", 10);
   codebasePath='/src/store/index.js'
 />
 
-我在 mutation 放了一個 `getImageUrl` 非同步函式去抓狗狗的圖片，運作上是沒問題的，那為什麼 mutation **一定**不能放非同步的函式呢？
+我在 mutations 放了一個 `getImageUrl` 非同步函式去抓狗狗的圖片，運作上是沒問題的，那為什麼 mutations **一定**不能放非同步的函式呢？
 
 其實 Vuex 在程式碼裡並沒有直接的禁止你用非同步函式，但他還是希望你不要這樣做的原因有幾個：
 
