@@ -29,6 +29,21 @@ export default new Vuex.Store({
 store.commit("increment", 10);
 ```
 
+## mapMutations
+
+引入 state 時，可以使用 `mapState` 來簡化程式碼，而 mutation 一樣可以用 `mapMutations` 來簡化：
+
+```html title=App.vue
+<script>
+  import { mapMutations } from "vuex";
+  export default {
+    methods: {
+      ...mapMutations(["increment", "decrement"]),
+    },
+  };
+</script>
+```
+
 ## mutation 一定是同步的
 
 在官方文件中說 mutation 函式**一定**要是同步（Synchronous）函式，不能放像是接 api 或是 setTimeout 等等的非同步（Asynchronous）函式。
