@@ -1,0 +1,53 @@
+---
+title: 【Vue2】Vuex mutation 深入理解
+sidebar_position: 2
+tags: ["Vue", "Vue2", "Vuex", "mutation"]
+---
+
+import CodeSandbox from "@site/src/components/CodeSandbox.jsx";
+
+想知道基本用法的可以參考 [【Vue2】Vuex 介紹](https://jim876633.github.io/Jim-Docusaurus/Vue/Vue2/Vuex/mapState)，這篇來介紹一些進階的用法。
+
+## 傳入參數
+
+如果在執行函式時需要帶入參數，會在第二個參數位放入參數，就可以把參數傳到 store：
+
+```js title='store/index.js'
+export default new Vuex.Store({
+  state: {
+    count: 0,
+  },
+  mutations: {
+    incrementNum(state, n) {
+      state.count += n;
+    },
+  },
+});
+```
+
+```js
+store.commit("increment", 10);
+```
+
+## mutation 一定是同步的
+
+在官方文件中說 mutation 函式**一定**要是同步（Synchronous）函式，不能放像是接 api 或是 setTimeout 等等的非同步（Asynchronous）函式。
+
+不過呢，如果你好奇試試看，會發現咦～還是跑的動啊，看起來也沒問題啊，像是下面的例子：
+
+<CodeSandbox
+  url='https://codesandbox.io/embed/mutation-beyfhs?fontsize=14&hidenavigation=1&theme=dark'
+  title='mutation'
+  initialPath='dog'
+  codebasePath='/src/store/index.js'
+/>
+
+我在 mutation 放了一個 `getImageUrl` 非同步函式去抓狗狗的圖片，運作上是沒問題的，那為什麼 mutation **一定**不能放非同步的函式呢？
+
+其實 Vuex 在程式碼裡並沒有直接的禁止你用非同步函式，但他還是希望你不要這樣做的原因有幾個：
+
+1. 當初設計 mutaiton 時，就是希望他是能及時的更新我們的 State，所以一但有非同步的行為發生，就沒辦法即時抓到正確的資料。
+2. 承上題，如果函式是非同步行為，在 Devtools debug 的時候，就沒辦法追蹤正確資料，而導致 debug 困難。
+3. 程式碼維護困難，如果把同步及非同步的函式混在一起使用，在維護上就會相對較困難。
+
+而 Vuex 也有設計執行非同步函式的地方，也就是下一篇的 Action。
