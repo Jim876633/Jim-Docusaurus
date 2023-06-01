@@ -4,9 +4,10 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import React from "react";
-import { Spin, Tag } from 'antd';
+import { Spin, Tag } from "antd";
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useDocsSidebar } from "@docusaurus/theme-common/internal";
+import useMedia from "@site/src/hooks/useMedia.jsx";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ export default function () {
 }
 
 function DocList() {
+  const { sm } = useMedia();
   const { items } = useDocsSidebar();
   const docs = formatDocList(items);
 
@@ -31,22 +33,31 @@ function DocList() {
     staleTime: Infinity,
   });
   if (isLoading) {
-    return <>
-      <Spin/>
-      <br/>
-    </>
+    return (
+      <>
+        <Spin />
+        <br />
+      </>
+    );
   }
   return (
     <div id='jim-doc-list'>
-      <Tag color="var(--tag-color)">Latest 10 article</Tag>
-      <br/>
-      <div style={{marginTop: '1rem'}}>
-      {data.map((doc) => (
-        <li key={doc.id} >
-          {doc.date} 更新文章 <a href={doc.href}>{doc.title}</a> - {doc.label}
-        </li>
-      ))}
-      </div>
+      <Tag color='var(--tag-color)'>Latest 10 article</Tag>
+      <br />
+      <ul style={{ marginTop: "1rem" }}>
+        {data.map((doc) => {
+          return sm ? (
+            <li key={doc.id}>
+              {doc.date.slice(6)} <a href={doc.href}>{doc.title}</a>
+            </li>
+          ) : (
+            <li key={doc.id}>
+              {doc.date} 更新文章
+              <a href={doc.href}>{doc.title}</a> - {doc.label}
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
@@ -103,7 +114,7 @@ async function fetchDocs(docsList) {
     }
   });
   docs.sort((a, b) => b.timeStamp - a.timeStamp);
-  const pureDocs = docs.filter(d => d.label !== 'Intro');
+  const pureDocs = docs.filter((d) => d.label !== "Intro");
   const lastTenDocs = pureDocs.slice(0, 10);
   return lastTenDocs;
 }
