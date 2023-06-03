@@ -2,6 +2,7 @@
   "label": "Vuex",
   "position": 1,
   "link": {
-    "type": "generated-index"
+    "type": "generated-index",
+    "description": "本系列皆為整理 Vuex 官網資料來做筆記，並補充一些重要的小知識！"
   }
 }
