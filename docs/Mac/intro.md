@@ -1,5 +1,5 @@
 ---
-title: 入坑 Mac 了 ！！
+title: 【Mac】入坑 Mac 了 ！！
 sidebar_position: 1
 tags: ["Mac"]
 hide_title: true

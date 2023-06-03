@@ -1,5 +1,5 @@
 ---
-title: 介紹、建立步驟
+title: 【TypeScript】介紹、建立步驟
 sidebar_position: 1
 ---
 
@@ -13,7 +13,7 @@ TypeScript 是一個**加強 JavaScript 型別的系統**，那為甚麼需要�
 console.log(addOne("5")); // output: 51
 
 function addOne(input) {
-    return input + 1;
+  return input + 1;
 }
 ```
 
