@@ -4,11 +4,11 @@ sidebar_position: 1
 slug: /
 ---
 
+import BrowserOnly from "@docusaurus/BrowserOnly";
 import DocList from "../src/components/DocList.jsx";
 
 # 介紹
 
-<DocList />
-<br/>
-前端筆記
-陸續更新 ...
+<BrowserOnly>{() => <DocList />}</BrowserOnly>
+<br />
+前端筆記 陸續更新 ...
