@@ -1,0 +1,106 @@
+---
+title: 【Vue2】Vuex Getters
+sidebar_position: 5
+tags: ["Vue", "Vue2", "Vuex", "Getters"]
+---
+
+import CodeSandbox from "@site/src/components/CodeSandbox.jsx";
+
+除了常見的 State、Mutation 以及 actions 以外，Vuex 還提供了一個重要的概念叫做 Getters。
+
+## 什麼是 Getters
+
+在 Vuex 中，Getters 是一個用來從 store 中取得 State 狀態的概念。它類似於 Vue 中的 `computed` 屬性，可以根據 state 中的資料變化進行同步更新。
+
+## 在 Store 建立 Getters
+
+建立的方式為在 Getters 裡建立 function 並回傳值。
+
+```js {5-9} title='store/index.js'
+export default new Vuex.Store({
+  state: {
+    count: 0,
+  },
+  getters: {
+    countPlusOne(state) {
+      return state.count + 1;
+    },
+  },
+});
+```
+
+```js
+store.getters.countPlusOne;
+```
+
+Getters 中的函式有兩個參數，第一個為 state，第二個為其他 getters。
+
+```js {9-11} title='store/index.js'
+export default new Vuex.Store({
+  state: {
+    count: 0,
+  },
+  getters: {
+    countPlusOne(state) {
+      return state.count + 1;
+    },
+    countPlusTwo(state, getters) {
+      return getters.countPlusOne + 1;
+    },
+  },
+});
+```
+
+如果要在 Getters 函式帶特定參數的話，就需要回傳**函式**把參數傳入 Getters 裡。
+
+```js {6-8} title='store/index.js'
+export default new Vuex.Store({
+  state: {
+    count: 0,
+  },
+  getters: {
+    countPlusNum(state) {
+      return (n) => state.count + n;
+    },
+  },
+});
+```
+
+```js
+store.getters.countPlusNum(3);
+```
+
+:::caution
+Getter **必須**是一個**純函式(pure function)**，不能修改 state 中的資料，否則會造成無預期的結果。
+:::
+
+## mapGetters
+
+Getters 一樣可以使用 `mapGetters` 的方法來簡化程式碼：
+
+```html title=App.vue
+<script>
+  import { mapGetters } from "vuex";
+
+  export default {
+    computed: mapGetters(['count','count2','count3',...]),
+  };
+</script>
+```
+
+## 範例
+
+下面是一個簡單的範例，有三個 count
+
+1. state 的 count (state)
+2. 跟據 state + 1 的 count (getter)
+3. 根據 getter 跟參數 n 相加的 count (getter)
+
+可以試著玩玩看～
+
+<CodeSandbox
+  url='https://codesandbox.io/embed/vuex-getters-pji66j?fontsize=14&hidenavigation=1&theme=dark'
+  title='Vuex-getters'
+  initialPath='counter'
+  codebasePath='/src/store/index.js'
+/>
