@@ -16,7 +16,7 @@ export default function ({
   return (
     <>
       <iframe
-        src={`${url}&module=${formatCodebasePath}&view=split&initialpath=${initialPath}`}
+        src={`${url}&module=${formatCodebasePath}&initialpath=${initialPath}`}
         style={{
           width: "100%",
           height,
