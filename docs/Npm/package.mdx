@@ -4,6 +4,9 @@ sidebar_position: 2
 tags: ["Docusaurus", "Algolia"]
 ---
 
+import { Img } from "../../src/components/Width.jsx";
+import image_1 from "./img/package-1.png";
+
 在開始一個新專案，使用 `npm install` 安裝一些套件時，會發現有兩個檔案 `package.json` 跟 `package.lock.json`，這一篇就來好好了解他們在做什麼的，以及這兩個有什麼差別。
 
 ## package.json
@@ -11,6 +14,8 @@ tags: ["Docusaurus", "Algolia"]
 首先在進行專案時，會先下 `npm init`，建立一個初始的 `package.json`，這時候會叫你回答一些問題，幫你的專案建立初始的設定。
 
 如果不輸入而直接全部按 Enter，他就會給你預設的資訊，或是你懶的一直按 Enter，可以直接下 `npm init -y`，跳過所有問答，直接給你初始的設定。
+
+<Img src={image_1} width='600px' />
 
 **package.json** 顧名思義就是一個專案包（package），定義了這個專案的所有資訊，可以來看一下初始設定有什麼：
 
