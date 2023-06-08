@@ -112,7 +112,7 @@ netlify dev
 
 就會看到
 
-<Img src={image_1} width='80%' />
+<Img src={image_1} width='500px' />
 
 不過你打開 `localhost:8888`，會發現什麼都沒看到，因為他的 functions 的路由是在 `localhost:8888/.netlify/functions/<function 名稱>`，這邊的 functions 名稱就是你的 node.js 的檔案名，我的檔名叫 `sever.js`，所以我的路徑會是 `localhost:8888/.netlify/functions/server`，就是你的 node.js 部署的路徑囉！
 

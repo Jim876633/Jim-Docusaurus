@@ -40,7 +40,7 @@ npm run swizzle
 
 不過因為我們需要把留言區加在主要頁面底下，所以還是按下 enter 就對了哈哈。
 
-<Img src={image_2} width='80%' />
+<Img src={image_2} width='500px' />
 
 再來有兩個轉換方式，一個是 `Warp`一個是 `Eject`。
 
@@ -48,7 +48,7 @@ npm run swizzle
 
 `Warp` 指的是把整個 Layout 變成一個 wrap 的 component，轉換完會是像這樣：
 
-<Img src={image_4} width='80%' />
+<Img src={image_4} width='500px' />
 
 這個比較不會改動到裡面細部的功能，但是我們需要加入在特定的位置，所以選擇 `Eject`。
 
@@ -58,7 +58,7 @@ npm run swizzle
 
 我們要加的留言區就是要放在 `DocItemPaginator` 元件的後面。
 
-<Img src={image_7} width='80%' />
+<Img src={image_7} width='550px' />
 
 ## Step2: 生成 giscus 元件
 
@@ -82,7 +82,7 @@ npm run swizzle
 
 可以選擇要在全部的 Repo 都載入 giscus 還是特定的 Repo，我這邊是選擇特定的 Repo。
 
-<Img src={image_10} width='50%' />
+<Img src={image_10} width='350px' />
 
 載入完後就可以回到 [giscus](https://giscus.app/zh-TW) 生成客製化元件，選擇完後會長這樣：
 
@@ -186,7 +186,7 @@ export default function DocItemLayout({ children }) {
 
 然後重新跑 `npm run start` 就會在每篇文章底下看到留言區囉 🥳
 
-<Img src={image_11} />
+<Img src={image_11} width='600px' />
 
 可以測試看看在底下留言，然後到 Discussions 區塊去確認有沒有留言成功
 
