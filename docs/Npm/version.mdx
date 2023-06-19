@@ -1,0 +1,100 @@
+---
+title: 【Npm】套件的版本怎麼看？
+sidebar_position: 2
+tags: ["Npm", "Package.json", "Package-lock.json"]
+---
+
+import { Img } from "../../src/components/Width.jsx";
+import image_1 from "./img/version-1.png";
+import image_2 from "./img/version-2.png";
+
+在引入套件時，可以在 `package.json` 及 `package-lock.json` 看到套件以及依賴套件的版本，像是 `^2.3.1` 或是 `~1.0.2`，這一篇就來好好了解怎麼看套件的版本號！
+
+## Semver (Semantic version)
+
+所有的套件都遵循著 Semver（語意話版本），來制定版本的格式，總共有三種版號：
+
+1. Major：更新主要版本，會影響先前版本運作。
+2. Minor：新增功能，不影響先前版本運作。
+3. Patch：修復 bug 的版本。
+
+這三個就是相呼對應版本號的三個數字，以 `^2.3.1` 為例，`2` 就是主要版號，`3` 就是次版號，`1` 就是修訂號，只要相對應的功能更新，就會在對應的版本位置加一。
+
+## 版本範圍
+
+除了版本號，也可以看到前面都會有一個前綴符號 `^` 或 `~`，是用來定義版本的範圍。
+
+- `^`：次版號範圍
+- `~`：修訂號範圍
+
+舉個例來說，假設你現在有個套件版本號是 `^1.0.0`，而目前最新版本是 `1.3.4`，當你下 `npm update` 或是別人 clone 你的 repo 進行 `npm install` 時，他就會抓次版號的最新版本 `1.3.4`，而如果套件版本號是 `~1.0.0`，那更新時，就會抓最新的修訂號，例如 `1.0.2`。
+
+用一個實際的套件來示範，我這邊用 [slugify](https://www.npmjs.com/package/slugify) 來當範例，在我使用的當下最新版本是 `1.6.6`。
+
+首先，先安裝一個低版號的版本
+
+```bash
+npm install slugify@1.0.1
+```
+
+你會在 `package.json` 看到
+
+```json
+"dependencies": {
+    "slugify": "^1.0.1"
+}
+```
+
+幾乎所有套件安裝時都會用 `^` 次版號範圍來設定，這樣套件有更新新功能時，就可以更新做使用。
+
+要查看最新的版本可以下
+
+```bash
+npm outdate
+```
+
+就可以看到所有你安裝的套件的版本以及最新的版本，如果已經是最新的就不會顯示任何東西。
+
+<Img src={image_1} />
+
+可以看到這邊可更新的版號寫 `1.6.6`，因為前綴是 `^` 所以版本更新範圍就是到**次版號**。
+
+那現在把前綴手動改成 `~`，再 `npm outdate` 一次就可以看到可更新的版本號變成 `1.0.2` 了！
+
+<Img src={image_2} />
+
+## 版本更新
+
+那如果今天想要更新到最新的版本，該怎麼更新呢？
+
+其實前面就有提到，就是下
+
+```bash
+npm update
+```
+
+就會更新全部的套件，或是更新指定套件
+
+```bash
+npm update <套件名>
+```
+
+更新完後，`npm outdate` 就不會顯示東西了，因為已經是最新版本了。
+
+可是我還是想確認到底是不是最新版本欸，沒問題！只要下
+
+```bash
+npm list
+```
+
+查看所有套件的版本，或是想看特定的套件版本
+
+```bash
+npm view <套件名> version
+```
+
+## 參考資料
+
+[Semver](https://semver.org/)
+
+[Npm Semver](https://docs.npmjs.com/cli/v6/using-npm/semver)
