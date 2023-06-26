@@ -1,0 +1,146 @@
+---
+title: 【Javascript】ECMAScript 2023 新功能介紹
+sidebar_position: 1
+tags: ["JavaScript", "ES14", "ECMAScript 2023"]
+---
+
+import { Img } from "../../src/components/Width.jsx";
+import image_1 from "./img/ES2023-1.png";
+
+從 ES6 ( 2015 ) 之後，每年都會推出一版新的 ECMAScript，到今年已經出到 ECMAScript 2023 ( ES14 ) 了，來看看今年有什麼新功能！
+
+## 要怎麼看？
+
+**ECMAScript** 是由 Ecma International 定義的語言規範，編號是 ECMA-262，除了 ECMAScript 以外，還有像是 ECMA-404(JSON)、ECMA-334(C#)等規範。
+
+而制定 ECMA 標準的技術委員，又稱 TC(Technical Committee)，其中 [TC39](https://github.com/tc39) 就是負責管理及制定 ECMAScript(ECMA-262)。
+
+每年的新功能都會有四個階段的[提案](https://github.com/tc39/proposals)，正式加入 ECMAScript 規範的會是在 [finished-proposals](https://github.com/tc39/proposals/blob/main/finished-proposals.md)裡，可以看到每年新增的功能有什麼，以及提案人跟審核的 meeting 文檔。
+
+## ECMAScript 2023
+
+<Img src={image_1} />
+
+今年總共有四個新功能：
+
+- [Array find from last](https://github.com/tc39/proposal-array-find-from-last)
+- [Hashbang Grammar](https://github.com/tc39/proposal-hashbang)
+- [Symbols as WeakMap keys](https://github.com/tc39/proposal-symbols-as-weakmap-keys)
+- [Change Array by Copy](https://github.com/tc39/proposal-change-array-by-copy)
+
+### Array find from last
+
+新增兩個 Array method `Array.prototype.findLast()` 跟 `Array.prototype.findLstIndex()`。
+
+用法跟 `find()`、`findIndex()` 一樣，只是從最後面開始找。
+
+```javascript
+const arr = [1, 18, 15, 4];
+
+const lastFind = arr.findLast((el) => el > 10);
+
+const lastFindIndex = arr.findLastIndex((el) => el > 10);
+
+console.log(lastFind); // 15
+
+console.log(lastFindIndex); // 2 (15 is index 2 of the array)
+```
+
+### Hashbang Grammar
+
+Hashbang 語法，可執行 script 開頭的字串，只能在 Unix 上執行，主要在開發時使用，提案者規範了 Hashbang 的語法。
+
+這個部分我本身也沒用過，有興趣的可以去看看提案的內容～
+
+### Symbols as WeakMap keys
+
+之前 WeakMap 的 key 只能使用 Object，現在可以使用 Symbols 當作是 key 值。
+
+```javascript
+const weak = new WeakMap();
+const key = Symbol("ref");
+weak.set(key, "Hello World!");
+
+console.log(weak.get(key)); // Hello World!
+```
+
+沒聽過 WeakMap 可以參考 [介紹 WeakMap](https://blog.errorbaker.tw/posts/umer/weak-map/)
+
+### Change Array by Copy
+
+個人覺得最有感的新功能，增加了四個 Array method：
+
+1. `Array.prototype.toReversed()`
+2. `Array.prototype.toSorted()`
+3. `Array.prototype.toSpliced()`
+4. `Array.prototype.with()`
+
+前三個解決了原本的 `reverse()`、`sort()`、`splice()` 會改變原陣列的痛點，回傳新的陣列且不會 mutate 原本的陣列了！用法都跟原本的 method 一樣。
+
+- `toReversed()` <=> `reverse()`
+
+```javascript
+const arr = [1, 2, 3, 4];
+
+const newArr = arr.toReversed();
+
+console.log(arr); // [1, 2, 3, 4]
+
+console.log(newArr); // [4, 3, 2, 1]
+```
+
+- `toSorted()` <=> `sort()`
+
+```javascript
+const arr = [2, 1, 4, 3, 5];
+
+const newArr = arr.toSorted();
+
+console.log(arr); // [2, 1, 4, 3, 5]
+
+console.log(newArr); // [1, 2, 3, 4, 5]
+```
+
+- `toSpliced()` <=> `spliced()`
+
+```javascript
+const arr = [2, 1, 4, 3, 5];
+
+const newArr = arr.toSpliced(0, 2, "hi");
+
+console.log(arr); // [2, 1, 4, 3, 5]
+
+console.log(newArr); // ['hi', 4, 3, 5]
+```
+
+最後一個 `with()` 則是可以傳入兩個參數，`with(index, start)`，去替換指定 index 的 value。
+
+- `with()`
+
+```javascript
+const arr = [1, 2, 3, 4];
+
+const newArr = arr.with(1, "hi");
+
+console.log(arr); // [1, 2, 3, 4]
+
+console.log(newArr); // [1, 'hi', 3, 4]
+```
+
+## 重點整理
+
+個人覺得本次新功能比較會用到的就是 Array 的新 method，皆是回傳新陣列且**不改變**原始的陣列：
+
+- `findLast()`：從陣列尾端尋找符合條件之元素。
+- `findLastIndex()`：從陣列尾端尋找符合條件之元素 index。
+- `toReversed()`：回傳 reverse 的陣列。
+- `toSorted()`：回傳依條件排序的陣列。
+- `toSpliced()`：回傳被 splice() 後的陣列。
+- `with()`：傳入 index/value 參數，回傳取代後的陣列。
+
+## 參考資料
+
+[JavaScript 之旅 (1)：介紹 ECMA、ECMAScript、JavaScript 和 TC39
+](https://titangene.github.io/article/javascript-ecmascript-tc39.html)
+
+[What's new in ECMAScript 2023](https://pawelgrzybek.com/whats-new-in-ecmascript-2023/)
