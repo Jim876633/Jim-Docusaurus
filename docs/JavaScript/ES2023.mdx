@@ -4,8 +4,8 @@ sidebar_position: 1
 tags: ["JavaScript", "ES14", "ECMAScript 2023"]
 ---
 
-import { Img } from "../../src/components/Width.jsx";
-import image_1 from "./img/ES2023-1.png";
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/javascript/ES2023-1.png";
 
 從 ES6 ( 2015 ) 之後，每年都會推出一版新的 ECMAScript，到今年已經出到 ECMAScript 2023 ( ES14 ) 了，來看看今年有什麼新功能！
 
@@ -75,7 +75,7 @@ console.log(weak.get(key)); // Hello World!
 3. `Array.prototype.toSpliced()`
 4. `Array.prototype.with()`
 
-前三個解決了原本的 `reverse()`、`sort()`、`splice()` 會改變原陣列的痛點，回傳新的陣列且不會 mutate 原本的陣列了！用法都跟原本的 method 一樣。
+前三個解決了原本 `reverse()`、`sort()`、`splice()` 會改變原陣列的痛點，回傳新的陣列且不會動到原本的陣列了！用法都跟原本的 method 一樣。
 
 - `toReversed()` <=> `reverse()`
 

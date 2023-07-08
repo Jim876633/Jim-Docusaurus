@@ -19,7 +19,7 @@ function addOne(input) {
 
 如果我們用 TypeScript 的話，他就會提示你型別有錯誤。
 
-![](./img/typeScript-1-1.jpg)
+![](/img/typescript/typeScript-1-1.jpg)
 
 不過他依然可以被編譯成 JavaScript ，當然也可以執行。所以 TypeScript 就只是一個預警措施，讓我們在寫程式碼的時候，可以更快的發現錯誤。
 
@@ -69,7 +69,7 @@ tsc
 
 沒錯！就是那麼簡單，他就會把所有 TypeScript 的檔案轉成 JavaScript 了。
 
-![](./img/typeScript-1-2.jpg)
+![](/img/typescript/typeScript-1-2.jpg)
 
 可以看到他還順便幫你用 `use strict` 嚴謹模式，是不是很貼心！
 

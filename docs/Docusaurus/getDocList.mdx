@@ -4,10 +4,10 @@ sidebar_position: 4
 tags: ["Docusaurus", "文章列表"]
 ---
 
-import { Img } from "../../src/components/Width";
-import image_1 from "./img/getDocList-1.png";
-import image_2 from "./img/getDocList-2.png";
-import image_3 from "./img/getDocList-3.png";
+import { Img } from "@site/src/components/Width";
+import image_1 from "/img/docusaurus/getDocList-1.png";
+import image_2 from "/img/docusaurus/getDocList-2.png";
+import image_3 from "/img/docusaurus/getDocList-3.png";
 
 雖然 Docusaurus 有 Sidebar 可以很清楚地找到你要的文章，但我希望可以在首頁看到最新更新的文章列表，不過在 Docusaurus 沒有內建的功能或 API 可以顯示所有的文章，所以需要自己做一個自動爬蟲的 component。
 
@@ -106,7 +106,7 @@ docs[i].timeStamp = new Date(timeStamp).getTime();
 最後拿到有日期的物件陣列，再用 `sort` 去依據日期排序，然後再 import 到 .mdx 檔（記得把 .md 轉成 .mdx 才能引入）。
 
 ```jsx title='intro.mdx'
-import DocList from "../src/components/docList.jsx";
+import DocList from "@site/src/components/docList.jsx";
 
 <DocList />;
 ```
