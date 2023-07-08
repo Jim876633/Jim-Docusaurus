@@ -26,6 +26,11 @@ const config = {
   i18n: {
     defaultLocale: "zh-Hant-TW",
     locales: ["en", "zh-Hant-TW"],
+    localeConfigs: {
+      "zh-Hant-TW": {
+        label: "繁體中文",
+      }
+    }
   },
 
   presets: [
@@ -92,6 +97,10 @@ const config = {
             label: "GitHub",
             position: "right",
           },
+          {
+            type: 'localeDropdown',
+            position: 'right',
+          }
         ],
         hideOnScroll: true,
       },
