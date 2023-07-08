@@ -1,0 +1,154 @@
+---
+title: 【Node】在 Netlify 部署 Node.js project
+sidebar_position: 1
+tags: ["Node.js", "Netlify"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/node/deploy-netlify-1.png";
+import image_2 from "/img/node/deploy-netlify-2.png";
+import image_3 from "/img/node/deploy-netlify-3.png";
+
+## 為什麼用 Netlify？
+
+可能大家常聽到部署後端的平台會是 **Heroku**，我本來也是想用 Heroku 來部署後端的，不過當我都辦好帳號才發現，Heroku 現在免費額度要先綁信用卡！！如果跟我一樣是不喜歡綁信用卡的免費仔，Netlify 就是你的救星！
+
+也因為我之前做的前端專案大部分不是用 GitHub Pages 就是 Netlify，而 Netlify 又更加方便，不需要寫 Github Actions，也能在你 push 到 repo 時，自動幫你部署，這一篇就是來介紹怎麼部署 node.js 到 Netlify，以及我踩的一些雷。
+
+## 使用額度
+
+雖然是免費的，但也不是無限制的讓你使用，可以看官網的 [Functions 的額度](https://www.netlify.com/pricing/#add-ons-functions:~:text=any%20backend%20coding.-,Functions,-Open%20a%20world)。
+
+- 每個月 125000 請求 - 每發出一個請求就是調用一次 functions。
+- 每個月 100 小時 run times - 每次調用一次 functions 的執行時間。
+- 上限 10000 個靜態檔案 - 靜態檔案包含圖檔、影音檔、html 檔等等。
+
+一般做小 Project 就超級夠用的！如果真的不夠的話也有付費方案可以用。
+
+## 如何使用
+
+可以先下載 [Netlify CLI](https://docs.netlify.com/cli/get-started/)，讓你在本地端測試實際 deploy 有沒有成功。
+
+```
+npm install netlify-cli --save-dev
+```
+
+載入到自己專案的資料夾下，因為是開發用的所以要加 `--save-dev`。如果你覺得會很常用也可以下載到本地端，只要把 `--save-dev` 替換成 `-g` 就可以了。
+
+再來需要建立一個 `netlify.toml` 的檔案，裡面放的就是部署在 Netlify 的參數設定檔，設定檔大概會是長這樣
+
+```.toml title=netlify.toml
+[build]
+  command = "npm install && npm run build"
+  functions="api"
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/server/:splat"
+  status = 200
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["express"]
+```
+
+### Build
+
+我們來一一講解，最主要的就是 `[build]` 底下的 `functions='api'` 這個會將 `api` 這個資料夾底下的檔案變成 **Netlify functions** ，也就是一般熟知的 service。至於為什麼 functions 就是 service，可以去 [Functions overview](https://docs.netlify.com/functions/overview/) 好好了解，這部分就不著墨太多了。
+
+所以我的資料夾是長這樣
+
+```
+my-server
+|_api
+  |_service.js
+|_netlify.toml
+```
+
+`service.js` 裡面則是放的是寫好的 node.js。然後我是用 `Express` 框架，所以有些地方要做修改，像是原本的：
+
+```javascript title=server.js
+import express from "express";
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+app.listen(3000);
+```
+
+### Redirects
+
+因為已經部署到新的網址的，所以這邊要用 `router` 做重新導向
+
+```javascript title=server.js
+import express from "express";
+const app = express();
+const router = express.Router();
+
+router.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+app.use("/", router);
+```
+
+然後需要把 `app` export 出去才能使用，要注意因為 Netlify functions 是一個 serverless 的框架，所以需要下載 [serverless-http](https://github.com/dougmoscrop/serverless-http)
+
+```
+npm install serverless-http
+```
+
+再把 `app` 包在 `serverless-http` 裡面
+
+```javascript title=server.js
+export const handler = serverlessHttp(app);
+```
+
+這時候就可以 run 你的 serice 在本地端了，輸入指令
+
+```
+netlify dev
+```
+
+就會看到
+
+<Img src={image_1} width='500px' />
+
+不過你打開 `localhost:8888`，會發現什麼都沒看到，因為他的 functions 的路由是在 `localhost:8888/.netlify/functions/<function 名稱>`，這邊的 functions 名稱就是你的 node.js 的檔案名，我的檔名叫 `sever.js`，所以我的路徑會是 `localhost:8888/.netlify/functions/server`，就是你的 node.js 部署的路徑囉！
+
+不過這個路徑實在是有點醜，所以可以透過 `[[redirects]]` 的方式轉換路由，這邊參照 [splats](https://docs.netlify.com/routing/redirects/redirect-options/#splats) 來配置萬用字元（wildcard），這樣所有在你的根路徑底下的 pathname 才能夠順利導轉。
+
+```
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/server/:splat"
+  status = 200
+```
+
+### Functions
+
+再來 `functions` 的地方，因為我是用 `import` 的方式引入第三方套件，所以在 `functions` 的地方要設定 `node_bundler = "esbuild"`，然後我是用 `Express` 所以還要設定 `external_node_modules = ["express"]`。
+
+```
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["express"]
+```
+
+全部都設定完後就可以部署在 Netlify 啦～
+
+## 額外補充
+
+有時候在串第三方套件的時候會有一些 `TOKEN`、`CLIEND_ID` 之類的隱密資料，如果在本地端測試時，都常會用 `.env` 檔來放置這些隱密資料。
+
+如果部署到 Netlify，可以在 **Environment variables** 設定這些變數。
+
+<Img src={image_2} />
+
+然後再 **Build settings** 那邊都不用設定，Netlify 會自動幫你 build 完成。
+
+<Img src={image_3} />
+
+## 參考資料
+
+[《賴田捕手：番外篇》第 38 天：用 Netlify Functions 佈署 Line Bot](https://ithelp.ithome.com.tw/articles/10257235)

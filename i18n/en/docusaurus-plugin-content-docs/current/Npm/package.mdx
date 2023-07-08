@@ -1,0 +1,171 @@
+---
+title: 【Npm】package.json 跟 package-lock.json 的差別
+sidebar_position: 1
+tags: ["Npm", "Package.json", "Package-lock.json"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/npm/package-1.png";
+
+在開始一個新專案，使用 `npm install` 安裝一些套件時，會發現有兩個檔案 `package.json` 跟 `package.lock.json`，這一篇就來好好了解他們在做什麼的，以及這兩個有什麼差別。
+
+## package.json
+
+首先在進行專案時，會先下 `npm init`，建立一個初始的 `package.json`，這時候會叫你回答一些問題，幫你的專案建立初始的設定。
+
+如果不輸入而直接全部按 Enter，他就會給你預設的資訊，或是你懶的一直按 Enter，可以直接下 `npm init -y`，跳過所有問答，直接給你初始的設定。
+
+<Img src={image_1} width='600px' />
+
+**package.json** 顧名思義就是一個專案包（package），定義了這個專案的所有資訊，可以來看一下初始設定有什麼：
+
+```json
+{
+  "name": "npm-test", // 預設是資料夾名稱
+  "version": "1.0.0", // 專案版號
+  "description": "", // 專案描述
+  "main": "index.js", // 根檔案
+  "scripts": {
+    // 自定義腳本指令
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [], // keywords 給 npm search 去搜尋
+  "author": "", // 專案作者
+  "license": "ISC" // license 類型
+}
+```
+
+基本上如果你是自己做專案的話上述這些就算拿掉也沒差，因為這些設定都是有要放到 npm 給其他人使用，才需要設定的，自己練習開發的話會用到的大概就只有 `scripts`，可以自定義一些 npm 的腳本。
+
+如果下載套件的話，就會就會多一個欄位 `dependencies`，裡面就會是你專案會用到的套件，會紀錄安裝的版本號
+
+```json {12-14}
+{
+  "name": "npm-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "react": "^18.2.0"
+  }
+}
+```
+
+像這邊我安裝了 react 的套件，就會顯示 `react: ^18.2.0`。
+
+:::info 補充
+如果套件只在開發中使用，會下 `npm install <套件名> -d`，套件就會被安裝在另一個分類 `devDependencies`，像是 webpack 或是 prettier 等等，在正式上線後不會用的套件就會放在這裡面。
+:::
+
+## package-lock.json
+
+在 npm v5 之後，當有安裝套件時，就會自動建立 `package-lock.json` 的檔案，那 `package-lock.json` 到底在做什麼的呢？讓我娓娓道來～
+
+在 `npm install` 的時候，會把套件裡面所有用到的資源安裝到 `node_modules` 資料夾裡面，包含套件所用到的套件。
+
+咦？套件裡面還有套件喔？
+
+沒錯！大部分的套件都會依賴其他的套件，有現成的幹嘛不用？這樣在開發上就可省掉很多時間。
+
+但是在 package.json 並沒有定義依賴套件的版本，這就會造成說雖然我控制了我安裝的套件版本，但我卻沒辦法去控制他所依賴的套件版本。
+這樣就會造成不同人安裝到的依賴套件版本不一，很有可能就會產生不可預期的效果。
+
+所以就有了 `package-lock.json`，用來定義安裝套件的依賴套件版本。
+
+講了那麼多來直接看一下實際內容：
+
+```json
+{
+  "name": "npm-test",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "name": "npm-test",
+      "version": "1.0.0",
+      "license": "ISC",
+      "dependencies": {
+        "react": "^18.2.0"
+      }
+    },
+    "node_modules/js-tokens": {
+      "version": "4.0.0",
+      "resolved": "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz",
+      "integrity": "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="
+    },
+    "node_modules/loose-envify": {
+      "version": "1.4.0",
+      "resolved": "https://registry.npmjs.org/loose-envify/-/loose-envify-1.4.0.tgz",
+      "integrity": "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==",
+      "dependencies": {
+        "js-tokens": "^3.0.0 || ^4.0.0"
+      },
+      "bin": {
+        "loose-envify": "cli.js"
+      }
+    },
+    "node_modules/react": {
+      "version": "18.2.0",
+      "resolved": "https://registry.npmjs.org/react/-/react-18.2.0.tgz",
+      "integrity": "sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==",
+      "dependencies": {
+        "loose-envify": "^1.1.0"
+      },
+      "engines": {
+        "node": ">=0.10.0"
+      }
+    }
+  }
+}
+```
+
+:::tip
+如果用不同的 npm 版本可能結構名稱會跟我的不一樣，不過概念都是一樣的喔！
+:::
+
+這一個就是當你安裝 react 會出現的 `package-lock.json`，我們來看一下有什麼內容：
+
+- `name` & `version`： 這邊就跟 `package.json` 一樣，就不再贅述
+- lockfileVersion：指的是 `package-lock.json` 的版本，版本的差異主要是格式跟命名的不同，目前有三個版本：
+  - Version 1：npm v5 v6 使用
+  - Version 2：npm v7 v8 使用
+  - Version 3：npm v9 使用
+- packages：所有套件資訊（包含依賴的套件）
+
+接下來來看 pacakges 的內容，首先我們可以在這裡很明顯的看到 `react` 的 `dependencies` 依賴一個 `loose-envify` 的套件，而 `loose-envify` 依賴一個另一個 `js-tokens` 的套件。
+
+所以你就會看到總共有三個套件的資訊被列出來，再來細看他記錄了什麼內容
+
+```json
+"node_modules/react": {
+  "version": "18.2.0",
+  "resolved": "https://registry.npmjs.org/react/-/react-18.2.0.tgz",
+  "integrity": "sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==",
+  "dependencies": {
+    "loose-envify": "^1.1.0"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  }
+}
+```
+
+- dependencies：解決了 `package.json` 的問題，紀錄了依賴套件的版本號。
+- resolved：套件的下載位置，為 npm registry 的 tarball 網址。
+- integrity：驗證套件的完整性的密鑰，避免安裝到被篡改過的內容。
+
+## 總結
+
+1. package.json 用來記錄專案的資訊，包含專案名稱、作者以及安裝的套件等等。
+2. package-lock.json 用來記錄安裝的套件版本**（包含依賴套件）**，避免每個人安裝時安裝到不同的版本。
+
+## 參考資料
+
+[package-lock.json](https://docs.npmjs.com/cli/v9/configuring-npm/package-lock-json)

@@ -1,0 +1,136 @@
+---
+title: 【Vue2】Vuex 介紹
+sidebar_position: 1
+tags: ["Vue", "Vue2", "Vuex"]
+---
+
+import CodeSandbox from "@site/src/components/CodeSandbox.jsx";
+
+今天來介紹 **Vuex**，是一個管理 stores 狀態的套件，如果有學過 [React Redux](https://react-redux.js.org/) 的話，應該會發現使用起來非常相似，個人覺得比 Redux 好上手。
+
+那本篇是跟著 [官網](https://v3.vuex.vuejs.org/zh/) 來做整理的，會盡量把所有我覺得重要的包含進去，有任何沒有補充到的歡迎在底下留言～
+
+## 安裝
+
+Vue2 使用的是 vuex v3，所以在安裝的時候記得後面要加 `@3`。
+
+```npm
+npm install vuex@3
+```
+
+## 基本使用
+
+這邊我會用一個簡單的計數器當範例～
+
+首先先建一個 `store/index.js` 的檔案，然後使用 `Vue.use()` 引入 `Vuex` 套件。
+
+```js title='store/index.js'
+import Vue from "vue";
+import Vuex from "vuex";
+
+Vue.use(Vuex);
+```
+
+再來使用 `Vuex.Store()` 建一個基本的 Store 物件並 export 出去，這邊先用一個簡單的例子來介紹。
+
+- `state` 就是你想存放的變數物件，我這邊先建一個變數 `count` 並給他初始值。
+
+- `mutations` 放的是要更改 state 狀態的函式，建一個 `increment()` 讓我的 `count` 變數加一。
+
+```js title='store/index.js'
+export default new Vuex.Store({
+  state: {
+    count: 0,
+  },
+  mutations: {
+    increment(state) {
+      state.count++;
+    },
+  },
+});
+```
+
+之後就可以在全域的地方引入 `store`。
+
+```js title='main.js'
+import Vue from "vue";
+import App from "./App.vue";
+import store from "./store";
+
+new Vue({
+  store,
+  render: (h) => h(App),
+}).$mount("#app");
+```
+
+因為在全域的地方加入 store，所以在使用時只要用 `this.$store.state` 就可以取得變數。記得使用 Vue 全域的變數前面都要加上 `$`，像是 `this.$router` 或 `this.$store`。
+
+在畫面上就可以顯示 `counter：0`。
+
+```html {4,9-13} title='App.vue'
+<template>
+  <div class="counterWithState">
+    <h1>Counter</h1>
+    <p>counter：{{count}}</p>
+</template>
+
+<script>
+export default {
+  computed: {
+    count () {
+      return this.$store.state.count;
+    }
+  }
+}
+</script>
+```
+
+你會看這邊是使用 `computed` 來建立 `count` 變數，而不是用 `data()`，是因為如果用 `data()` 建立變數的話，呼叫 `mutation` 內的函式時，不會把更改的結果同步更新到 `data()` 內的 count 變數。
+
+而 `computed` 則是如果函式內的值改變（`this.$store.state.count` 值改變），就會更改 `count` 的值。之後再來細講其他的用法～
+
+---
+
+那要使用 `mutations` 裡面的 `increment()` 是不是呼叫 `this.$store.mutations.increment()` 就可以了？
+
+很可惜 Vuex 並不允許這樣做，如果真的要呼叫 `this.$store.mutations` 的話，使用起來會像是這樣：
+
+```html {4-7}
+<script>
+  export default {
+    methods: {
+      incrementHandler() {
+        const [increment] = this.$store._mutations.increment;
+        increment();
+      },
+    },
+  };
+</script>
+```
+
+是不是超不直覺又超麻煩的！官網也說不要這樣做，`mutations` 比較像一個事件註冊，它呼叫函式的方法是透過 `this.$store.commit('函式名稱')` 來呼叫對應的函式。
+
+```html {4-6}
+<script>
+  export default {
+    methods: {
+      incrementHandler() {
+        this.$store.commit("increment");
+      },
+    },
+  };
+</script>
+```
+
+這樣一個簡單的計數器就做完了！可以試一下底下的範例：
+
+<CodeSandbox
+  url='https://codesandbox.io/embed/bitter-sun-cs7hlr?fontsize=14&hidenavigation=1&theme=dark'
+  title='Vuex'
+  initialPath='counter'
+  codebasePath='/src/store/index.js'
+/>
+
+:::tip
+另外因為 `store` 是會一直存在除非關掉頁面或重新整理，可以試看看按 `Home page` 按紐回到首頁，再回到 `Counter page` 會發現剛剛更改過的 `count` 會記住剛剛改過的變數，不會歸零喔！
+:::

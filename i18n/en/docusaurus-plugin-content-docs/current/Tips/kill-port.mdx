@@ -1,0 +1,45 @@
+---
+title: 【Tip】刪除佔據的 port 號
+sidebar_position: 2
+tags: ["Tips", "Mac"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/tips/kill-port-1.png";
+import image_2 from "/img/tips/kill-port-2.png";
+
+<Img src={image_1} width='400px' />
+
+有時候在跑本地端程式碼的時候，會出現像上面一樣 port 號被佔據的問題，在 Mac 可以先查詢 PID(Process id) 號：
+
+```
+lsof -i:<port>
+```
+
+就會顯示這個 port 號有沒有被佔據。
+
+<Img src={image_2} />
+
+或是加上 -t 直接顯示 PID
+
+```
+lsof -t -i:<port>
+```
+
+得到 PID 號碼後，使用 `kill <PID>` 刪除佔據的 PID。
+
+```
+kill <PID>
+```
+
+再輸入一次 `lsof -i:<port>` 如果沒有跑出東西就代表成功刪除囉！
+
+但有時候程式當掉的話使用 `kill <PID>` 會刪不掉，這時候使用 `kill -9 <PID>`，就可以強制停止程序。
+
+```
+kill -9 <PID>
+```
+
+## 參考資料
+
+[在 Linux 中使用 kill、killall 與 xkill 等指令強迫關閉程式](https://blog.gtwang.org/linux/linux-kill-killall-xkill/)
