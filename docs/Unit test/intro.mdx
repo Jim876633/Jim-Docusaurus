@@ -1,0 +1,61 @@
+---
+title: 測試分類及前端測試工具介紹
+sidebar_position: 1
+tags: ["Unit test", "Testing"]
+---
+
+import { Img } from "@site/src/components/Width";
+import image_1 from "/img/unitTest/unit-test-1.png";
+import image_2 from "/img/unitTest/unit-test-2.png";
+import image_3 from "/img/unitTest/unit-test-3.gif";
+
+在開發時，最怕的就是遇到修這個壞那個，很常會不太敢亂動或重構程式碼，寫起來也會綁手綁腳的。剛好最近公司在試著推測試，所以也就開啟了這個 **Unit Test** 的新分類。
+
+## 測試的分類
+
+測試可以分為三種：
+
+- **單元測試(Unit test)**：針對程式中的最小可測試單位進行的測試，例如：函式邏輯測試。
+- **整合測試(Integration test)**：針對多個組件或模組之間的互動和整合的測試，例如：測試點擊按鈕顯示對話框。
+- **端對端測試(End-to-End test)**：模擬真實使用者情境，測試整個應用程式的功能和流程，例如：測試使用者註冊流程。
+
+也就是我們常看到的測試金字塔：
+
+<Img src={image_1} width='500px' />
+
+可以從這個圖看到，當測試越靠近單元測試，測試的速度越快，測試的成本也越低，但是測試的範圍也越小。反之，當測試越靠近端對端測試，測試的速度越慢，測試的成本也越高，但是測試的範圍也越大。
+
+而大部分的公司會是相反的測試冰淇淋，也就是花大量的時間在進行使用者測試，因為越貼近使用者的測試，越能確保使用者的體驗，不過就會需要花費更多的時間和成本，更不用說大部分的 E2E 測試都是人工測試，除了要花人力在撰寫各種測試腳本或是截圖，一旦有了新功能也不可能每次都要人工測試一遍。
+
+## 測試工具
+
+以前端來說，不管是 React、Vue、Angular，核心都是 javascript，所以共通的測試套件都是以 JavaScript 為主，先來看一下常見的單元測試工具在 [npm trend](https://npmtrends.com/ava-vs-jest-vs-karma-vs-mocha-vs-vitest) 的比較：
+
+<Img src={image_2} />
+
+可以看到，目前最熱門的測試工具是 Jest，也是我目前比較常用的測試套件。值得注意的是最近 Vite 所出的 Vitest 可能有望成為新一代熱門套件，除了測試速度更快以外，語法上也與 Jest 類似，可以持續關注！
+
+這邊簡單做一個比較：
+
+|    library     |                    Jest                     |                 Mocha                  |               Karma               |            Vitest             |
+| :------------: | :-----------------------------------------: | :------------------------------------: | :-------------------------------: | :---------------------------: |
+| 發布日期/版本  |                 2014/0.1.0                  |               2011/0.1.0               |            2012/0.1.0             |          2020/0.1.0           |
+|  開發公司/人   |                     FB                      |              open source               |              Google               |             Vite              |
+|   是否含斷言   |                     ✅                      |              ❌ 搭配 chi               |          ❌ 搭配 Jasmine          |   ✅ 內建 chi 及 jest 混合    |
+| 是否含 mock fn |                     ✅                      |            ❌ 搭配 Sinon.js            |         ❌ 搭配 Sinon.js          |              ✅               |
+|   跑測試速度   |                      2                      |                   3                    |                 4                 |               1               |
+|      優點      | 內建斷言庫、mock fn、snapshot、覆蓋率、快速 | 搭配 chi 斷言庫、mock fn、覆蓋率、快速 | 內建斷言庫、mock fn、覆蓋率、快速 | vite 開發、快速、覆蓋率、快速 |
+
+- 斷言：判斷輸入是否符合預期, example: `expect(1+1).toBe(2)`
+- mock fn: 模擬函式, example: `jest.fn()`
+- snapshot: 比對輸出是否符合預期, example: `expect(<div>123</div>).toMatchSnapshot()`
+
+## Unit Test vs Integration Test
+
+<Img src={image_3} width='500px' />
+
+這一系列都會著重在 React 搭配 Jest 的測試筆記，如果有興趣可以持續關注！
+
+## 參考資料
+
+[Unit Test vs Integration Test](https://tenor.com/zh-TW/view/unit_vs_integration_tests-gif-24903920)
