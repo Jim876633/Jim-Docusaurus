@@ -72,9 +72,14 @@ const config = {
         {
           name: "google-site-verification",
           content: "Xow6fHBMZxltxfkcAm44dklblf6FUas98iNOJ1QhcKg",
-        }, {
+        },
+        {
           name: "Jim's Blog",
           content: 'Jim docusaurus blog'
+        },
+        {
+          name: 'robots',
+          content: 'max-image-preview:large'
         }
       ],
       navbar: {
