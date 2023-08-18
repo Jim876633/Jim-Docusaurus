@@ -13,7 +13,7 @@ const config = {
   baseUrl: "/Jim-Docusaurus/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
-  favicon: "/img/favicon-32x32.png",
+  favicon: "https://jim876633.github.io/Jim-Docusaurus/img/favicon-32x32.png",
   deploymentBranch: "gh-pages",
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
