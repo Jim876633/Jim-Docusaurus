@@ -1,0 +1,320 @@
+---
+title: 【Other】使用 husky + commitlint 來規範 commit message
+sidebar_position: 2
+tags: ["Other", "husky", "commitlint", "lint-staged"]
+---
+
+import { Img } from "@site/src/components/Width";
+import image_1 from "/img/other/commitlint-1.png";
+import image_2 from "/img/other/commitlint-2.png";
+import image_3 from "/img/other/commitlint-3.png";
+import image_4 from "/img/other/commitlint-4.png";
+import image_5 from "/img/other/commitlint-5.png";
+import image_6 from "/img/other/commitlint-6.png";
+import image_7 from "/img/other/commitlint-7.png";
+
+## 介紹
+
+在開發專案時，commit message 是很重要的一環，因為它可以讓我們知道這次 commit 做了什麼事情，很常在多人協作的時候會發生 commit message 不統一，導致後續要找特定的 commit 會很難找。所以本篇介紹使用 husky + commitlint + lint-staged 來規範 commit message。
+
+## 套件介紹
+
+- [husky](https://typicode.github.io/husky/#/) : 可以在 git hook 執行 script 的套件
+- [commitlint](https://commitlint.js.org/#/) : 可以讓我們規範 commit message 的套件
+
+## 安裝流程
+
+### **Husky**
+
+```bash
+npx husky-init && npm install
+```
+
+建立一個 .husky 的資料夾，裡面會有 `husky.sh` 執行檔跟預設的 `pre-commit` 的檔案，會在 commit 前會去執行裡面的指令，像是 prettier、eslint 等等會在 commit 之前執行，而 husky 預設是執行 npm test。
+
+<Img src={image_1} width='700px' />
+
+並且會在 package.json 中加入 husky install 的 script。
+
+```json
+{
+  "scripts": {
+    "prepare": "husky install"
+  }
+}
+```
+
+這個 script 會在 npm install 的時候執行，用意是當其他人下載專案包時可以自動執行 husky install，載入 `.husky.sh` 的執行檔。
+
+:::tip 提醒
+husky 的 hook 檔案像是 `pre-commit` 或 `commit-msg` 要記得加入 git 版控，才可以執行 hook 指令。
+:::
+
+### Commitlint
+
+```bash
+npm i @commitlint/cli @commitlint/config-conventional -D
+```
+
+_＊@commitlint/config-conventional 會提供基本的規範，如果想要客製化的可以不用安裝。_
+
+安裝完後要建立 `commitlint.config.js` 配置檔，可以在裡面設定 commit message 的規則
+
+```js
+module.exports = {
+  rules: {
+    "header-min-length": [2, "always", 5],
+  },
+};
+```
+
+rules 項目的 value 會是一個**陣列**傳入三個設定
+
+- **level**（要不要開啟這個規則)：0 = disable, 1 = warning, 2 = error
+- **applicable**（設定規則是否遵守)：always | never
+- **value**：規則的值
+
+上面的例子就是開啟設定 header 的最小長度為 `5` 個字元。更多的條件可以參考 [commitlint rules](https://commitlint.js.org/#/reference-rules)。
+
+接著就可以測試看看是否有套用規則
+
+```bash
+echo "test" | npx commitlint
+```
+
+因為字數沒有符合規則，就會顯示不通過及違反的規則
+
+<Img src={image_2} width='700px' />
+
+:::caution 注意
+如果在 package.json 有設定 `"type": "module"`，記得要把 `commitlint.config.js` 檔改成 `commitlint.config.cjs`，在執行 script 時要執行 `echo "test" | npx commitlint --config` 不然會有 ESModule 的報錯。
+:::
+
+### config-coventional
+
+前面提到的 @commitlint/config-conventional 如果有安裝，可以把它加入到 `commitlint.config.js` 的 extends。
+
+```js {2}
+module.exports = {
+  extends: ["@commitlint/config-conventional"],
+  rules: {
+    "header-min-length": [2, "always", 5],
+  },
+};
+```
+
+他有幫你設定基本的[預設規則](https://github.com/conventional-changelog/commitlint/blob/5403f0b5bcab43803708997c482a44a7d1151480/@commitlint/config-conventional/index.js)，像是 type 只能使用有意義的詞，例如：feat、chore、fix 等等。
+
+設定完 commitlint 後要把它加入到 husky 的 hook
+
+```bash
+npx husky add .husky/commit-msg 'npx --no-install commitlint --edit "$1"'
+```
+
+這樣會在 .husky 底下建立 commit-msg 的 hook 檔案，在 commit 時把 commit message 傳入，並且去跑 commitlint 的檢查。
+
+這樣就完成了 husky + commitlint 的設定，可以在 commit 時進行規範！
+
+### Commitizen
+
+除了一般的輸入 commit message ，還可以使用 [commitizen](https://commitizen-tools.github.io/commitizen/) 建立問答的方式來進行 commit。首先要安裝 commitizen
+
+```bash
+npm i commitizen -D
+```
+
+commitlint 有提供 [cz-commitlint](https://github.com/conventional-changelog/commitlint/tree/master/%40commitlint/cz-commitlint) 可以結合 commitizen 跟 commitlint 本身的 [prompt](https://commitlint.js.org/#/reference-prompt) 進行問答
+
+```bash
+npm i @commitlint/cz-commitlint -D
+```
+
+然後在 package.json 的 script 加上
+
+```json {3} title="package.json"
+{
+  "scripts": {
+    "commit": "git-cz"
+  }
+}
+```
+
+以及 config 的設定
+
+```json {3-5} title="package.json"
+{
+  "config": {
+    "commitizen": {
+      "path": "@commitlint/cz-commitlint"
+    }
+  }
+}
+```
+
+如果使用 @commitlint/config-conventional 擴充的話，他也有預設好的 prompt 可以使用
+
+只要下指令
+
+```bash
+npm run commit
+```
+
+就可以進行問答式的 commit message
+
+<Img src={image_3} />
+
+## 客製化 commit message
+
+### cz-customizable
+
+如果不想使用 @commitlint/config-conventional 提供的 prompt，除了可以在 commitlint 客製化 prompt，這邊推薦另一個套件 [cz-customizable](https://github.com/leoforfree/cz-customizable) 可以更方便的客製化問答式
+
+```bash
+npm i cz-customizable -D
+```
+
+並把原本的 config path 改成 cz-customizable
+
+```json {3-5} title="package.json"
+{
+  "config": {
+    "commitizen": {
+      "path": "cz-customizable"
+    }
+  }
+}
+```
+
+接著在根目錄建立 `.cz-config.js` 檔案，裡面可以設定問答的內容
+
+```js title='.cz-config.js'
+module.exports = {
+  // 配置 type 的選項，限制只能提交以下類型
+  types: [
+    {
+      value: "feat",
+      name: "feat: 新增功能",
+    },
+    {
+      value: ":bug: fix",
+      name: "fix: 解決 bug 或 issue",
+    },
+  ],
+
+  // 每一步的提示信息
+  messages: {
+    type: "請選擇提示訊息",
+    scope: "請選擇 scope（選填）",
+    subject: "請輸入 commit 內容（必填）",
+    body: "請輸入 commit description，可透過 & 換行（選填）",
+    breaking: "列出任何 BREAKING CHANGES（重大修改）(選填)",
+    footer: "請輸入相關的的 issue（跟 issue 有關的 commit）(選填)",
+    confirmCommit: "確定提交此 commit 嗎？",
+  },
+
+  // 跳過要求的步驟
+  skipQuestions: ["scope", "breaking", "footer"],
+};
+```
+
+詳細內容可以參考[設定範例](https://github.com/leoforfree/cz-customizable/blob/master/cz-config-EXAMPLE.js)。
+
+:::caution 注意
+一樣如果在 package.json 有設定 `"type": "module"`，記得要把 `.cz-config.js` 檔改成 `.cz-config.cjs`，不然會有 ESModule 的報錯，然後要在 package.json 的 config 加上 config 的路徑。
+
+```json {6-8} title="package.json"
+{
+  "config": {
+    "commitizen": {
+      "path": "cz-customizable"
+    },
+    "cz-customizable": {
+      "config": ".cz-config.cjs"
+    }
+  }
+}
+```
+
+:::
+
+最後執行原本的 `npm run commit`，就可以看到客製化的問答式 commit。
+
+<Img src={image_4} />
+
+### commitlint-config-cz
+
+不過可能會發現 cz-customizable 跟 commitlint 是兩個毫無相關的套件，所以會 commitlint 沒辦法知道 cz-customizable 設定什麼 type，所以需要另外安裝 [commitlint-config-cz](https://www.npmjs.com/package/commitlint-config-cz) 來讓 commitlint 知道 cz-customizable 的設定
+
+```bash
+npm i commitlint-config-cz -D
+```
+
+然後在 commitlint.config.js 的 extends 加上
+
+```js {2}
+module.exports = {
+  extends: ["cz"],
+  rules: {
+    ...
+  },
+};
+```
+
+### commitlint-config-gitmoji
+
+有人可能跟我一樣想在 commit 前面加上 emoji，卻發現過不了 commitlint 的情況。
+
+<Img src={image_5} width='700' />
+
+這是因為它沒辦法解析 emoji 的內容，所以需要另外使用 [commitlint-config-gitmoji](https://www.npmjs.com/package/commitlint-config-gitmoji) 來解決這個問題，它是使用 [gitmoji](https://gitmoji.dev/) 把 emoji 轉成對應的 type
+
+```bash
+npm i commitlint-config-gitmoji -D
+```
+
+使用上只要參考 gitmoji 的對應表，把對應的 emoji 加在 commit message 前面就可以了
+
+```js {4}
+module.exports = {
+  types: [
+    {
+      value: ":sparkles: feat",
+      name: "feat: 新增功能",
+    },
+  ],
+};
+```
+
+一樣在 commitlint.config.js 的 extends 加上 gitmoji，這樣 commitlint 才可以吃到 emoji 的設定
+
+```js {2}
+modules.exports = {
+  extends: ["cz", "gitmoji"],
+  rules: {
+    ...
+  },
+}
+```
+
+<Img src={image_6} width='700' />
+
+雖然在結果上看起來沒有 emoji，但是在 git graph 中就會看到 emoji 了！
+
+<Img src={image_7} width='500' />
+
+_不過目前 gitmoji 的 emoji 還沒有很多，但也足夠用了，期待之後可以越加越多～_
+
+## 結論
+
+1. 想要檢查 commmit 不需要問答方式，只要下載 **husky** + **commitlint** + **config-coventional**(optional) 就可以了。
+2. 想要使用問答方式，可以下載 **commitizen** + **config-coventional**。
+3. 想要客製化問答方式，可以使用 commitlint 原本的 prompt，或是下載 **cz-customizable** + **commitlint-config-cz**。
+4. 想要在 commit message 加上 emoji，可以下載 **commitlint-config-gitmoji**。
+
+## 參考資料
+
+- [21 - Commitlint - Lint Commit 訊息](https://ithelp.ithome.com.tw/articles/10278664)
+- [約定式提交 Conventional Commits](https://www.cythilya.tw/2021/03/16/conventional-commits/)
+- [[note] git conventional commit](https://pjchender.dev/npm/note-git-conventional-commit/)
+- [打造前端现代化规范工程 Vite + ESLint + Husky + Commitlint + Lint-staged](https://cloud.tencent.com/developer/article/2271337?areaSource=&traceId=)
+- [Can't work with emoji?](https://github.com/conventional-changelog/commitlint/issues/880)
