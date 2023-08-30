@@ -1,0 +1,282 @@
+---
+title: 【Other】使用 husky + lint-staged 來規範 commit file
+sidebar_position: 1
+tags: ["Other", "husky", "lint-staged", "eslint", "prettier", "stylelint"]
+---
+
+import { Img } from "@site/src/components/Width";
+import image_1 from "/img/other/lint-staged-1.png";
+import image_2 from "/img/other/commitlint-1.png";
+import image_3 from "/img/other/lint-staged-2.gif";
+import image_4 from "/img/other/lint-staged-3.png";
+
+本篇會介紹常見的統一程式碼風格的套件，並且使用 husky + lint-staged 來讓每次 commit 都會自動執行格式化程式碼的動作。
+
+## 套件介紹
+
+### ESLint
+
+[ESLint](https://eslint.org/) 是一個 JavaScript 的 Linter，可以用來檢查程式碼是否符合 JavaScript 的規範，並且可以自訂規則。
+
+```bash
+npm init @eslint/config
+```
+
+上面的指令會透過問答的方式來產生 `.eslintrc.js` 設定檔，大部分會用到的像是使用什麼框架，或是有沒有用 typescript 都有考慮進去。
+
+<Img src={image_1} width='700px' />
+
+:::tip
+如果是使用建置套件，像是 Vite 或 Next.js 都已經有內建設定好的 ESLint 可以使用，就不用再另外安裝。
+:::
+
+ESLint 的設定檔主要有幾個項目：
+
+- [Environments](https://eslint.org/docs/user-guide/configuring/language-options#specifying-environments)：專案是在哪個環境做執行，較常會設定 `node: true` 允許使用 `module.exports`。
+- [Parser Options](https://eslint.org/docs/user-guide/configuring/language-options#specifying-parser-options)：eslint 解析器的設定。
+- [Plugins](https://eslint.org/docs/user-guide/configuring/plugins)：引入的第三方套件。
+- [Rules](https://eslint.org/docs/user-guide/configuring/rules)：客製化 ESLint 規則。
+- [Extends](https://eslint.org/docs/user-guide/configuring/configuration-files#extending-configuration-files)：擴充其他設定檔。
+- [Globals](https://eslint.org/docs/user-guide/configuring/language-options#specifying-globals)：定義全域變數，避免 eslint 報錯，像是 window 或 document。
+- [Overrides](https://eslint.org/docs/user-guide/configuring/configuration-files#configuration-based-on-glob-patterns)：針對特定檔案的設定。
+
+比較常會客製化的是 Rules，可以參考 [ESLint Rules](https://eslint.org/docs/latest/rules)。
+
+如果特定檔案不想使用 eslint，可以新增 `.eslintignore` 檔案，並在裡面寫上不想要使用 eslint 的檔案路徑。
+
+### Prettier
+
+[Prettier](https://prettier.io/) 是一個程式碼格式化的工具，可以幫助我們統一程式碼的風格，並且可以自訂規則。
+
+```bash
+npm install prettier --save-dev --save-exact
+```
+
+_＊`--save-exact(shorcut : -E)` 會固定安裝當前版本，避免未來安裝其他套件時，因為版本不同而造成的錯誤。_
+
+接著新增 `.prettierrc.json` 檔案，並在裡面寫上 prettier 的設定。
+
+```json title='.prettierrc.json'
+{
+  "printWidth": 80,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": false
+}
+```
+
+詳細內容可以參考 [Prettier Options](https://prettier.io/docs/en/options.html)。
+
+提供一下我個人用的 prettier 設定
+
+```json title='.prettierrc.json'
+{
+  "semi": true,
+  "tabWidth": 2,
+  "singleQuote": false,
+  "bracketSameLine": false,
+  "bracketSpacing": true,
+  "trailingComma": "es5",
+  "printWidth": 80,
+  "jsxSingleQuote": false,
+  "arrowParens": "always"
+}
+```
+
+### Stylelint
+
+[Stylelint](https://stylelint.io/) 是一個 CSS 的 Linter，可以用來檢查程式碼是否符合 CSS 的規範，並且可以自訂規則。
+
+```bash
+npm init stylelint
+```
+
+上面的指令會產生 `.stylelintrc.json` 設定檔，並且預設使用 [stylelint-config-standard](https://www.npmjs.com/package/stylelint-config-standard) 規則。
+
+如果使用 SASS 可以另外安裝 [styledlint-config-standard-scss](https://www.npmjs.com/package/stylelint-config-standard-scss) ，並放入 `.stylelintrc.json` 的 extends 中。
+
+```json title='.stylelintrc.json'
+{
+  "extends": ["stylelint-config-standard", "stylelint-config-standard-scss"]
+}
+```
+
+stylelint 跟 ESLint 一樣有幾個屬性可以做設定
+
+- [Plugins](https://stylelint.io/user-guide/plugins)：引入的第三方套件。
+- [Rules](https://stylelint.io/user-guide/rules)：客製化 stylelint 規則。
+- [Extends](https://stylelint.io/user-guide/configure#extends)：擴充其他設定檔。
+
+比較常會客製化的是 Rules，可以參考 [stylelint Rules](https://stylelint.io/user-guide/rules)。
+
+這邊推薦一個 plugin 是 [stylelint-order](https://www.npmjs.com/package/stylelint-order)，可以設定 **CSS 屬性的順序**。
+
+```bash
+npm install stylelint-order --save-dev
+```
+
+使用方法：
+
+```json title='.stylelintrc.json'
+{
+  "plugin": ["stylelint-order"],
+  "rules":{
+    "order/properties-order":[
+      // 設定屬性排序
+      "position",
+      "display",
+      "width",
+      ...
+    ]
+  }
+}
+```
+
+這邊提供我常用的[設定順序](https://github.com/Jim876633/vite-react-template/blob/main/.stylelintrc.json)，可以依照個人習慣做更動。
+
+### JavaScript + TypeScript ESLint 設定
+
+如果專案有使用 JS + TS 的話，記得不要把 `plugin:@typescript-eslint/recommended` 放在 extends 裡面，不然 JS 會吃不到 ESLint 的規則。
+
+解決方式是把 TS 的 ESLint 放在 Overrides 裡面另外設定 .ts 檔案的規則。
+
+```js {3-8} title='eslintrc.js'
+module.exports = {
+  extends: ["eslint:recommended", "plugin:react/recommended"],
+  overrids: [
+    {
+      files: ["*.ts", "*.tsx"],
+      extends: ["plugin:@typescript-eslint/recommended"],
+    },
+  ],
+};
+```
+
+### eslint 與 prettier 衝突
+
+有些屬性在 eslint 跟 prettier 都有，但是預設的規則不一樣，會造成其中一個修改後，另一個就會報錯。解決方法是下載 [eslint-config-prettier](https://www.npmjs.com/package/eslint-config-prettier)
+
+```bash
+npm install eslint-config-prettier --save-dev
+```
+
+並且在 `.eslintrc.js` 檔案中的 extends 中加入 `prettier`，記得加在最後面，這樣 prettier 的規則就會覆蓋 eslint 的規則。
+
+```json {5} title='.eslintrc.js'
+{
+  "extends": [
+    "standard-with-typescript",
+    "plugin:react/recommended",
+    "prettier"
+  ]
+}
+```
+
+### Vscode 設定
+
+在 Vscode 這三個都有各自的套件可以安裝
+
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+- [stylelint](https://marketplace.visualstudio.com/items?itemName=stylelint.vscode-stylelint)
+
+並且在全域 `setting.json`，或專案底下 `.vscode/settings.json` 中加入以下設定，可以讓 Vscode 在儲存時自動修正 eslint、prettier、stylelint 的錯誤。
+
+```json
+{
+  "formatOnSave": true, // 儲存時自動格式化
+  "editor.defaultFormatter": "esbenp.prettier-vscode", // 設定 prettier 為預設格式化工具
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true, // 儲存時自動修正 eslint 的錯誤
+    "source.fixAll.stylelint": true // 儲存時自動修正 stylelint 的錯誤
+  }
+}
+```
+
+## husky + lint-staged
+
+講了這麼多規範套件，但是每次都要手動執行指令，或是在 vscode 設定自動修正才能進行格式化。在多人協作時，總是有可能會漏掉，這時候就可以使用 husky + lint-staged 來幫助我們。
+
+- [hustky](https://typicode.github.io/husky/#/)：可以在 git 的 hook 中執行指令，像是 commit、push、pull 等等。
+- [lint-staged](https://www.npmjs.com/package/lint-staged)：可以在 git commit 時，只對 **staged** 的檔案做指定的動作。
+
+> _所以 husky + lint-staged 做的就是在 commit 時，執行 husky 的 script 指令，裡面設定去跑 lint-staged 的指令，lint-staged 就會去執行設定的 eslint、prettier、stylelint 的指令。_
+
+### 安裝
+
+首先先下載套件：
+
+```bash
+npx husky-init && npm install lint-staged --save-dev
+```
+
+:::info
+在下指令前記得先下 `git init` 初始化 git，不然會報錯。
+:::
+
+下載完後會有一個 .husky 的資料夾，裡面會有 `husky.sh` 執行檔跟預設的 `pre-commit` 的檔案，預設是執行 npm test。
+
+<Img src={image_2} width='700px' />
+
+並且會在 package.json 中加入 husky install 的 script。
+
+```json
+{
+  "scripts": {
+    "prepare": "husky install"
+  }
+}
+```
+
+這個 script 會在 npm install 的時候執行，用意是當其他人下載專案包時可以自動執行 husky install，載入 `.husky.sh` 的執行檔。
+
+### 設定指令
+
+先把 `.hsuky/pre-commit` 裡的 `npm test` 改成呼叫 `lint-staged` 的指令。
+
+```bash {5} title='.husky/pre-commit'
+# .husky/pre-commit
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npx lint-staged
+```
+
+接著在 `package.json` 裡加入 lint-staged 要執行的格式化指令。
+
+```json title='package.json'
+{
+  "lint-staged": {
+    "**/*.{ts,tsx,js,jsx,css,scss,json,md}": ["prettier --write"],
+    "**/*.{js,jsx,ts,tsx}": ["eslint --fix"],
+    "**/*.{css,scss}": ["stylelint --fix"]
+  }
+}
+```
+
+可以針對特定的檔案格式進行格式化，設定完後就可以在 commit 時自動執行格式化的動作。
+
+這邊簡單做一個範例，可以看到原本很糟的程式碼在 commit 時就會自動修正成設定好的規範。是不是很方便呢！
+
+<Img src={image_3} width='500px' />
+
+### 使用 Vscode Source Control 發 commit 問題踩雷
+
+有些會習慣使用 Vscode 內建的 commit 按鈕來操作，一樣可以進行 lint-staged，只是過程會顯示在 Vscode 的 output 裡
+
+<Img src={image_4} width='700px' />
+
+然後因為 Vscode 是使用 default 的 node version 去跑 lint-staged，我在使用的時候就遇到 lint-staged 最新版本只能使用 node 14 以上的版本，不然會[報錯](https://github.com/okonet/lint-staged/issues/1315)。但我明明下 `node -v` 是超過 14 的版本，後來才發現我的 nvm default node version 是使用 14，記得下指令修改 default node version 才不會找不到報錯原因。
+
+```bash
+nvm alias default {{ > 14 的版本號 }}
+```
+
+## 參考資料
+
+- [變成 rule 的形狀(3) - Prettier + ESLint](https://tempura-good-good.coderbridge.io/2022/06/11/prettier-+-eslint/)
+- [Day19 - 寫出更有品質的程式碼，信 eslint 得永生](https://ithelp.ithome.com.tw/articles/10277227)
+- [Vue.js - 使用 StyleLint 來整理 CSS 吧！](https://ithelp.ithome.com.tw/articles/10232650)
+- [extends 和 plugin 的差別](https://pjchender.dev/webdev/note-eslint/#extends-%E5%92%8C-plugin-%E7%9A%84%E5%B7%AE%E5%88%A5)
+- [How to run typescript-eslint on .ts files and eslint on .js files in the same project in VSCode](https://stackoverflow.com/questions/57597142/how-to-run-typescript-eslint-on-ts-files-and-eslint-on-js-files-in-the-same-pr)
