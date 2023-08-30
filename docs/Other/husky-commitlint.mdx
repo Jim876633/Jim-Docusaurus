@@ -13,8 +13,6 @@ import image_5 from "/img/other/commitlint-5.png";
 import image_6 from "/img/other/commitlint-6.png";
 import image_7 from "/img/other/commitlint-7.png";
 
-## 介紹
-
 在開發專案時，commit message 是很重要的一環，因為它可以讓我們知道這次 commit 做了什麼事情，很常在多人協作的時候會發生 commit message 不統一，導致後續要找特定的 commit 會很難找。所以本篇介紹使用 husky + commitlint + lint-staged 來規範 commit message。
 
 ## 套件介紹
@@ -30,7 +28,7 @@ import image_7 from "/img/other/commitlint-7.png";
 npx husky-init && npm install
 ```
 
-建立一個 .husky 的資料夾，裡面會有 `husky.sh` 執行檔跟預設的 `pre-commit` 的檔案，會在 commit 前會去執行裡面的指令，像是 prettier、eslint 等等會在 commit 之前執行，而 husky 預設是執行 npm test。
+上面指令會建立一個 .husky 的資料夾，裡面會有 `husky.sh` 執行檔跟預設的 `pre-commit` 的檔案，會在 commit 前會去執行裡面的指令，像是 prettier、eslint 等等會在 commit 之前執行，而 husky 預設是執行 npm test。
 
 <Img src={image_1} width='700px' />
 
@@ -264,7 +262,7 @@ module.exports = {
 
 有人可能跟我一樣想在 commit 前面加上 emoji，卻發現過不了 commitlint 的情況。
 
-<Img src={image_5} width='700' />
+<Img src={image_5} width='500px' />
 
 這是因為它沒辦法解析 emoji 的內容，所以需要另外使用 [commitlint-config-gitmoji](https://www.npmjs.com/package/commitlint-config-gitmoji) 來解決這個問題，它是使用 [gitmoji](https://gitmoji.dev/) 把 emoji 轉成對應的 type
 
@@ -296,11 +294,11 @@ modules.exports = {
 }
 ```
 
-<Img src={image_6} width='700' />
+<Img src={image_6} width='500px' />
 
 雖然在結果上看起來沒有 emoji，但是在 git graph 中就會看到 emoji 了！
 
-<Img src={image_7} width='500' />
+<Img src={image_7} width='250px' />
 
 _不過目前 gitmoji 的 emoji 還沒有很多，但也足夠用了，期待之後可以越加越多～_
 
