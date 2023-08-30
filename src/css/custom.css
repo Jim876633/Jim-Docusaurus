@@ -14,7 +14,7 @@
   --ifm-color-primary-lighter: #34678d;
   --ifm-color-primary-lightest: #39719b;
   --ifm-code-font-size: 95%;
-  --tag-color:#49b7ee;
+  --tag-color: #49b7ee;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.5);
 }
 
@@ -27,11 +27,27 @@
   --ifm-color-primary-light: #65c2f1;
   --ifm-color-primary-lighter: #74c8f2;
   --ifm-color-primary-lightest: #9ed9f6;
-  --tag-color:#39719b;
+  --tag-color: #39719b;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 table {
   table-layout: fixed;
   display: table;
   width: 100%;
+}
+
+blockquote {
+  border-left: 5px solid #dadde1;
+  background-color: rgba(91, 98, 107, 0.1);
+  color: #5b626b;
+  font-size: 100%;
+  margin: 0 0 1rem;
+  padding: 1rem;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] blockquote {
+  border-left: 5px solid #5c5d5f;
+  background-color: rgba(91, 98, 107, 0.2);
+  color: #bcc3cc;
 }
