@@ -1,0 +1,149 @@
+---
+title: 【Unit Test】使用 Vite + Vitest 進行 React 測試
+sidebar_position: 2
+tags: ["Unit Test", "Vite", "Vitest", "React"]
+---
+
+import { Img } from "@site/src/components/Width";
+import image_1 from "/img/unitTest/vite-react-vitest-1.png";
+import image_2 from "/img/unitTest/vite-react-vitest-2.png";
+
+## React + Vitest
+
+首先先下載 Vite + React 的專案
+
+```bash
+npm create vite@latest
+```
+
+這邊會有兩個問答的選項，我這邊選擇 React + TypeScript + SWC
+
+<Img src={image_1} width='400px' />
+
+:::info
+[SWC](https://swc.rs/) 是一個用 Rust 開發的 JavaScript / TypeScript 編譯器，打包速度比 Babel 還快，現在 Next.js 及 Vite 都有支援 SWC
+:::
+
+再來安裝 [Vitest](https://vitest.dev/)
+
+```bash
+npm i -D vitest
+```
+
+在 _package.json_ 加入 test script
+
+```json title='package.json'
+{
+  "scripts": {
+    "test": "vitest"
+  }
+}
+```
+
+接著在 _vite.config.ts_ 中加入 reference 跟 test 的設定，設定 globals 為 true，這樣就可以在全域使用 `describe`、`it`、`expect` 等方法。
+
+```js {1,7-9} title='vite.config.ts'
+/// <reference types="vitest" />
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+  },
+});
+```
+
+### JavaScript
+
+<Img src={image_2} width='500px' />
+
+設置完後如果使用 **JavaScript** 可能會發現會報 eslint 的錯，如上圖，但是跑測試是沒問題的，這是因為 eslint 沒有加入 vitest 的 config，所以會報錯，需要下載 [eslint-plugin-vitest](https://www.npmjs.com/package/eslint-plugin-vitest) 來解決。
+
+```bash
+npm i -D eslint-plugin-vitest
+```
+
+然後在 eslint 的設定檔中設定 env 及加入 `plugin:vitest/globals`。
+
+```js {2,8} title='.eslintrc.cjs'
+module.exports = {
+  env: { browser: true, es2021: true, "vitest/env": true },
+  extends: [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react/jsx-runtime",
+    "plugin:react-hooks/recommended",
+    "plugin:vitest/recommended",
+  ],
+};
+```
+
+### TypeScript
+
+如果使用 **TypeScript** 的話，則需要在 _tsconfig.json_ 中加入 types。
+
+```json {3} title='tsconfig.json'
+{
+  "compilerOptions": {
+    "types": ["vitest/globals"]
+  }
+}
+```
+
+## React testing library
+
+使用 React 進行測試跟 Jest 一樣加入三個基本的 **testing-library** 以及測試環境 **jsdom**。
+
+```bash
+npm i -D @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom
+```
+
+### JavaScript
+
+建立一個 _./tests/setup.js_ 檔案把 _@testing-library/jest-dom_ 套件引入，就可以在全域中使用 jest-dom 的擴充語法。
+
+```js title='./tests/setup.js'
+import "@testing-library/jest-dom";
+```
+
+接著在 _vite.config.js_ 加入環境及 `setupFile` 路徑
+
+```js {9-10} title='vite.config.js'
+/// <reference types="vitest" />
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./tests/setup.js",
+  },
+});
+```
+
+### TypeScript
+
+在 **TypeScript** 因為最近 _@testing-library/jest-dom_ 有進行[更版](https://github.com/testing-library/jest-dom/releases/tag/v6.0.0)，把 type 型別拉出去了，所以 _jest-dom_ 引入的方式要改成
+
+```js title='./tests/setup.ts'
+import "@testing-library/jest-dom/vitest";
+```
+
+然後在 _tsconfig.json_ 把 _@testing-library/jest-dom/vitest_ 加入 types
+
+```json title='tsconfig.json'
+{
+  "compilerOptions": {
+    "types": ["vitest/globals", "@testing-library/jest-dom/vitest"]
+  }
+}
+```
+
+## 參考資料
+
+- [Vitest with React Testing Library](https://www.robinwieruch.de/vitest-react-testing-library/)
+- [note-vite-vitest](https://pjchender.dev/npm/note-vite-vitest/)
