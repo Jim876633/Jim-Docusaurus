@@ -1,0 +1,187 @@
+---
+title: 【Npm】bun 1.0 發布！node 即將被取代？
+sidebar_position: 1
+tags: ["Npm", "bun", "node"]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/npm/bun-1.png";
+import image_2 from "/img/npm/bun-2.png";
+import image_3 from "/img/npm/bun-3.png";
+import image_4 from "/img/npm/bun-4.png";
+import image_5 from "/img/npm/bun-5.png";
+import image_6 from "/img/npm/bun-6.png";
+import image_7 from "/img/npm/bun-7.png";
+import image_8 from "/img/npm/bun-8.png";
+
+<Img src={image_1} />
+
+在最近 (2023/09/08) bun 推出了 [1.0 穩定版](https://bun.sh/blog/bun-v1.0)，一發布馬上看到很多人在轉發，有望取代 node 的感覺，就來看看 bun 到底是什麼吧！
+
+## 什麼是 bun
+
+> Bun is a fast, all-in-one toolkit for running, building, testing, and debugging JavaScript and TypeScript
+
+基本上 bun 跟 node 一樣，都是 JavaScript 的 **runtime(執行環境)**，不過主打比 node 運行還快速，解決了很多 node 的痛點，而且還可以相容 node / npm，官網列出來的優勢可大致分為：
+
+1. **執行速度快**：官網聲稱跑一個 hello world 的 JavaScript 檔案比 node.js 還要快 4 倍。
+2. **可以直接編譯 TypeScript 及 JSX 檔案**：不需要額外安裝一堆像是 ts-node、babel 之類的套件。
+3. **可以同時編譯 ESM 跟 CommonJS 檔案**：不用每次都需要定義 type: module 等等。
+4. **可以直接使用 Web API**：像是 fetch、WebSocket 等等，不需要再額外安裝 node-fetch。(不過 fetch API 在 node 18.0.0 後可以使用了)
+5. **可以直接啟動即時更新**：只要下 --hot 就可以啟動即時更新，不需要額外安裝 nodemon。(不過 node 18.13.0 後 可以使用 --watch 了)
+6. **取代 npm**：就算不使用 bun 的 runtime，也可以當作一般的 package manager 使用，且安裝速度更快。
+7. **同時是一個 test runner**：直接取代掉 Jest，速度甚至比 Vitest 還快。(不過 node 20.0.0 後可以跑測試了)
+
+## 安裝 bun
+
+<Tabs>
+<TabItem value="npm" label="npm">
+
+```bash
+npm install -g bun
+```
+
+</TabItem>
+<TabItem value="brew" label="brew">
+
+```bash
+brew tap oven-sh/bun
+brew install bun
+```
+
+</TabItem>
+</Tabs>
+
+下載完確認有安裝到就可以使用囉！
+
+```bash
+bun --version
+```
+
+## 執行速度快
+
+之所以 bun 執行速度那麼快，是因為相較於 node.js 或其他執行環境都是使用 Google 的 **V8 引擎**，bun 使用的是 Apple 本身提供的 [WebKit](https://webkit.org/) 引擎，也就是 safari 背後的引擎，所以目前 bun 只能在 macOS 上執行。
+
+以測試印出一個 hello world 為例，來比較一下他們的速度：
+
+```js title="hello.js"
+console.time("hello");
+console.log("hello world");
+console.timeEnd("hello");
+```
+
+<Img src={image_2} width='500px' />
+
+可以看到這個速度根本超過 10 倍了！不過這種簡單的 console.log 有時候測起來不太準，來測一個 1000000 次的迴圈：
+
+```js title="loop.js"
+console.time("time");
+let result = 0;
+for (let i = 0; i < 1000000; i++) {
+  result += i;
+}
+console.log(result);
+console.timeEnd("time");
+```
+
+結果：
+
+<Img src={image_3} width='500px' />
+
+好像差不多是四倍左右，不過迴圈次數越多，兩個會越接近，平均下來 bun 確實比 node 快上許多。
+
+## 可直接編譯 ts、jsx 檔案
+
+這個真的蠻不錯的，可以不用再安裝有的沒的套件，執行速度也比 tsc 快。以一個簡單的 ts 檔案為例：
+
+```ts title="sum.ts"
+const sum = (a: number, b: number) => a + b;
+console.log(sum(1, 2));
+```
+
+### node
+
+<Img src={image_4} width='500px' />
+
+正常，node 無法編譯 TypeScript
+
+### bun vs tsx vs ts-node
+
+<Img src={image_5} width='500px' />
+
+可以看到 bun 的速度比 tsx 快上許多，不過 ts-node 跑起來跟 bun 差不多。
+
+## 可以同時編譯 ESM 跟 CommonJS 檔案
+
+以往在使用 ESM 的 import / output 都需要加上 `--experimental-modules` flag 啟用 ESM 支援，還要在 package.json 定義 `type: module`，或是將檔名命名為 .mjs，來定義檔案是否為 ESM。
+
+雖然從 node 13.2.0 開始就有支援啟用 ESM 不用再加上 flag，但檔案是否為 ESM 還是需要另外設定。
+
+### node
+
+方法 1：定義 type 屬性
+
+```json title="package.json"
+{
+  "type": "module"
+}
+```
+
+方法 2：使用 .mjs 檔案
+
+```js title="index.mjs"
+import { sum } from "./sum.js";
+console.log(sum(1, 2));
+```
+
+現在大部分的方法都是使用 `type: module` 來定義，畢竟現在幾乎都使用 ESM，不過有些套件還是只支援 CommonJS，這時候還需要另外把檔名改成 .cjs，使用起來還是非常麻煩。
+
+### bun
+
+相較之下，bun 能夠**同時**編譯 ESM 跟 CommonJS，不需要額外設定，而且是在**同一個檔案也可以同時使用**，也就是說下面這個
+
+```js title="index.js"
+import sum from "./sum.js";
+const sumCommon = require("./sumCommon.js");
+
+console.log(sum(1, 2));
+console.log(sumCommon(1, 2));
+```
+
+是可以執行的，是不是超酷！！
+
+## 安裝套件
+
+bun 可以直接當作套件管理工具，且下載速度比 npm 快很多，以安裝 45.1MB 的 [antd](https://www.npmjs.com/package/antd) 為例：
+
+`npm install`:
+
+<Img src={image_6} width='500px' />
+
+`bun install`:
+
+<Img src={image_7} width='500px' />
+
+可以看到速度上差蠻多的，安裝套件的時候可以考慮使用 bun，可以節省很多時間。
+
+## 測試
+
+bun 還有一個我覺得超棒的功能，就是可以直接跑測試，Jest 有的基本功能 bun 都有，而且速度比 Jest 快很多。
+
+<Img src={image_8} width='400px' />
+
+bun test 包含：
+
+- **Life cycle hooks：**beforeAll、afterAll、beforeEach、afterEach
+- **Mock functions：**bun 有包含基本的 `jest.fn()`、`jest.spyOn()` 等等。
+- **snapshot：**跟 Jest 一樣，會產出一個 \_\_snapshots\_\_ 的檔案，記錄 UI 的變化。
+- **coverage：**可以在 terminal 顯示 coverage，不過只有 function 跟 Line 的指標，也沒有像 Jest 一樣有測試報告可以看。
+
+不過我在實際測試的時候，發現還是沒有支援的很完善，沒辦法完全取代原本的測試工具。如果要整合其他的測試套件，像是 jest-dom 等 testing-library 目前官網都沒有任何的文件，可以看到 [bun test](https://github.com/oven-sh/bun/issues/1825) 還有很多語法待新增，所以如果要使用 bun test，目前還是無法使用在實際的專案上。
+
+## 結論
+
+bun 可以說是一個很有潛力的工具，就官網來看如果持續發展，真的蠻有機會可以取代 node，不過現階段看來還有很多問題待解決，有興趣可以玩玩看，有些功能真的蠻不錯的，期待它繼續發展～
