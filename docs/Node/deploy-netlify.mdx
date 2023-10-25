@@ -39,7 +39,7 @@ npm install netlify-cli --save-dev
 
 ```.toml title=netlify.toml
 [build]
-  command = "npm install && npm run build"
+  command = "npm install"
   functions="api"
 [[redirects]]
   from = "/*"
@@ -66,6 +66,19 @@ my-server
 `service.js` 裡面則是放的是寫好的 node.js。然後我是用 `Express` 框架，所以有些地方要做修改，像是原本的：
 
 ```javascript title=server.js
+export.handler = async (event, context) => {
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      message: "Hello World!",
+    }),
+  };
+};
+```
+
+調整後：
+
+```javascript title=server.js
 import express from "express";
 const app = express();
 
@@ -73,26 +86,12 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.listen(3000);
+export const handler = app;
 ```
 
-### Redirects
+是不是簡潔很多～
 
-因為已經部署到新的網址的，所以這邊要用 `router` 做重新導向
-
-```javascript title=server.js
-import express from "express";
-const app = express();
-const router = express.Router();
-
-router.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-
-app.use("/", router);
-```
-
-然後需要把 `app` export 出去才能使用，要注意因為 Netlify functions 是一個 serverless 的框架，所以需要下載 [serverless-http](https://github.com/dougmoscrop/serverless-http)
+不過如果使用 Express 需要下載 [serverless-http](https://github.com/dougmoscrop/serverless-http) 來把 http request 轉換成 serverless 的 request。
 
 ```
 npm install serverless-http
@@ -101,8 +100,11 @@ npm install serverless-http
 再把 `app` 包在 `serverless-http` 裡面
 
 ```javascript title=server.js
+import serverlessHttp from "serverless-http";
 export const handler = serverlessHttp(app);
 ```
+
+### Redirects
 
 這時候就可以 run 你的 serice 在本地端了，輸入指令
 
