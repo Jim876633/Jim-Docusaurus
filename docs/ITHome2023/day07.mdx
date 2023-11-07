@@ -1,0 +1,92 @@
+---
+title: "[Day 07] 寫測試 AI 工具推薦"
+tags: ["ITHome 2023"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/ithome2023/day7-1.png";
+import image_2 from "/img/ithome2023/day7-2.gif";
+
+介紹完基本的測試後，終於到了主題的 AI 部分，現在 AI 工具有如雨後春筍般，每天都有新的工具，真的要講的話有太多可以介紹了，所以我會就我常用的 AI 工具來做介紹。
+
+## AI Tools
+
+### Web Site
+
+- [ChatGPT](https://chatbot.gpt.ai/)：OpenAI 開發的聊天機器人，短短兩個月使用人數破億，目前還是非常主流的 AI 工具。
+- [Monica](https://www.monicahq.com/)：使用 GPT-4 的免費工具，在網頁版有 Chrome Extension 可以使用，不過一天只有 30 個免費提問。
+
+### Vscode Extension
+
+- [TabNine](https://marketplace.visualstudio.com/items?itemName=TabNine.tabnine-vscode)：在還沒有 Copilot 前，我最常用的 AI 工具，可以根據上下文做程式碼補全。
+- [Code GPT](https://marketplace.visualstudio.com/items?itemName=DanielSanMedium.dscodegpt)：使用 openAI API 來進行程式碼問答及生成。
+- [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)：GitHub 開發的 AI 工具，使用 GitHub 上的開源程式碼進行訓練，目前只有付費版。
+- [GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat)：Copilot 版的 ChatGPT，要有 Copilot 才能使用（個人版需要排隊）。
+- [Code Whisperer](https://marketplace.visualstudio.com/items?itemName=CodeWhisper.code-whisper)：Amazon 開發的 AI 工具，需要註冊 AWS 帳號。
+
+### Application
+
+- [MacGPT](https://goodsnooze.gumroad.com/l/menugpt)：Mac 專屬的應用程式，可以在 Menu Bar 直接使用 ChatGPT。
+- [Monica](https://monica.im/)：Monica 也有提供 windows / Mac 版本的應用程式，可以像 spotlight 一樣叫出 Monica 來做使用。
+
+## AI 寫測試推薦
+
+以寫測試來說，VS Code extension 一定是最合適的，因為可以直接在開發環境中使用，而且有些還可以直接把 AI 結果一鍵引入到程式碼中，非常的方便。
+
+這邊就以我常用的 ChatGPT 跟 Copilot Chat 來做比較
+
+假設要測試一個簡單的加總函式
+
+```js
+function sum(a, b) {
+  return a + b;
+}
+```
+
+### ChatGPT
+
+步驟：
+
+1. 把 Code 貼到 ChatGPT
+2. 說明檔案路徑
+3. 說明測試條件
+4. 複製程式碼到測試檔案
+
+<Img src={image_1} />
+
+可以參考實際的[對話過程](https://chat.openai.com/share/b73acecd-b9af-4fa3-b2d6-426b93b0f201)
+
+會需要說明檔案路經，是因為這樣就可以把程式碼直接貼上使用，不需要還要再另外更改路徑。
+
+### Copilot Chat
+
+步驟：
+
+1. 打開要測試的檔案
+2. 在 Chat 視窗輸入 /tests 後接測試條件
+3. 一鍵插入測試程式碼
+
+<Img src={image_2} />
+
+只要下 `/tests` 就會默認是要測試當前打開檔案，還可以一鍵插入生成的測試程式碼。
+
+---
+
+## ChatGPT vs Copilot Chat
+
+從上面的步驟流程可以看到 Copilot chat 與 VS Code 整合上的優勢，不過缺點就是沒辦法保留多個記錄，而且也只能根據程式碼做回答，在文字處理上還是 ChatGPT 比較強大。
+
+這邊簡單做個比較：
+
+|  Tools  | 優點                                                                                                     | 缺點                                                                          | 價錢                                                  |      使用時機       |
+| :-----: | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------- | :-----------------: |
+| ChatGPT | <ul><li>可以保留多個訓練 prompt 記錄</li><li>較擅長回答各式問題</li></ul>                                | <ul><li>需把程式碼描述完整</li><li>生成的程式碼需要複製貼上到編輯器</li></ul> | <ul><li>GPT3.5 免費</li><li>GPT4 20 美元/月</li></ul> | 框架 / 套件研究理解 |
+| Copilot | <ul><li>VS Code 整合方便</li><li>可以根據當前打開的檔案做測試</li><li>可以直接插入生成的程式碼</li></ul> | <ul><li>無法保留多個記錄</li><li>只能根據程式碼做回答</li></ul>               | <ul><li>10 美金/ 月</li><li>100 美金 /年</li></ul>    |     開發、測試      |
+
+以寫測試及開發來說，Copilot 及 Copilot Chat 在使用上會比較合適，所以接下來的 AI 測試都會以 **Copilot Chat** 當作主要工具。
+
+不過畢竟 Copilot 是要付費的，所以如果想試著導入 AI 到測試中，也可以先從 ChatGPT 開始，覺得真的有幫助再考慮付費。
+
+但是相信我，一旦用了 Copilot 之後就回不去了 😂
+
+再來就要進入實作的部分了～我會依照各個不同的情況先寫一遍測試，再使用 Copilot Chat 來產出測試碼，比較看看實際的差別，我們下一篇見！

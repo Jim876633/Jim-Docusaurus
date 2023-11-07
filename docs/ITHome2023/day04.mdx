@@ -1,0 +1,303 @@
+---
+title: "[Day 04] Jest 進階模擬語法"
+tags: ["ITHome 2023"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/ithome2023/day4-1.png";
+import image_2 from "/img/ithome2023/day4-2.png";
+
+上一篇介紹了 Jest 的基本語法，接下來要來介紹 Jest 的進階模擬語法。
+
+## Timer Mock (模擬計時器)
+
+有時候在測試 `setTimeout` 或是 `setInterval` 的時候都需要實際等到時間到才能測試，像簡訊驗證到期測試，每次都要等個五分鐘才能測，這樣測試的效率就非常低，這時候就可以使用 Jest 的 Timer Mock 來模擬計時器。
+
+假設現在有一個函式會回傳一個 Promise，在 3 秒後回傳 "time out"
+
+```js title="timer.js"
+const timer = async () => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve("time out"); // 回傳 "time out"
+    }, 3000);
+  });
+};
+
+export default timer;
+```
+
+實際在人工測試的時候，需要等待 3 秒才能測試，那我們如果直接用 Jest 跑測試
+
+```js title="timer.test.js"
+import timer from "./timer";
+
+describe("timer", () => {
+  it('should resolve with "time out" after 3 seconds', async () => {
+    const promise = timer();
+    const result = await promise; // 等待 promise 3 秒後回傳
+    expect(result).toBe("time out");
+  });
+});
+```
+
+也會需要等 3 秒才會跑完
+
+<Img src={image_1} />
+
+這時候就可以使用 Jest 的 Timer Mock 來模擬計時器，把原本的測試改成這樣
+
+```js title="timer.test.js"
+import timer from "./timer";
+jest.useFakeTimers(); // 使用 Jest 的 Timer Mock
+
+describe("timer", () => {
+  it('should resolve with "time out" after 3 seconds', async () => {
+    const promise = timer();
+    jest.advanceTimersByTime(3000); // 模擬時間經過 3 秒
+    const result = await promise;
+    expect(result).toBe("time out");
+  });
+});
+```
+
+跑測試的時候，就會直接跳過等待時間
+
+<Img src={image_2} />
+
+是不是很方便啊～
+
+再來就來介紹一下 Timer Mock 的相關 API
+
+### jest.useFakeTimers
+
+啟用 Time Mock，底層是用 [@sinonjs/fake-timers](https://github.com/sinonjs/fake-timers) 所做，它做的事情就是把所有有關時間的 API 都**替換成模擬的計時器**，常用的像是
+
+- setTimeout
+- setInterval
+- clearTimeout
+- clearInterval
+- Date
+
+所以在任何模擬時間的測試中，都需要先使用 jest.useFakeTimers() 來啟用模擬計時器。
+
+如果想要關閉模擬計時器，可以使用 `jest.useRealTimers()` 來關閉。
+
+### jest.advanceTimersByTime
+
+顧名思義就是**模擬時間經過**，這個 API 會讓模擬計時器經過指定的毫秒數，讓計時器可以跑到指定的時間點。
+
+他放置的位置必須要在程式的計時器被觸發之後，不然會沒有效果。以剛剛的例子為例，如果把 `jest.advanceTimersByTime()` 放在任何其他位置，測試都會失敗。
+
+```js
+import timer from "./timer";
+jest.useFakeTimers();
+
+describe("timer", () => {
+  it('should resolve with "time out" after 3 seconds', async () => {
+    const promise = timer(); // setTimeout 被觸發
+    jest.advanceTimersByTime(3000); // ✅ 模擬時間經過 3 秒，在 setTimeout 被觸發後
+    const result = await promise; // 得到結果
+    expect(result).toBe("time out");
+  });
+});
+```
+
+再來如果模擬時間小於原本設定的時間，也會測試失敗，因為在模擬的時間上沒有到達觸發 setTimeout callback 函式的時間點。
+
+```js
+it('should resolve with "time out" after 3 seconds', async () => {
+  const promise = timer(); // setTimeout 被觸發
+  jest.advanceTimersByTime(2000); // 模擬時間經過 2 秒
+  const result = await promise; // ❌ 得不到回傳，測試失敗
+  expect(result).toBe("time out");
+});
+```
+
+不過如果模擬時間大於原本設定的時間，就不會有問題，就算時間超過，也會經過觸發函式的時間點。
+
+```js
+it('should resolve with "time out" after 3 seconds', async () => {
+  const promise = timer(); // setTimeout 被觸發
+  jest.advanceTimersByTime(10000); // 模擬時間經過 10 秒
+  const result = await promise; // ✅ 會經過 3 秒，得到結果
+  expect(result).toBe("time out");
+});
+```
+
+最後值得注意的是，如果有多個計時器，並且時間都是相同的，那麼這些計時器會被**一起**觸發，所以如果有多個計時器，並且時間不同，就要分開模擬時間測試。
+
+### jest.runAllTimers
+
+如果不想要設定經過的時間，可以使用 `jest.runAllTimers()` 來模擬所有時間經過，這個 API 會讓所有計時器都直接觸發函式。
+
+```js
+it('should resolve with "time out" after 3 seconds', async () => {
+  const promise = timer();
+  jest.runAllTimer(); // 模擬所有時間經過
+  const result = await promise;
+  expect(result).toBe("time out");
+});
+```
+
+### jest.clearAllTimers
+
+有時候需要清除所有的模擬計時器，可以在 beforeEach 中使用 `jest.clearAllTimers()` 來讓每次測試都是乾淨的狀態。
+
+```js
+beforeEach(() => {
+  jest.clearAllTimers(); // 清除所有模擬計時器
+});
+```
+
+## jest.mock (模組模擬)
+
+在寫測試的時候，最主要的原則就是**測試單一性**，也就是說，每個測試只測試一個功能，且不會因為有引入其他的函式或是模組而影響測試結果。所以在測試的時候，常常會需要模擬其他函式或模組的回傳值，讓我們可以專注在單一功能的測試。
+
+舉個例子，假設今天有一個函式
+
+```js title="printNumber.js"
+import randomNumber from "./randomNumber";
+
+function printRandomNumber() {
+  return "My number is " + randomNumber();
+}
+
+export default printRandomNumber;
+```
+
+呼叫 `printRandomNumber` 會得到一個字串 `My number is <隨機數字>`，`randomNumber` 是一個回傳隨機 0~100 數字的函式。
+
+```js title="randomNumber.js"
+function randomNumber() {
+  return Math.floor(Math.random() * 100);
+}
+
+export default randomNumber;
+```
+
+現在要測試 `printRandomNumber` 的時候，我們只想要測試回傳的字串是否正確，但是 `randomNumber` 是隨機的，所以每次測試都會得到不同的結果，這時候就可以使用 `jest.mock()` 來模擬 `./randomNumber` 模組，並使用 `mockReturnValue` 來模擬回傳值。
+
+```js title="printNumber.test.js"
+import printRandomNumber from "./printRandomNumber";
+import randomNumber from "./randomNumber";
+
+jest.mock("./randomNumber"); // 模擬 ./randomNumber 模組
+
+describe("printRandomNumber", () => {
+  it("should return 'My number is 10'", () => {
+    randomNumber.mockReturnValue(50); // 模擬 randomNumber 回傳 50
+    const result = printRandomNumber();
+    expect(result).toBe("My number is 50");
+  });
+});
+```
+
+利用模擬的方式，把任何可能會影響測試結果的函式或模組都模擬掉，這樣就可以專注在單一功能的測試。
+
+## jest.spyOn (模組函式模擬)
+
+剛剛介紹了 `jest.mock` 可以模擬模組，但是如果只想要模擬模組中的某個函式，就可以使用 `jest.spyOn` 來模擬。
+
+以剛剛的例子為例，現在在 `./randomNumber` 除了 `randomNumber` 函式之外，還有一個 `randomEvenNumber` 函式，會回傳隨機的 1~100 的偶數值。
+
+```js title="randomNumber.js"
+function randomNumber() {
+  return Math.floor(Math.random() * 100);
+}
+
+function randomEvenNumber() {
+  return Math.floor(Math.random() * 50) * 2;
+}
+
+export default { randomNumber, randomEvenNumber };
+```
+
+`printRandomNumber` 函式改成
+
+```js title="printNumber.js"
+import random from "./utils/randomNumber_jestSpyOn.js";
+
+function printRandomNumber() {
+  return `My number is ${random.randomNumber()}. My even number is ${random.randomEvenNumber()}`;
+}
+
+export default printRandomNumber;
+```
+
+在測試時就可以使用 `jest.spyOn` 來模擬 `./randomNumber` 模組裡的函式
+
+```js title="printNumber.test.js"
+import printRandomNumber from "./printRandomNumber_jestSpyOn";
+import random from "./utils/randomNumber_jestSpyOn.js";
+
+jest.spyOn(random, "randomNumber"); // 模擬 randomNumber 函式
+jest.spyOn(random, "randomEvenNumber"); // 模擬 randomEvenNumber 函式
+
+describe("printRandomNumber function", () => {
+  it('if randomNumber is 50, printRandomNumber should return "My number is 50"', () => {
+    random.randomNumber.mockReturnValue(51); // 模擬 randomNumber 回傳 51
+    random.randomEvenNumber.mockReturnValue(52); // 模擬 randomEvenNumber 回傳 52
+    const result = printRandomNumber();
+    expect(result).toEqual("My number is 51. My even number is 52");
+  });
+});
+```
+
+## jest.fn (函式模擬)
+
+除了 `jest.spyOn` 可以模擬模組裡的函式，`jest.fn` 也可以模擬函式。只要把 `jest.spyOn` 轉換成下面這樣就可以了
+
+```js title="printNumber.test.js"
+import random from "./utils/randomNumber_jestSpyOn.js";
+
+random.randomNumber = jest.fn(); // 使用 jest.fn 模擬 randomNumber 函式
+random.randomEvenNumber = jest.fn(); // 使用 jest.fn 模擬 randomEvenNumber 函式
+```
+
+除此之外，`jest.fn` 也可以直接建立一個新的模擬函式，像這樣：
+
+```js
+describe("jest.mock test", () => {
+  it("mock return value is 50", () => {
+    const mockFn = jest.fn(); // 建立模擬函式
+    mockFn.mockReturnValue(50); // 模擬回傳值為 50
+    expect(mockFn()).toEqual(50);
+  });
+});
+```
+
+賦予變數一個 `jest.fn()` 的模擬函式，這樣就可以使用 `mockReturnValue` 等方法來模擬回傳值。
+
+這樣的好處就是如果函式的參數有函式，就可以使用 `jest.fn()` 替換掉。
+
+以下面為例，把 `randomNumber` 當成`printRandomNumber` 的函式參數傳入。
+
+```js title="printNumber.js"
+function printRandomNumber(randomNumber) {
+  return "My number is " + randomNumber();
+}
+
+export default printRandomNumber;
+```
+
+要測試的時候就可以使用 `jest.fn()` 來模擬 `randomNumber` 參數的回傳值
+
+```js title="printNumber.test.js"
+describe("printRandomNumber function", () => {
+  it('if randomNumber is 50, printRandomNumber should return "My number is 50"', () => {
+    const mockRandomNumber = jest.fn(); // 建立模擬函式
+    mockRandomNumber.mockReturnValue(50); // 模擬回傳值為 50
+    const result = printRandomNumber(mockRandomNumber); // 將模擬函式當成參數傳入
+    expect(result).toEqual("My number is 50");
+  });
+});
+```
+
+---
+
+今天講了很多 Jest 的模擬語法，可以說測試中最核心的就是模擬，好的模擬可以讓測試更加的乾淨，也可以讓測試更專注在單一功能上，讓測試更加的穩定。
+
+雖然這篇的標題是 Jest 的進階語法，但在實際測試中都是很常會用到的語法，除此之外，還有很多用法是沒有提到，有興趣的可以參考[官方文件](https://jestjs.io/docs/mock-functions)。
+
+那今天就介紹到這邊，下一篇來講 React 的測試安裝介紹～

@@ -1,0 +1,325 @@
+---
+title: "[Day 06] React Testing Library 語法介紹"
+tags: ["ITHome 2023"]
+---
+
+前面提到 Jest 本身有提供很多測試方法，但在測試上都比較偏向邏輯測試，像是 a + b 是否等於 c。而實際上我們所需要的測試有一大部分也包含 UI 的測試，像是畫面上有沒顯示正確文字，或是使用者點擊有沒有跳出視窗等等，這時候就需要使用 Testing Library 。
+
+Testing Library [文檔介紹](https://testing-library.com/docs/)開頭就很明確的說了
+
+> The @testing-library family of packages helps you test UI components in a user-centric way.
+
+也就是 @testing-library 系列的套件可以幫助你以用戶為中心的方式測試 UI 元件。
+
+Testing Library 不只提供可以共通使用的測試套件，還有專為各個框架所出的套件，基本的三大框架 React、Vue、Angular 都有屬於他們的測試 UI 套件。而比較新的框架像是 Preact、Svelte 也都有在持續更新。
+
+## Testing Library For React
+
+以 React 來說，搭配 Jest 會需要的 Testing Libary 有以下幾個：
+
+1. [@testing-library/react](https://www.npmjs.com/package/@testing-library/react) - 模擬 React 渲染，Ex：render、screen
+
+2. [@testing-library/jest-dom](https://www.npmjs.com/package/@testing-library/jest-dom) - 擴充 jest 的斷言庫，Ex：toBeInTheDocument、toHaveClass
+
+3. [@testing-library/user-event](https://www.npmjs.com/package/@testing-library/user-event) - 模擬使用者操作，Ex：useEvent.click、userEvent.type
+
+接下來來各別介紹這三個的使用時機：
+
+### 📌 @testing-library/react
+
+主要是提供模擬渲染 UI 畫面的函式，比較常用的有
+
+1. `render()`
+
+就如同 React 中的 render，就是模擬渲染 React 元件，假設有一個 `<Home/>` 元件：
+
+```js
+export const Home = () => {
+  return <h1>Home Page</h1>;
+};
+```
+
+要測試元件的 DOM 元素時，就可以使用 `render()` 函式。
+
+```js
+import { render } from "@testing-library/react";
+import { Home } from "./Home";
+
+describe("testing home component", () => {
+  it("show Home Page in the home component", () => {
+    const { getByText } = render(<Home />);
+    //使用 getByText 判斷抓到文字的元素是否存在
+    expect(getByText("Home Page")).toBeTruthy();
+  });
+});
+```
+
+`render()` 函式會回傳一個物件包含一些屬性對象：
+
+- [...Query](https://testing-library.com/docs/queries/about/)：getBy、queryBy、findBy、getAllBy、queryAllBy、findAllBy，取得元件內的元素。
+- container：渲染的 DOM 節點。
+- debug：偵錯函式，可以顯示當前的 DOM 結構。
+- rerender：重新渲染元件。
+- unmount：取消渲染。
+
+Query 有很多不同的取元素方法，有 get、find、query，各自都有取得多元素的 all 方法
+
+| Query 種類\結果 | 沒有符合    | 一項符合     | 多項符合     | 是否為非同步函式 |
+| :-------------: | ----------- | ------------ | ------------ | ---------------- |
+|    getBy...     | Throw Error | 回傳元素     | Throw Error  | ❌               |
+|   queryBy...    | 回傳 `null` | 回傳元素     | Throw Error  | ❌               |
+|    findBy...    | Throw Error | 回傳元素     | 回傳元素     | ✅               |
+|   getAllBy...   | Throw Error | 回傳元素陣列 | 回傳元素陣列 | ❌               |
+|  queryAllBy...  | 回傳 `[]`   | 回傳元素陣列 | 回傳元素陣列 | ❌               |
+|  findAllBy...   | Throw Error | 回傳元素陣列 | 回傳元素陣列 | ✅               |
+
+看起來很容易搞混，不過他們都有各自使用的時機
+
+- getBy...：大部分都可以使用，判斷元素是否存在。
+- queryBy...：因為找不到會回傳 null 的特性，所以常用來判斷元素是否一開始不存在。
+- findBy...：非同步函式，可以判斷需等待的元素是否存在，例如 API 回傳才會顯示在畫面上。
+
+2. `screen()`
+
+雖然 `render()` 解決了模擬 UI 的情況，不過只能根據 `render()` 的內容進行測試，如果有多個 `render()` 函式測起來就會比較麻煩，這時候就可以使用 `screen()`。
+
+其實 `screen()` 算是 @testing-library/dom 所提供，而所有框架的 @testing-library 底層都有 @testing-library/dom，所以這邊才可以直接做使用。
+
+而 `screen()` 所抓取的元素是 `<body></body>` 內的所有 DOM 元素。
+
+```js
+import { render, screen } from "@testing-library/react";
+import { Home } from "./Home";
+
+describe("testing home component", () => {
+  it("show Home Page in the home component", () => {
+    render(<Home />);
+    render(<Home />);
+    //使用 getAllByText 判斷是否抓取兩個元素
+    expect(screen.getAllByText("Home Page")).toHaveLength(2);
+  });
+});
+```
+
+個人在抓元素時是比較常用 `screen()` 勝過於使用 `render()` 回傳的方法，使用起來也比較方便。
+
+3. `renderHook()`
+
+顧名思義就是去模擬客製化的 React Hook，假設今天有一個計數器的 custom hook
+
+```js
+import { useState } from "react";
+
+function useCounter(initialValue = 0) {
+  const [count, setCount] = useState(initialValue);
+  // 加一函式
+  const increment = () => {
+    setCount(count + 1);
+  };
+  // 減一函式
+  const decrement = () => {
+    setCount(count - 1);
+  };
+
+  return { count, increment, decrement };
+}
+
+export default useCounter;
+```
+
+要測試這個 hook 就可以使用 `renderHook()`，他可以傳入兩個參數，第一個就是要測試的函式，第二是傳入函式的參數 (非必要)。
+
+```js
+import useCounter from "./useCounter";
+import { renderHook, act } from "@testing-library/react";
+
+it("should increment and decrement the counter", () => {
+  const { result } = renderHook(useCounter);
+
+  expect(result.current.count).toBe(0);
+
+  act(() => {
+    result.current.increment(); // 呼叫 + 1 函式
+  });
+
+  expect(result.current.count).toBe(1);
+
+  act(() => {
+    result.current.decrement(); // 呼叫 -1 函式
+  });
+
+  expect(result.current.count).toBe(0);
+});
+```
+
+`renderHook()` 會回傳一個物件，可以使用 result 屬性利用 result.current 去操控函式的回傳物件。
+
+如果有**更改 state** 的操作，就需要使用 **act** 包起來，這樣才可以即時更新 state 的狀態。
+
+### 📌 @testing-library/jest-dom
+
+@testing-library/jest-dom 提供給 Jest 很多 DOM 元素的擴充判斷，讓我們在抓元素時，有更多的方法去測試，比較常用的像是 `toBeInTheDocument`、`toHaveClass` 等等。
+
+以剛剛的 `<Home/>` 渲染測試為例
+
+```js
+import { render, screen } from "@testing-library/react";
+
+describe("testing home component", () => {
+  it("show Home Page in the home component", () => {
+    render(<Home />);
+    expect(screen.getByText("Home Page")).toBeInTheDocument(); // 判斷元素是否存在於 DOM 中
+  });
+});
+```
+
+或是
+
+```js
+import { render, screen } from "@testing-library/react";
+
+describe("testing div", () => {
+  it("test div className have 'hide'", () => {
+    render(<div className='hide'>test</div>);
+    expect(screen.getByText("test")).toHaveClass("hide"); //判斷元素是否含有指定的 class name
+  });
+});
+```
+
+### 📌 @testing-library/user-event
+
+最後一個就是模擬使用著操作，user-event 常常跟另一個 @testing-library/react 的 fireEvent 拿來比較，fireEvent 就是在程式碼中會用的事件處理，像是 click 或是 change，而 user-event 的底層就是 fireEvent，不過 userEvent 能更貼合使用者的模擬情況，像是同樣是在 input 輸入文字，如果使用 fireEvent 就會使用 change 的事件。
+
+**fireEvent：**
+
+```js
+import { fireEvent } from "@testing-library/react";
+
+fireEvent.change(inputElement, { target: { value: "Hello World!" } });
+```
+
+不過如果是使用 userEvent 就會使用 type 的事件。
+
+**userEvent：**
+
+```js
+import userEvent from "@testing-library/user-event";
+
+const user = userEvent.setup();
+await user.type(inputElement, "Hello World!");
+```
+
+除了 userEvent 是非同步以外，乍看之下沒有什麼不一樣，不過 userEvent 的 type 還包含使用者點擊 input，輸入文字的 keyDown、keyUp 事件，比起 fireEvent 的 change，更貼近實際的使用者操作情況。
+
+假設有一個 input，輸入文字的同時會顯示 KeyDown、KeyUp 的文字
+
+```js
+import React, { useState } from "react";
+
+function KeyEvent() {
+  const [text, setText] = useState("");
+  const [keyEvent, setKeyEvent] = useState("");
+
+  // keyDown 事件
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    setKeyEvent((prev) => prev + `Key Down: ${e.key}`);
+  };
+  // keyUp 事件
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    setKeyEvent((prev) => prev + `Key Up: ${e.key}`);
+  };
+
+  return (
+    <div>
+      <input
+        type='text'
+        value={text}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          setText(e.target.value)
+        }
+        onKeyDown={handleKeyDown}
+        onKeyUp={handleKeyUp}
+        data-testid='input'
+      />
+      <p data-testid='key-event'>{keyEvent}</p>
+    </div>
+  );
+}
+
+export default KeyEvent;
+```
+
+使用 firEvent 來測試
+
+```js
+describe("KeyEventsComponent", () => {
+  it("test with fireEvent", async () => {
+    render(<KeyEvent />);
+    const inputElement = screen.getByTestId("input");
+    const keyEventElement = screen.getByTestId("key-event");
+
+    // 使用 fireEvent.change 輸入文字
+    fireEvent.change(inputElement, { target: { value: "Hello" } });
+
+    // 使用 fireEvent.keyDown 模擬使用者按下 o
+    fireEvent.keyDown(inputElement, { key: "o" });
+
+    // 使用 fireEvent.keyUp 模擬使用者放開 o
+    fireEvent.keyUp(inputElement, { key: "o" });
+
+    expect(inputElement).toHaveValue("Hello");
+    expect(keyEventElement.textContent).toContain("Key Down: o");
+    expect(keyEventElement.textContent).toContain("Key Up: o");
+  });
+});
+```
+
+可以看到需要把 change 事件跟 keyDown、keyUp 事件分開寫，寫起來比較麻煩外，也不符合實際的使用者輸入。
+
+如果使用 userEvent 來測試
+
+```js
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import KeyEvent from "./KeyEvent";
+
+const user = userEvent.setup();
+
+describe("KeyEventsComponent", () => {
+  it("should simulate key events with userEvent.type", async () => {
+    render(<KeyEvent />);
+    const inputElement = screen.getByTestId("input");
+    const keyEventElement = screen.getByTestId("key-event");
+
+    // 使用 user.type 輸入文字
+    await user.type(inputElement, "Hello");
+
+    // 判斷 input 的值是否為 Hello
+    expect(inputElement).toHaveValue("Hello");
+
+    // 判斷是否有顯示 KeyDown、KeyUp 的文字
+    expect(keyEventElement.textContent).toContain("Key Down: o");
+    expect(keyEventElement.textContent).toContain("Key Up: o");
+  });
+});
+```
+
+只需要一個 user.type 就可以包含所有的事件，也更貼近使用者的操作。
+
+除此之外，userEvent 還有提供很多實用的方法像是：
+
+- dblClick：點擊兩次
+
+- tripleClick：點擊三次
+
+- type：input 輸入
+
+- upload：上傳
+
+- hover/unhover：指標移進移出
+
+- copy/paste：複製/貼上
+
+詳細的可以參考 [User Interactions](https://testing-library.com/docs/user-event/intro/)
+
+今天就介紹到這邊～下一篇終於要進入 AI 的部分了！

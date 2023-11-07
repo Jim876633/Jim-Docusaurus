@@ -1,0 +1,278 @@
+---
+title: "[Day 03] JavaScript 測試框架介紹 & Jest 基本語法"
+tags: ["ITHome 2023"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/ithome2023/day3-1.png";
+import image_2 from "/img/ithome2023/day3-2.png";
+import image_3 from "/img/ithome2023/day3-3.png";
+import image_4 from "/img/ithome2023/day3-4.png";
+import image_5 from "/img/ithome2023/day3-5.png";
+import image_6 from "/img/ithome2023/day3-6.png";
+import image_7 from "/img/ithome2023/day3-7.png";
+import image_8 from "/img/ithome2023/day3-8.png";
+
+前面講了為什麼要寫測試，再來要來介紹 JavaScript 有哪些常用的測試框架。
+
+目前常用的有以下幾種：
+
+- [Jest](https://jestjs.io/)
+- [Mocha](https://mochajs.org/)
+- [Karma](https://karma-runner.github.io/latest/index.html)
+- [Vitest](https://vitest.dev/)
+- [AVA](https://github.com/avajs/ava)
+
+來看一下近五年的下載量：
+
+<Img src={image_1} />
+
+目前 Jest 是最多人使用的測試框架，也是一開始學測試最容易接觸到的。不過各個框架都有不同的使用時間及優點，簡單來說：
+
+- Jest 是由 Facebook 所開發，在原先的 [CRA](https://create-react-app.dev/) 中就有內建，所以在 React 的專案中使用率很高。
+- Mocha 主要是 Node.js 的測試框架。
+- Karma 則是 Angular 官方推薦的測試框架，在 [Angular-cli](https://angular.io/cli) 內建與 [Jasmin](https://jasmine.github.io/) 做搭配。
+- Vitest 是由 Vite 所開發，算是近期崛起的測試框架，跟 Vite 一樣主打快速。
+
+來做一個詳細的比較
+
+|      種類      |   Jest   |        Mocha         |        Karma         | Vitest |
+| :------------: | :------: | :------------------: | :------------------: | :----: |
+|      時間      |   2014   |         2011         |         2012         |  2020  |
+|     開發者     | Facebook |     Open Source      |       Angular        |  Vite  |
+|   下載量排名   |    1     |          2           |          3           |   4    |
+| 是否內建斷言庫 |    ✅    |   ❌（需搭配 chi)    |  ❌（需搭配 Jasmin)  |   ✅   |
+| 是否含模擬函式 |    ✅    | ❌（需搭配 Sinon.js) | ❌（需搭配 Sinon.js) |   ✅   |
+
+- 斷言庫：用來判斷測試結果是否符合預期，Ex: expect(1 + 1).toBe(2)
+- 模擬函式：用來模擬外部函式，例如 API 請求、時間函式等等。
+
+以 React 來說會比較建議使用 Jest 來當作測試框架，一方面都是 facebook 開發的，整合上會比較合適，另一方面是 Jest 就涵蓋很多測試功能，功能性來說是很完善的，在建置環境上也比較簡單，雖然測試速度沒有 Vitest 快，不過因為歷史比較悠久，所以遇到問題比較容易找到解決方法。
+
+綜合上述，所以接下來的測試範例都會以 **Jest** 框架為主。
+
+> 可是我想使用其他框架怎麼辦？
+
+不用擔心～大部分測試框架的語法都差不多，所以學會 Jest 之後，其他框架也可以很快上手。
+
+## Jest 特色
+
+- 內建斷言庫
+- 內建模擬函式
+- 內建覆蓋率報告
+- 內建快照測試
+- CRA 內建，Next.js、Vite 也支援
+
+### 安裝 Jest
+
+```bash
+npm install --save-dev jest
+```
+
+因為 Jest 是在 node 環境底下執行，如果要使用 ESModule 的 import/export 語法，需要安裝 @babel/preset-env 及 babel-jest
+
+```bash
+npm install --save-dev @babel/preset-env babel-jest
+```
+
+接著在專案根目錄新增一個 babel.config.json 檔案，內容如下：
+
+```json
+{
+  "presets": ["@babel/preset-env"]
+}
+```
+
+並在 package.json 中新增 jest transform 的設定
+
+```json
+{
+  "jest": {
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    }
+  }
+}
+```
+
+### 斷言庫（基本語法）
+
+假設有一個加總的函式如下：
+
+```js title='sum.js'
+const sum = (a, b) => {
+  return a + b;
+};
+export default sum;
+```
+
+要測試這個函式就會像這樣：
+
+```js title='sum.test.js'
+import sum from "./sum";
+
+describe("testing sum function", () => {
+  it("adds 1 + 2 to equal 3", () => {
+    expect(sum(1, 2)).toBe(3);
+  });
+});
+```
+
+這邊就包含幾個基本的語法
+
+1. describe：描述大範圍的測試內容
+2. test / it：描述詳細的測試案例內容
+3. expect：斷言函式
+4. toBe：斷言函式的方法
+
+測試時在 Terminal 下指令
+
+```bash
+npx jest sum.test.js
+```
+
+Jest 就會去跑測試案例，顯示是否通過測試
+
+<Img src={image_2} />
+
+### 模擬函式
+
+在寫測試時，要盡量把測試的項目單一化，所以如果函式裡有借助外部的模組或函式，就會需要使用模擬函式的方式，方便我們進行測試。
+比較常見的例子像是使用 axios 去發 API 請求，這時候就會需要模擬 axios 的函式，讓測試更加單純。
+
+這邊我去抓 [jsonplaceholder API](https://jsonplaceholder.typicode.com/) 的使用者名稱，然後把資料經過處理回傳出來。
+
+```js title='fetchData.js'
+import axios from "axios";
+
+const fetchData = async () => {
+  // 使用 axios.get
+  const data = await axios.get("https://jsonplaceholder.typicode.com/users/1");
+  const content = `My name is ${data.username}`;
+  return content;
+};
+
+export default fetchData;
+```
+
+當我要測試這個函式時，就需要去模擬 axios 的回傳資料，這邊使用 `jest.mock` 去模擬 axios，再使用 `mockResolvedValue()` 方法去模擬回傳的資料。
+
+```js title='fetchData.test.js'
+import axios from "axios";
+import fetchData from "./fetchData";
+
+jest.mock("axios"); // 模擬 axios
+
+describe("testing fetchData function", () => {
+  it("fetchData", async () => {
+    axios.get.mockResolvedValue({ username: "Bret" }); // 模擬 axios.get 回傳
+    const data = await fetchData();
+    expect(data).toBe("My name is Bret");
+  });
+});
+```
+
+這樣就可以專注在測試 fetchData 函式本身，也不會真的發 API 出去。
+
+### 測試覆蓋率
+
+Jest 有提供一個測試覆蓋率的功能，可以顯示有多少的程式碼有被測試到，只要下指令
+
+```bash
+jest --coverage
+```
+
+就會在 Terminal 顯示出各個檔案的測試覆蓋率
+
+<Img src={image_3} />
+
+不過這樣其實很不好看，所以 Jest 也提供了網頁版的測試覆蓋率報告，在下指令的同時，會建立一個 coverage 的檔案夾，lcov-report 裡面會有一個 index.html，打開檔案就可以看到網頁版的測試覆蓋率報告。
+
+<Img src={image_4} />
+
+測試覆蓋率有四個指標：
+
+1. **Statements**：有多少比例的語句被測試到，一個 console.log 就算一個語句，一行程式碼可以有多個語句。
+2. **Branches**：條件語句，例如 if、else、switch 等等
+3. **Functions**：函式有被執行到的比例
+4. **Lines**：程式碼有被執行到的行數量，數量通常會比 Statements 少。
+
+比較重要的指標是 _Branch_ 跟 _Function_，因為這兩個指標會是功能及邏輯的核心，所以要盡量讓這兩個指標都達到 100%。
+
+### 快照測試 Snapshot
+
+快照顧名思義就是快速的拍照，只是在這邊的照片指的是 UI 的畫面，也就是 DOM 的結構，快照測試的目的是可以快速的檢查 UI 是否有變動。
+
+Jest 提供 `toMatchSnapshot()` 方法，可以將 DOM 結構儲存起來，下次測試時就可以比對是否有變動。
+
+假設有一個函式會傳入標題文字，然後回傳一個 `<h1></h1>`，裡面包含標題的內容。
+
+```js title='getTitleContent.js'
+const getTitleContent = (title) => {
+  return `<h1>${title}</h1>`;
+};
+
+export default getTitleContent;
+```
+
+這時候就可以使用 toMatchSnapshot 方法，將 DOM 結構儲存起來。
+
+```js title='getTitleContent.test.js'
+import getTitleContent from "./getTitleContent";
+
+describe("testing getTitleContent function", () => {
+  it("getTitleContent with 'Hello World' ", () => {
+    const title = "Hello World";
+    const content = getTitleContent(title);
+    expect(content).toMatchSnapshot();
+  });
+});
+```
+
+第一次執行測試時，可以看到它會把 DOM 結構儲存起來，並且通過測試。
+
+<Img src={image_5} />
+
+同時會在檔案夾中建立一個 snapshots 的檔案夾，裡面會有一個 getTitleConent.test.js.snap 的檔案儲存快照。
+
+<Img src={image_6} />
+
+來看一下裡面的內容，可以發現他是使用 describe 加 it 的測試描述，去用 array 的方式儲存 DOM 結構。
+
+<Img src={image_7} />
+
+那現在我們再重新跑一次測試，這次把 Hello World 改成 Hello Jest
+
+```js
+describe("testing getTitleConent function", () => {
+  it("getTitleConent with 'Hello Jest' ", () => {
+    const title = "Hello Jest";
+    const content = getTitleConent(title);
+    expect(content).toMatchSnapshot();
+  });
+});
+```
+
+就會發現測試失敗，並且顯示有哪些地方不一樣。
+
+<Img src={image_8} />
+
+那如果我們確定這個變動是正確的，就可以下指令
+
+```bash
+npx jest --updateSnapshot
+```
+
+或是使用 [watch](https://jestjs.io/docs/cli#--watch) 模式，輸入 u 就可以更新快照了。
+
+快照測試乍看之下好像沒有什麼用處，很常 UI 畫面會有所變動，而且就算測試失敗也可以更新快照。所以快照測試比較像是一種提醒，跟你說：「欸，這邊好像有不一樣喔，你要不要檢查看看」的這種感覺，使用時機上也比較適合在 UI 大致確定的情況下做使用，才不會很常跑測試沒過。
+
+## Jest VS Code Extension
+
+這邊介紹一個好用的 VS Code Extension，[Jest Runner](https://marketplace.visualstudio.com/items?itemName=firsttris.vscode-jest-runner)，可以在 VS Code 中直接執行 Jest 測試，不用再去 Terminal 下指令。
+
+今天的部分就到這裡啦～下一篇來介紹 Jest 的進階用法，包含模擬時間、測試異步函式等等。
+
+## 參考資料
+
+[Does Jest support ES6 import/export?](https://stackoverflow.com/questions/35756479/does-jest-support-es6-import-export)

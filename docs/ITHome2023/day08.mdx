@@ -1,0 +1,234 @@
+---
+title: "[Day 08] React + Jest 表單驗證測試"
+tags: ["ITHome 2023"]
+---
+
+從這篇開始我會使用 Vite + React + Jest + Testing Library 來做各個項目測試，而實作的部分就不會詳細說明只會大概講解流程，主要會著重在如何寫測試。那所有項目的程式碼都會放在 [Practice Test](https://github.com/Jim876633/ithome-2023/tree/main/practice-test)，想要看各個項目可以切換 branch 來看。
+
+今天要來測試的是表單驗證，這個功能在實際開發中是很常會用到的，我這邊是使用 [formik](https://formik.org/docs/overview) 跟 [yup](https://github.com/jquense/yup) 來進行表單管理驗證。
+
+## 程式碼
+
+先來看一下表單的程式碼：
+
+```js
+export const FormPage = () => {
+  const handleSubmit = (
+    values: typeof initialValues,
+    { resetForm }: FormikHelpers<typeof initialValues>
+  ) => {
+    alert(JSON.stringify(values));
+    resetForm();
+  };
+
+  return (
+    <div>
+      <h2>Form</h2>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={Yup.object({
+          firstName: requiredSchema().max(5, "不可大於 5 個字"), // 使用 yup 來驗證
+          lastName: requiredSchema().max(10, "不可大於 10 個字"), // 使用 yup 來驗證
+          twId: requiredSchema().concat(strAcctSchema()), // 使用 yup 來驗證
+        })}
+        onSubmit={handleSubmit}
+      >
+        <Form>
+          <TextInput name='firstName' label='firstName' type='text' />
+          <TextInput name='lastName' label='lastName' type='text' />
+          <TextInput name='twId' label='taiwan id' type='text' />
+          <button type='submit'>Submit</button>
+        </Form>
+      </Formik>
+    </div>
+  );
+};
+```
+
+表單驗證的部分是使用 `<Formik>` 的 `validationSchema` 來設定，這邊我設定了三個欄位，分別是 `firstName`、`lastName`、`twId`，其中 `firstName`、`lastName` 是必填，且不可超過 15、20 個字，`twId` 則是必填，且必須符合台灣身分證規則。
+
+驗證規則則是另外拉函式出來，這樣可以讓程式碼更乾淨，也可以讓驗證規則可以重複使用。
+
+以「必填」驗證為例：
+
+```js
+import * as yup from "yup";
+
+export default (msg = "必填項目") =>
+  yup.string().test({
+    name: "requiredSchema",
+    exclusive: true, //同名以此為主
+    params: { msg },
+    message: `${msg}`,
+    test: (value) => {
+      return value !== "" && value !== undefined;
+    },
+  });
+```
+
+會 export 一個函式，這個函式可以接收一個參數，預設是「必填項目」，這樣就可以在驗證時傳入自訂的錯誤訊息。
+
+## Test Suites (測試套件)
+
+基本上一個檔案會有一個對應的測試檔案，再根據檔案內的邏輯及功能來寫測試套件，這邊的測試套件 (Test Suites) 不是真的指一個套件，而是指很多的測試案例 (Test Cases) 的集合。
+
+我這邊會把測試分成兩個部分，一個是表單邏輯(含 UI 顯示)的測試，另一個是表單的驗證測試。
+
+- 表單邏輯(含 UI 顯示)
+  - 當未輸入任何欄位時，按下送出按鈕。
+  - 當輸入欄位驗證失敗時，顯示錯誤訊息。
+  - 當輸入欄位驗證通過時，按下送出按鈕。
+- 表單驗證
+  - 必填項目驗證
+  - 身分證驗證
+
+### 表單邏輯(含 UI 顯示)
+
+表單邏輯的測試，主要是測試當使用者在各個輸入情況下，按下送出按鈕，表單的行為是否符合預期，測試案例 (Test Case) 的描述會是這樣：
+
+```js
+describe("Form page testing", () => {
+  it("當未輸入任何欄位，按下送出按鈕，不會呼叫 alert 函式", () => {});
+  it("當 firstName 欄位輸入「Alice」、lastName 欄位輸入「Robinson」、twId 欄位輸入「A123456789」，按下送出按鈕，呼叫 alert 函式", () => {});
+  it("當 firstName 欄位輸入「Daniel」，顯示「不可大於 5 個字」", () => {});
+  it("當 lastName 欄位輸入「Butterworth」，顯示「不可大於 10 個字」", () => {});
+  it("當 twId 欄位輸入「A123」，顯示「身分證字號格式錯誤」", () => {});
+});
+```
+
+這邊要注意的是，1 跟 2 是屬於單元測試，測試的是單一的邏輯，是否有執行某函式。而 3、4、5 則是屬於整合測試，測試的是使用者點擊，畫面有沒有顯示正確的錯誤訊息。
+
+實際的測試程式碼如下：
+
+```js
+window.alert = jest.fn(); // 模擬 alert 函式，也可以放在 setupTests.js 全域裡
+
+describe("Form page testing", () => {
+  const user = userEvent.setup(); // 設定 userEvent
+
+  it("當未輸入任何欄位，按下送出按鈕，不會呼叫 alert 函式", async () => {
+    render(<FormPage />); // 渲染表單頁面
+    //記得 userEvent 是非同步的，所以要用 await
+    await user.click(screen.getByRole("button", { name: /submit/i }));
+    // 判斷 alert 函式有沒有被呼叫
+    expect(alert).not.toHaveBeenCalled();
+  });
+
+  it("當 firstName 欄位輸入「Alice」、lastName 欄位輸入「Robinson」、twId 欄位輸入「A123456789」，按下送出按鈕，呼叫 alert 函式", async () => {
+    render(<FormPage />);
+    // 使用 user.type 來模擬使用者輸入
+    await user.type(screen.getByLabelText(/firstname/i), "Alice");
+    await user.type(screen.getByLabelText(/lastname/i), "Robinson");
+    await user.type(screen.getByLabelText(/taiwan id/i), "A123456789");
+    // 使用 user.click 來模擬使用者點擊
+    await user.click(screen.getByRole("button", { name: /submit/i }));
+    // 判斷 alert 函式有沒有被呼叫，且參數是否符合預期
+    expect(alert).toHaveBeenCalledWith(
+      JSON.stringify({
+        firstName: "Alice",
+        lastName: "Robinson",
+        twId: "A123456789",
+      })
+    );
+  });
+  it("當 firstName 欄位輸入「Daniel」，按下送出按鈕，顯示「不可大於 5 個字」", async () => {
+    render(<FormPage />);
+    await user.type(screen.getByLabelText(/firstname/i), "Daniel");
+    await user.click(screen.getByRole("button", { name: /submit/i }));
+    expect(screen.getByText(/不可大於 5 個字/i)).toBeInTheDocument(); // 判斷畫面有沒有顯示錯誤訊息
+  });
+  it("當 lastName 欄位輸入「Butterworth」，按下送出按鈕，顯示「不可大於 10 個字」", async () => {
+    render(<FormPage />);
+    await user.type(screen.getByLabelText(/lastname/i), "Butterworth");
+    await user.click(screen.getByRole("button", { name: /submit/i }));
+    expect(screen.getByText(/不可大於 10 個字/i)).toBeInTheDocument();
+  });
+  it("當 twId 欄位輸入「A123」，按下送出按鈕，顯示「身分證字號格式錯誤」", async () => {
+    render(<FormPage />);
+    await user.type(screen.getByLabelText(/taiwan id/i), "A123");
+    await user.click(screen.getByRole("button", { name: /submit/i }));
+    expect(screen.getByText(/身分證字號格式錯誤/i)).toBeInTheDocument();
+  });
+});
+```
+
+### 表單驗證
+
+表單驗證的測試，就是一般的函式測試，屬於單元測試，測試上就會相對單純，只要測試函式的回傳值是否符合預期就可以了。
+
+```js
+import * as yup from "yup";
+
+export default () =>
+  yup.string().test({
+    name: "twIdSchema",
+    exclusive: true,
+    params: {},
+    message: "身分證字號格式錯誤",
+    test: (value) => {
+      if (value === undefined) return false;
+      const letters = "ABCDEFGHJKLMNPQRSTUVXYWZIO";
+      const firstLetterIndex = letters.indexOf(value[0]);
+      if (firstLetterIndex < 0) {
+        return false;
+      }
+      let sum =
+        Math.floor((firstLetterIndex + 10) / 10) +
+        ((firstLetterIndex + 10) % 10) * 9;
+      for (let i = 1; i < 9; i++) {
+        sum += +value[i] * (9 - i);
+      }
+      sum += +value[9] * 1;
+      return sum % 10 === 0;
+    },
+  });
+```
+
+```js
+import * as yup from "yup";
+
+export default (msg = "必填項目") =>
+  yup.string().test({
+    name: "requiredSchema",
+    exclusive: true, //同名以此為主
+    params: { msg },
+    message: `${msg}`,
+    test: (value) => {
+      return value !== "" && value !== undefined;
+    },
+  });
+```
+
+測試程式碼：
+
+```js
+describe("requiredSchema function testing", () => {
+  it("輸入為「」，結果為 false", async () => {
+    const schema = requiredSchema();
+    const result = await schema.isValid("");
+    expect(result).toBe(false);
+  });
+  it("輸入為「123」，結果為 true", async () => {
+    const schema = requiredSchema();
+    const result = await schema.isValid("123");
+    expect(result).toBe(true);
+  });
+});
+
+describe("strAcctSchema function testing", () => {
+  it("輸入為「A123」，結果為 false", async () => {
+    const schema = strAcctSchema();
+    const result = await schema.isValid("A123");
+    expect(result).toBe(false);
+  });
+  it("輸入為「A123456789」，結果為 true", async () => {
+    const schema = strAcctSchema();
+    const result = await schema.isValid("A123456789");
+    expect(result).toBe(true);
+  });
+});
+```
+
+---
+
+表單驗證算是比較常見的功能，測試的時候會把驗證跟 UI 顯示分開來測試，這樣比較好寫測試案例，也比較好維護。那今天的部分就到這邊～程式碼都在 [Day-08](https://github.com/Jim876633/ithome-2023/tree/manual-day8/practice-test)，可以下載下來玩看看！

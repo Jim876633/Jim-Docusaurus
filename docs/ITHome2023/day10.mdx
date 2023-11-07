@@ -1,0 +1,188 @@
+---
+title: "[Day 10] React + Jest 路徑測試"
+tags: ["ITHome 2023"]
+---
+
+這一篇要來介紹怎麼使用 Jest + Testing Library 來測試路徑，我是使用 [React Router](https://reactrouter.com/en/6.16.0) 來做路徑管理。
+
+這邊我分兩個部分，一個是 router config 的導頁測試，一個是 navbar 的路徑測試。
+
+## Router 導頁測試
+
+router config 的結構會是長這樣：
+
+```js
+import { FormPage } from "@/pages/FormPage";
+import { HomePage } from "@/pages/HomePage";
+import { Home } from "@/pages/HomePage/Home";
+import { Navigate } from "react-router-dom";
+
+export const routerConfig = [
+  {
+    path: "/",
+    element: <Navigate to='/home' />,
+  },
+  {
+    path: "home",
+    element: <HomePage />,
+    children: [
+      { index: true, element: <Home /> },
+      {
+        path: "form",
+        element: <FormPage />,
+      },
+    ],
+  },
+];
+```
+
+要測 router config 測試的是對應路徑是否有顯示正確的 component，這邊使用 `jest.mock` 去模擬元件，就可以避免當元件內容改變時，測試也要重寫的問題，所以導頁測試其實就是在測試**路由是否有對應到正確的元件路徑**。
+
+測試案例描述：
+
+```js
+describe("router testing", () => {
+  it("當 router 路徑為 '/home' 顯示 'home page' 文字", () => {});
+  it("當 router 路徑為 '/home/form' 顯示 'form page' 文字", () => {});
+});
+```
+
+完整測試：
+
+```js
+import { render, screen } from "@testing-library/react";
+import { RouterProvider, createMemoryRouter } from "react-router-dom";
+import { routerConfig } from ".";
+
+// 模擬元件回傳
+jest.mock("@/pages/HomePage/Home/index.tsx", () => {
+  return {
+    Home: () => <div>home page</div>,
+  };
+});
+
+jest.mock("@/pages/FormPage/index.tsx", () => {
+  return {
+    FormPage: () => <div>form Page</div>,
+  };
+});
+
+// 測試
+describe("router testing", () => {
+  it("當 router 路徑為 '/home' 顯示 'home page' 文字", () => {
+    const router = createMemoryRouter(routerConfig, {
+      initialEntries: ["/home"],
+    });
+
+    render(<RouterProvider router={router} />);
+
+    expect(screen.getByText(/home page/i)).toBeInTheDocument();
+  });
+
+  it("當 router 路徑為 '/home/form' 顯示 'form page' 文字", () => {
+    const router = createMemoryRouter(routerConfig, {
+      initialEntries: ["/home/form"],
+    });
+
+    render(<RouterProvider router={router} />);
+
+    expect(screen.getByText(/form page/i)).toBeInTheDocument();
+  });
+});
+```
+
+可以看到每個測試案例都有一個 router 的初始化及渲染元件，重複的地方我會提出來寫一個 function
+
+```js
+const renderRouter = (path: string) => {
+  const router = createMemoryRouter(routerConfig, {
+    initialEntries: [path],
+  });
+
+  render(<RouterProvider router={router} />);
+};
+```
+
+這樣就可以讓測試碼更簡潔。
+
+```js
+describe("router testing", () => {
+  it("當 router 路徑為 '/home' 顯示 'home page' 文字", () => {
+    renderRouter("/home");
+
+    expect(screen.getByText(/home page/i)).toBeInTheDocument();
+  });
+
+  it("當 router 路徑為 '/home/form' 顯示 'form page' 文字", () => {
+    renderRouter("/home/form");
+
+    expect(screen.getByText(/form page/i)).toBeInTheDocument();
+  });
+});
+```
+
+不過優化測試碼的部分，就算沒做也無傷大雅，尤其是時程很趕時，有寫測試就已經很不錯了哈哈。
+
+## Navbar 路徑測試
+
+那在 navbar 的路徑測試，測試的是點擊 navbar 的連結，是否有導頁到正確的路徑。
+
+測試案例描述：
+
+```js
+describe("navbar testing", () => {
+  it("點擊 'home' 連結，網址導頁到 '/home' 路徑", () => {});
+  it("點擊 'form' 連結，網址導頁到 '/home/form' 路徑", () => {});
+});
+```
+
+需要引入 [history](https://www.npmjs.com/package/history) 套件來模擬路由的行為，並使用 `history.location.pathname` 來取得當前路徑。
+
+```bash
+npm install --save-dev history
+```
+
+完整測試：
+
+```js
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { MemoryHistory, createMemoryHistory } from "history";
+import { Router } from "react-router-dom";
+import { Navbar } from ".";
+
+describe("navbar testing", () => {
+  let history: MemoryHistory;
+  const user = userEvent.setup();
+  beforeEach(() => {
+    history = createMemoryHistory();
+    render(
+      <Router location='/home' navigator={history}>
+        <Navbar />
+      </Router>
+    );
+  });
+
+  it("點擊 'home' 連結，網址導頁到 '/home' 路徑", async () => {
+    const homeLink = screen.getByText(/home/i);
+    expect(homeLink).toBeInTheDocument();
+    await user.click(homeLink);
+    expect(history.location.pathname).toBe("/home");
+  });
+
+  it("點擊 'form' 連結，網址導頁到 '/home/form' 路徑", async () => {
+    const button = screen.getByText(/form/i);
+    await user.click(button);
+    expect(history.location.pathname).toBe("/home/form");
+  });
+});
+```
+
+## 結論
+
+可以看到我把點擊連結的行為分成兩個部分來測試
+
+- 測試元件是否顯示正確
+- 試點擊連結網址是否正確
+
+這樣的好處是能讓測試項目更加單純，也能更快速的找到問題。

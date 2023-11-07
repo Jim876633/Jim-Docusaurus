@@ -1,0 +1,244 @@
+---
+title: "[Day 05] React 測試安裝介紹 ( CRA / Vite / Next.js )"
+tags: ["ITHome 2023"]
+---
+
+前幾篇介紹完 JavaScript 的測試框架，今天要來介紹 React 測試安裝。我會以目前最常用的 React 開發工具 [CRA](https://create-react-app.dev/)、[Vite](https://vitejs.dev/) 及 [Next.js](https://nextjs.org/) 來介紹。
+
+## React 測試套件
+
+React 測試套件有很多種，像是 [Enzyme](https://enzymejs.github.io/enzyme/)、[Testing Library](https://testing-library.com/)、[React Hooks Testing Library](https://react-hooks-testing-library.com/) 等等，這邊我使用 React 官方推薦的 Testing Library。
+
+## React 開發工具
+
+### 📌 CRA
+
+雖然在新的[官網推薦](https://react.dev/learn/start-a-new-react-project#nextjs)中，已經把 CRA 拿掉，不過一些舊專案可能還是會使用 CRA 來開發。
+
+安裝：
+
+```bash
+npx create-react-app my-app
+```
+
+CRA 有個很大優點就是內建就有含 Jest 及常用的 React-testing-library，所以不用再額外安裝。
+
+如果要使用 TypeScript 的話，可以在安裝時加上 `--template typescript`。
+
+```bash
+npx create-react-app my-app --template typescript
+```
+
+就會把 TypeScript 需要的測試套件都安裝進去。
+
+### 📌 Vite
+
+Vite 是 2021 推出的開發工具，它的特色是快速的開發速度，官方推薦的測試框架是 Vitest，Vitest 的安裝方式可以參考[官方文件](https://vitejs.dev/guide/features.html#testing)。這邊我就還是以安裝 Jest 為例。
+
+安裝 Vite：
+
+```bash
+npm create vite@latest
+```
+
+#### JavaScript
+
+安裝 Jest 及 React-testing-library：
+
+```bash
+npm i -D  jest @testing-library/react @testing-library/jest-dom @testing-library/user-event
+```
+
+在 package.json 加入 script
+
+```json
+{
+  "scripts": {
+    "test": "jest"
+  }
+}
+```
+
+前面有提到因為如果要使用 ESModule 的 import/export 語法，需要額外安裝 [@babel/preset-env](https://www.npmjs.com/package/@babel/preset-env) 及 [babel-jest](https://www.npmjs.com/package/babel-jest)，詳細可參考[官方文件](https://jestjs.io/docs/ecmascript-modules)。
+
+```bash
+npm install -D @babel/preset-env babel-jest
+```
+
+而在 React 專案還需要安裝 [@babel/preset-react](https://www.npmjs.com/package/@babel/preset-react)
+
+```bash
+npm install -D @babel/preset-react
+```
+
+安裝完後，建立 babel.config.json 或 .babelrc，並把安裝完的套件加到 presets，在 React 17 之後的記得要加上 runtime。
+
+```json
+{
+  "presets": [
+    "@babel/preset-env",
+    ["@babel/preset-react", { "runtime": "automatic" }]
+  ]
+}
+```
+
+在 React 要支援 svg 及 css 等格式的檔案，會被當作 js 檔編譯，所以需要額外安裝 [jest-svg-transformer](https://www.npmjs.com/package/jest-svg-transformer) 及 [identity-obj-proxy](https://www.npmjs.com/package/identity-obj-proxy)。
+
+```bash
+npm i -D jest-svg-transformer identity-obj-proxy
+```
+
+並在 package.json 中加入以下設定：
+
+```json
+{
+  "jest": {
+    "transform": {
+      "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
+    },
+    "moduleNameMapper": {
+      "\\.(svg)$": "jest-svg-transformer",
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+    }
+  }
+}
+```
+
+再來需要安裝 [jest-environment-jsdom](https://www.npmjs.com/package/jest-environment-jsdom) 讓 Jest 在測試時使用 jsdom 來模擬瀏覽器環境，這樣就可以在測試時使用 DOM API。
+
+```bash
+npm i -D jest-environment-jsdom
+```
+
+最後如果要使用 @testing-library/jest-dom 的擴充語法，需要先建立一個 setupTests.js 檔案，並在裡面加入以下程式碼：
+
+```js
+import "@testing-library/jest-dom";
+```
+
+接著在 package.json 中加入以下設定：
+
+```json
+{
+  "jest": {
+    "setupFilesAfterEnv": ["<rootDir>/setupTests.js"]
+  }
+}
+```
+
+就可以在 Vite 跑 React 測試了！！
+
+**＊ESLint 設定**
+
+如果使用 Vite 內建的 ESLint 測試檔案會一直報紅字，不過是可以跑測試的，只是看起來很不舒服，解決方式是在 .eslintrc.js 中開啟 jest 環境：
+
+```js
+module.exports = {
+  env: {
+    jest: true,
+  },
+};
+```
+
+#### TypeScript
+
+使用 TypeScript 的話，步驟都與 JavaScript 流程相同，只是需要額外安裝 [@types/jest](https://www.npmjs.com/package/@types/jest) 跟 [@babel/preset-typescript](https://www.npmjs.com/package/@babel/preset-typescript)。
+
+```bash
+npm i -D @types/jest @babel/preset-typescript
+```
+
+在 .babel.config.json 裡加入 typeScript 設定
+
+```json
+{
+  "presets": [
+    "@babel/preset-env",
+    ["@babel/preset-react", { "runtime": "automatic" }],
+    "@babel/preset-typescript"
+  ]
+}
+```
+
+然後使用 @testing-library/jest-dom 的擴充語法，需要把 setupTests.js 改成 setupTests.ts，然後在 tsconfig.json 中引入：
+
+```json
+{
+  "compilerOptions": {
+    ..., // 其他設定
+    "include": ["src/setupTests.ts"]
+  }
+}
+```
+
+這樣就可以跑 TypeScript 的測試了！
+
+### 📌 Next.js
+
+#### JavaScript
+
+```bash
+npx create-next-app@latest
+```
+
+安裝 Jest、React-testing-library 及 jest-environment-jsdom：
+
+```bash
+npm i -D  jest @testing-library/react @testing-library/jest-dom @testing-library/user-event jest-environment-jsdom
+```
+
+在 package.json 加入 script
+
+```json
+{
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/setupTests.js"]
+  }
+}
+```
+
+建立 setupTests.js
+
+```js
+import "@testing-library/jest-dom";
+```
+
+如果遇到 _Parsing error : Cannot find module 'next/babel'_ 需要在 .eslintrc.js 中加入 `next/babel`
+
+```js
+{
+  "extends": ["next/babel", "next/core-web-vitals"]
+}
+```
+
+另外在 next.js 不用安裝 babel，只要在 .babelrc 中加入 `next/babel` 就可以了。
+
+```json
+{
+  "presets": ["next/babel"]
+}
+```
+
+#### TypeScript
+
+只要額外安裝 [@types/jest](https://www.npmjs.com/package/@types/jest)。
+
+```bash
+npm i -D @types/jest
+```
+
+Next.js Jest 設定也可以參考 [Setting up Jest (with the Rust Compiler)](https://nextjs.org/docs/pages/building-your-application/optimizing/testing#setting-up-jest-with-the-rust-compiler)
+
+---
+
+今天的程式碼都放有在 [GitHub](https://github.com/Jim876633/ithome-2023/tree/main/day5)，有興趣的可以下載來玩，下一篇來介紹 React Testing Library 的語法～
+
+## 參考資料
+
+- [How to setup Jest and React Testing Library in Vite project](https://zaferayan.medium.com/how-to-setup-jest-and-react-testing-library-in-vite-project-2600f2d04bdd)
+- [jest-dom with TypeScript](https://github.com/testing-library/jest-dom#with-typescript)
+- [Parsing error : Cannot find module 'next/babel'](https://stackoverflow.com/questions/68163385/parsing-error-cannot-find-module-next-babel)

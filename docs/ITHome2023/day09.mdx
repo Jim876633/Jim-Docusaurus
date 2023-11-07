@@ -1,0 +1,108 @@
+---
+title: "[Day 09] React + Jest 表單驗證測試 (AI)"
+tags: ["ITHome 2023"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/ithome2023/day9-1.gif";
+import image_2 from "/img/ithome2023/day9-2.gif";
+import image_3 from "/img/ithome2023/day9-3.gif";
+import image_4 from "/img/ithome2023/day9-4.gif";
+import image_5 from "/img/ithome2023/day9-5.png";
+import image_6 from "/img/ithome2023/day9-6.png";
+import image_7 from "/img/ithome2023/day9-7.png";
+
+上一篇講了怎麼使用 Jest + Testing Library 來測試表單驗證，這一篇要來讓 AI 來幫我們寫測試吧！
+
+## 表單邏輯(含 UI 顯示)
+
+直接打開 formPage 頁面，在 Copilot Chat 下 `/tests`
+
+<Img src={image_1} />
+
+會發現跑出來的結果都是錯的，這是因為 Copilot Chat 只會讀取當前打開的檔案，所以如果元件內有引入其他的**子元件**，它就沒辦法正確的產出符合預期的程式碼。
+
+所以比較好的方式是直接把要求寫清楚，甚至直接給他詳細的測試案例描述，這樣就越能提高產出測試碼的準確度。
+
+最終修改後的 prompt 會像這樣：
+
+> /tests According to
+>
+> ```js
+> describe("Form page testing", () => {
+>   it("當未輸入任何欄位，按下送出按鈕，不會呼叫 alert 函式", () => {});
+>   it("當 firstName 欄位輸入「Alice」、lastName 欄位輸入「Robinson」、taiwan id 欄位輸入「A123456789」，按下送出按鈕，呼叫 alert 函式", () => {});
+>   it("當 firstName 欄位輸入「Daniel」，按下送出按鈕，顯示「不可大於 5 個字」", () => {});
+>   it("當 lastName 欄位輸入「Butterworth」，按下送出按鈕，顯示「不可大於 10 個字」", () => {});
+>   it("當 taiwan id 欄位輸入「A123」，按下送出按鈕，顯示「身分證字號格式錯誤」", () => {});
+> });
+> ```
+>
+> and the rules:
+>
+> 1.  use user = userEvent.setup() .
+> 2.  user event is promise function, use await before user event.
+> 3.  use RegExp to catch the label name .
+
+<Img src={image_2} />
+
+可以看到我把每個步驟都很請楚的告訴 Copilot Chat，包含 input 的欄位名稱，這樣他就可以使用 `getByLabelText` 來抓取 input 的 DOM 元素。
+
+除了測試案例描述，我還需要告訴他一些規則，像是使用 userEvent.setup()，不然他會直接使用 fireEvent 來觸發事件，或是請他使用 RegExp 來抓取 label 名稱等等，規則的部分都是經過每次的微調，讓他產出的測試碼更符合我們的預期。
+
+這邊我也比較一下 Copilot Chat 產出的測試碼與我們手寫測試碼的差別：
+
+<Img src={image_7} />
+
+雖然看起來差很多，不過仔細看都是一些寫法上的不同，比如說我會把每個測試都會用到的 userEvent.setup() 抽出來，但 Copilot Chat 會在每個測試案例都寫一次，當然你也可以進一步的要求他照你的寫法來寫，不過如果不影響測試結果的話，也可以不用太在意～
+
+## 表單驗證
+
+直接上 prompt:
+
+> /tests Generate unit test follow the rules:
+>
+> just import this function without yup
+> give me 100% coverage
+
+<Img src={image_3} />
+
+沒錯！就是那麼簡短！因為函式的測試相對單純，沒有什麼外部引入的東西，除了 yup 這個套件，所以才必須請他只引入我們要測試的函式，這樣就可以避免他自己去模擬外部的套件或函式。
+
+那為什麼不要像表單邏輯一樣，把測試案例描述寫清楚呢？我們先來看一下原本我寫的測試案例描述：
+
+```js
+describe("requiredSchema function testing", () => {
+  it("輸入為 ""，結果為 false", () => {});
+  it("輸入為 "123"，結果為 true", () => {});
+});
+
+describe("strAcctSchema function testing", () => {
+  it("輸入為「A123」，結果為 false", () => {});
+  it("輸入為「A123456789」，結果為 true", () => {});
+});
+```
+
+看一下測試覆蓋率：
+
+<Img src={image_5} />
+
+strAcctSchema 的部分在 branch 只有 75% coverage，因為在寫的時候並沒有考慮到所有的情況，而像這種單純的單元測試都希望越接近 100% 越好，所以在函式測試的部分我選擇不寫測試案例描述，而是直接告訴 Copilot Chat 給我 100% 覆蓋率的測試碼，這樣它就會直接幫我列出所有可能的測試案例，避免有漏掉的情況。
+
+一樣再把身分證驗證的測試碼使用我提供的 prompt 產出：
+
+<Img src={image_4} />
+
+再看一下測試覆蓋率：
+
+<Img src={image_6} />
+
+就是 100% 了！而且測試案例也都是符合我們的預期，這樣就可以省下很多時間，不用一個一個寫測試案例，而且還可以避免漏掉一些邊界條件。
+
+## 結論
+
+1. 要求要寫清楚，包含測試案例描述、規則等等。
+2. 函式的測試可以直接要求 100% 覆蓋率。
+3. 有些測試案例描述不夠清楚，會導致產出的測試碼不符合預期，這時候就要再微調一下。
+
+下一篇來看路由測試～
