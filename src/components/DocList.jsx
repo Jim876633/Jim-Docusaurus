@@ -1,26 +1,11 @@
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from "@tanstack/react-query";
-import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Spin, Tag } from "antd";
+import React from "react";
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useDocsSidebar } from "@docusaurus/theme-common/internal";
 import useMedia from "@site/src/hooks/useMedia.jsx";
 
-const queryClient = new QueryClient();
-
-export default function () {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <DocList />
-      {/* <ReactQueryDevtools /> */}
-    </QueryClientProvider>
-  );
-}
-
-function DocList() {
+const DocList = () => {
   const { sm } = useMedia();
   const { items } = useDocsSidebar();
   const docs = formatDocList(items);
@@ -60,7 +45,10 @@ function DocList() {
       </ul>
     </div>
   );
-}
+};
+
+export default DocList;
+
 /**
  * format doc item from useDocsSidebar()
  * @param {*} items
