@@ -27,9 +27,11 @@ const DocList = () => {
   }
   return (
     <div id='jim-doc-list'>
-      <Tag color='var(--tag-color)'>Latest 10 article</Tag>
+      <Tag color='var(--tag-color)' className='flash'>
+        Latest 10 article
+      </Tag>
       <br />
-      <ul style={{ marginTop: "1rem" }}>
+      <ul className='doc-list'>
         {data.map((doc) => {
           return sm ? (
             <li key={doc.id}>
