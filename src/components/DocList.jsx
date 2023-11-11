@@ -35,7 +35,7 @@ const DocList = () => {
         {data.map((doc) => {
           return sm ? (
             <li key={doc.id}>
-              {doc.date.slice(6)} <a href={doc.href}>{doc.title}</a>
+              {doc.date.slice(5)} <a href={doc.href}>{doc.title}</a>
             </li>
           ) : (
             <li key={doc.id}>
