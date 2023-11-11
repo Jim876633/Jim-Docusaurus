@@ -10,6 +10,7 @@ env:
   # Setting an environment variable with the value of a configuration variable
   API_KEY: ${{ vars.API_KEY }}
   APPLICATION_ID: ${{vars.APPLICATION_ID}}
+  MAIL_CHIMP_API_URL: ${{vars.MAIL_CHIMP_API_URL}}
 
 jobs:
   deploy:
