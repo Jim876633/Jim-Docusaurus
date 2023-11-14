@@ -1,0 +1,151 @@
+---
+title: "[Day 24] React + Cypress 測試"
+tags: ["ITHome 2023"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/ithome2023/day24-1.jpg";
+import image_2 from "/img/ithome2023/day23-2.jpg";
+import image_3 from "/img/ithome2023/day23-3.jpg";
+import image_4 from "/img/ithome2023/day23-4.gif";
+
+這一篇來把之前寫的程式碼挑選 itemListPage 跟 formPage 來使用 Cypress 寫測試，並且順便介紹一些基本的語法。
+
+## itemListPage 測試
+
+首先我們要測試的是 `itemListPage`，這個頁面的功能有：
+
+- 顯示所有的項目
+- 可以新增項目
+- 可以刪除項目
+
+Cypress 的程式碼會是這樣：
+
+```js
+describe("API Page", () => {
+  beforeEach(() => {
+    cy.visit("http://localhost:5173/home/itemList");
+  });
+
+  it("顯示正確的初始項目", () => {
+    cy.get("li").should("have.length", 3);
+    cy.get("li").eq(0).should("contain", "test1");
+    cy.get("li").eq(1).should("contain", "test2");
+    cy.get("li").eq(2).should("contain", "test3");
+  });
+
+  it("新增「test4」文字，顯示正確結果", () => {
+    cy.get("input").type("test4");
+    cy.contains(/add/i).click();
+    cy.get("li").should("have.length", 4);
+    cy.get("li").eq(3).should("contain", "test4");
+  });
+
+  it("刪除「test1」文字，顯示正確結果", () => {
+    cy.contains(/delete/i)
+      .eq(0)
+      .click();
+    cy.get("li").should("have.length", 2);
+    cy.get("li").eq(0).should("contain", "test2");
+    cy.get("li").eq(1).should("contain", "test3");
+  });
+});
+```
+
+比較常見的有幾個語法：
+
+- `visit()`：前往某個網址
+- `get()`：使用 CSS 選擇器取得元素
+- `contains()`：選取含有某個文字的元素
+- `eq()`：當有多個元素符合時，選取第幾個元素
+- `type()`：輸入文字
+- `click()`：點擊某個元素
+
+實際跑起來的樣子：
+
+<Img src={image_2} />
+
+很快就跑完了，還沒看清楚就結束了ＸＤ可以打開每一步驟的畫面，Cypress 會把每一步驟都拍下來，很清楚的資料整個測試的流程
+
+<Img src={image_3} />
+
+## formPage 測試
+
+接下來是 `formPage`，這個頁面的功能有：
+
+- 未輸入任何資料，按下送出按鈕，顯示錯誤訊息
+- 輸入錯誤資料，按下送出按鈕，顯示錯誤訊息
+- 輸入正確資料，按下送出按鈕，顯示正確訊息
+
+Cypress 程式碼：
+
+```js
+describe("Form Page", () => {
+  beforeEach(() => {
+    cy.visit("http://localhost:5173/home/form");
+  });
+
+  it("未輸入任何資料，按下送出按鈕，顯示錯誤訊息", () => {
+    cy.contains(/submit/i).click();
+    cy.get("input ~ div")
+      .should("contain", "必填項目")
+      .should("have.length", 3);
+  });
+
+  it("輸入錯誤資料，按下送出按鈕，顯示錯誤訊息", () => {
+    cy.get('input[name="firstName"]').type("testing");
+    cy.get('input[name="lastName"]').type("testing ten word");
+    cy.get('input[name="twId"').type("A123");
+    cy.contains(/submit/i).click();
+    cy.contains("不可大於 5 個字").should("have.length", 1);
+    cy.contains("不可大於 10 個字").should("have.length", 1);
+    cy.contains("身分證字號格式錯誤").should("have.length", 1);
+  });
+
+  it("輸入正確資料，按下送出按鈕，顯示正確訊息", () => {
+    cy.get('input[name="firstName"]').type("test");
+    cy.get('input[name="lastName"]').type("test");
+    cy.get('input[name="twId"').type("A123456789");
+    cy.contains(/submit/i).click();
+    cy.on("window:alert", (message) => {
+      expect(message).to.equal(
+        JSON.stringify({
+          firstName: "test",
+          lastName: "test",
+          twId: "A123456789",
+        })
+      );
+    });
+  });
+});
+```
+
+Cypress 畫面：
+
+<Img src={image_4} />
+
+## TypeScript 設定
+
+如果用 TypeScript 的話，可以在 `cypress.config.ts` 第一行加上
+
+```ts
+/// <reference types="cypress" />
+```
+
+這樣就可以使用 Cypress 的全域變數了。
+
+<Img src={image_1} />
+
+記得在 `.eslintrc.cjs` 加上
+
+```js
+module.exports = {
+  extends: ["plugin:cypress/recommended"],
+};
+```
+
+才不會出現 `cy` 這個變數沒有定義的錯誤。
+
+---
+
+今天就先到這邊，明天試著使用 Copilot chat 來寫 Cypress 測試吧！

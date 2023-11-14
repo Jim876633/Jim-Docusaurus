@@ -1,0 +1,35 @@
+---
+title: "[Day 26] Copilot Chat 測試心得"
+tags: ["ITHome 2023"]
+---
+
+從 Day08 到 Day25 實作結束，我們測試了很多在開發上會使用到的功能，並在每一項的功能測試都導入 Copilot Chat 來幫我們產生測試，這一篇就來整理這個系列的實作，以及我在使用上的一些心得。
+
+## 實作項目
+
+| 項目                     |                             手寫測試                              |                           Copilot Chat                            |
+| :----------------------- | :---------------------------------------------------------------: | :---------------------------------------------------------------: |
+| 表單驗證                 | [Day08](https://github.com/Jim876633/ithome-2023/tree/main/day08) | [Day09](https://github.com/Jim876633/ithome-2023/tree/main/day09) |
+| 路徑導頁                 | [Day10](https://github.com/Jim876633/ithome-2023/tree/main/day10) | [Day11](https://github.com/Jim876633/ithome-2023/tree/main/day11) |
+| Modal 彈窗               | [Day12](https://github.com/Jim876633/ithome-2023/tree/main/day12) | [Day13](https://github.com/Jim876633/ithome-2023/tree/main/day8)  |
+| API                      | [Day14](https://github.com/Jim876633/ithome-2023/tree/main/day14) | [Day15](https://github.com/Jim876633/ithome-2023/tree/main/day15) |
+| API (msw)                | [Day17](https://github.com/Jim876633/ithome-2023/tree/main/day17) | [Day18](https://github.com/Jim876633/ithome-2023/tree/main/day18) |
+| Redux Toolkit            | [Day19](https://github.com/Jim876633/ithome-2023/tree/main/day19) | [Day20](https://github.com/Jim876633/ithome-2023/tree/main/day20) |
+| Redux Toolkit Query      | [Day21](https://github.com/Jim876633/ithome-2023/tree/main/day21) | [Day22](https://github.com/Jim876633/ithome-2023/tree/main/day22) |
+| Cypress (API / 表單驗證) | [Day24](https://github.com/Jim876633/ithome-2023/tree/main/day24) | [Day25](https://github.com/Jim876633/ithome-2023/tree/main/day25) |
+
+## Copilot Chat 使用心得
+
+### 1. 產生測試的準確度
+
+在實作的時候可以發現，越接近 Unit Test 的項目，也就是測試的單位越小，Copilot Chat 產出的測試碼越準確，像是表單驗證的**驗證函式**或是 Redux Toolkit 的 **CreateSlice 函式**，都是可以只下 `/tests` 指令就產出完美的測試程式碼，在現階段在 Copilot Chat 只能讀取單一檔案做分析的情況下，這樣結果也是在合理之中。
+
+不過已經可以看到它未來的發展性，就函式測試來說已經幾乎是 100% 可以完全交由給 Copilot Chat 來產生測試，要能達到最佳的自動化測試，盡量把程式碼寫的更 Pure 單位更小，以 React 來說，可以參考 [Keeping Components Pure](https://react.dev/learn/keeping-components-pure#purity-components-as-formulas) 這一篇來做學習，這樣的話越能發揮 Copilot Chat 的優勢。
+
+### 2. 測試程式碼的可讀性
+
+Copilot Chat 產出的測試程式碼，雖然可以直接使用，但是可讀性還是有待加強，像是會有很多重複的程式碼，或是一些寫法上比較過時，這個部分就需要再另外下指令，或是自己手動。不過就像我前面有說過，其實優化測試程式碼並不是一個非常必要的事情，在執行專案的時候也不會去跑測試碼，所以需不需要優化，這部分可以依照自己的需求來決定，等到真的在跑 CI/CD 太慢的時候，再來做優化也不遲。
+
+## 結論
+
+就我在這幾天使用 Copilot Chat 的使用心得上，我是覺得比我想像中的還要好用！除了有時候它會不太聽我的話之外，大部分都能達到我的需求，而且一個指令產生測試碼，一個按鍵插入測試碼，這樣的體驗真的是蠻讓我驚艷的，除此之外還可以順便學到一些沒使用過的語法，整體來說我非常推薦大家可以試著使用看看，也許你就從此愛上寫測試了呢！

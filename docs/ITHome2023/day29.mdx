@@ -1,0 +1,124 @@
+---
+title: "[Day 29] 測試搭配 CI/CD 更自動！"
+tags: ["ITHome 2023"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/ithome2023/day29-1.jpg";
+import image_2 from "/img/ithome2023/day29-2.jpg";
+import image_3 from "/img/ithome2023/day29-3.jpg";
+
+在我們前面的實作測試時，都是手動的下指令去跑測試，但是如果忘記去跑測試，那我們寫出來的測試都是白費工，所以接下來就是要試著將測試整合到 CI/CD 流程中，讓測試更加自動化！
+
+## CI/CD 平台介紹
+
+**CI/CD** (Continuous Integration 持續整合/ Continuous Deployment 持續部署) 是一種軟體開發流程，透過自動化的方式將程式碼整合、測試、部署，讓開發者可以更快速的開發並且部署程式。
+
+通常會寫一份指令檔 (Ex: deploy.yml) 來定義 CI/CD 流程，並且將指令檔放在專案的根目錄下，當 CI/CD 平台偵測到專案有指令檔時，就會依照指令檔的內容來執行 CI/CD 流程。
+
+這邊介紹幾個常見且方便使用的 CI/CD 平台：
+
+|       平台        |                                                 GitHub                                                 | GitLab                                                                                        |                                                                                                       Bitbucket |
+| :---------------: | :----------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------: |
+|       優點        |                             GitHub 社群龐大，有很多完整的 action template                              | 可與第三方套件進行整合部署，Ex: AWS                                                           |                                                                    可與 Jira / confluence 及 Slack 通知進行整合 |
+|    CI/CD tools    |                          [Github Actions](https://docs.github.com/en/actions)                          | [Gitlab CI/CD](https://docs.gitlab.com/ee/ci/)                                                | [bitbucket pipelines](https://support.atlassian.com/bitbucket-cloud/docs/get-started-with-bitbucket-pipelines/) |
+|  是否有結果通知   |                                                   ✅                                                   | ✅                                                                                            |                                                                                                              ✅ |
+|    設定檔位置     |                                     `.github/workflows/deploy.yml`                                     | `.gitlab-ci.yml`                                                                              |                                                                                       `bitbucket-pipelines.yml` |
+| VS Code Extension | [GitHub Actions](https://marketplace.visualstudio.com/items?itemName=cschleiden.vscode-github-actions) | [GitLab Workflow](https://marketplace.visualstudio.com/items?itemName=gitlab.gitlab-workflow) |                  [Bitbucket Pipelines](https://marketplace.visualstudio.com/items?itemName=Atlassian.atlascode) |
+
+分別對應的就是三個常見的 Git 平台，可以根據專案放置的位置來選擇使用的平台，個人使用起來都還不錯，功能也都蠻齊全的，不過各自也都有一些小差異，可以根據自己的需求來選擇使用。
+
+那這邊就以 GitHub Actions 來做介紹
+
+GitHub Actions 的 yml 大概會是這樣：
+
+```yml
+# Simple workflow for deploying static content to GitHub Pages
+name: Deploy static content to Pages
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets the GITHUB_TOKEN permissions to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: npm run test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+      - name: Install dependencies
+        run: npm install
+      - name: test
+        run: npm run test
+  # Single deploy job since we're just deploying
+  deploy:
+    needs: test
+    if: ${{ success() }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build && cp ./dist/index.html ./dist/404.html
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          # Upload dist repository
+          path: "./dist"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
+```
+
+可以看到我在 deploy 之前先去跑 test 測試，如果測試成功的話，才去進行部署，這樣的話就可以避免測試沒過就部署的情況發生。
+
+在 GitHub 上可以看到這個 workflow 的結果：
+
+### 測試成功
+
+<Img src={image_3} />
+
+### 測試失敗
+
+<Img src={image_2} />
+
+還可以設定測試失敗時要發送 email 通知，這樣就可以更快速的知道測試失敗的原因！
+
+<Img src={image_1} />
+
+---
+
+測試搭配 CI/CD 之後，就可以讓測試更加自動化，不用再手動下指令去跑測試，也可以避免忘記跑測試的情況發生，讓測試更加有效率！

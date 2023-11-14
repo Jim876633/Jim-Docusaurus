@@ -1,0 +1,146 @@
+---
+title: "[Day 27] 嫌 Jest 太慢？來看看 SWC 跟 Vitest 吧！"
+tags: ["ITHome 2023"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/ithome2023/day27-1.jpg";
+import image_2 from "/img/ithome2023/day27-2.jpg";
+import image_3 from "/img/ithome2023/day27-3.jpg";
+
+在我們前面在實作測試的時候，不知道大家有沒有覺得 Jest 跑測試好像有點慢欸～雖然公認 Jest 跑測試的速度比 Mocha 跟 Karma 還要快，但是在跑 React 測試的時候，還是會覺得有點慢，尤其是在你的專案越大的時候，測試的時間就會越長，那有沒有什麼方法可以讓測試的速度變快一點呢？
+
+## SWC
+
+[SWC](https://swc.rs/) 是一個基於 Rust 的打包編譯工具，可以用來取代 Babel，並且可以更快速的編譯程式碼，而 SWC 也有提供 [@swc/jest](https://www.npmjs.com/package/@swc/jest) 這個套件，可以讓我們在 Jest 中使用 SWC 來取代 Babel。
+
+安裝套件：
+
+```bash
+npm i -D jest @swc/core @swc/jest
+```
+
+接著在 Jest 的設定檔中把原本的 `babel-jest` 替換成 `@swc/jest`：
+
+```json
+{
+  "transform": {
+    "^.+\\.(js|jsx|ts|tsx)$": "@swc/jest"
+  }
+}
+```
+
+如果是使用 React 還需要加上 `react` 的設定：
+
+```json
+{
+  "transform": {
+    "^.+\\.(js|jsx|ts|tsx)$": [
+      "@swc/jest",
+      {
+        "jsc": {
+          "transform": {
+            "react": {
+              "runtime": "automatic"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+讓我們來實際跑測試看看快了多少，先來看看原本的測試速度：
+
+<Img src={image_1} />
+
+而使用 SWC 之後的測試速度：
+
+<Img src={image_2} />
+
+平均測試下來大概快了 1 秒左右，SWC 的官網聲稱在單執行緒上比 Babel 快 20 倍，而在四核心上比 Babel 快上 70 倍，不過不確定是不是在測試上是否也是這樣，畢竟 SWC 也只是節省了編譯的時間，在跑測試上看起來還是使用 Jest，不過實測下來的確是有提升跑測試的速度的！
+
+## Vitest
+
+Vitest 如同 Vite 一樣是使用 esbuild 來進行打包編譯，如果有用過 Vite 就知道他有多快，而 Vitest 搭配 Vite 可以更方便來進行設置。
+
+安裝套件：
+
+```bash
+npm i -D vitest
+```
+
+在 package.json 中把測試框架 `jest` 改成 `vitest`，再把原本 Jest 的設定都拿掉：
+
+```json
+{
+  "scripts": {
+    "test": "vitest"
+  }
+}
+```
+
+接著如果使用 Vite 的話，要在 `vite.config.js` 中加上第一行的設定：
+
+```js
+/// <reference types="vitest" />
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  test: {
+    // ...
+  },
+});
+```
+
+然後原本的 `setupTests.ts` 就可以加在 `vite.config.js` 中的 test 裡：
+
+```ts
+/// <reference types="vitest" />
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  // 測試設定
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["./setupTests.ts"],
+  },
+});
+```
+
+再來如果有使用 @testing-library/jest-dom 的話，在 `setupTests.ts` 引入時要改成：
+
+```ts
+import "@testing-library/jest-dom/vitest";
+```
+
+使用 TypeScript 的話，需要在 `tsconfig.json` 中加入：
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vitest/globals", "@testing-library/jest-dom/vitest"]
+  }
+}
+```
+
+接著在根據官網 [Migration Guide](https://vitest.dev/guide/migration.html) 的指示，把一些 jest 的語法改成 vitest 的語法，就大功告成了！
+
+讓我們實際跑一次 Vitest 的測試：
+
+<Img src={image_3} />
+
+可以看到又比 SWC 快了一秒多，也就是說比 Jest 快了兩秒多！是不是等不及把 Jest 換掉啦，而且當專案越大越能明顯看出他們的差異。
+
+不過 Vitest 畢竟還是比較新的工具，社群上當然是比不過歷史悠久的 Jest，而且有些語法還不完全支援 Jest，但是我非常看好 Vitest 的發展，速度快用起來就是舒服啊～
+
+---
+
+這一篇試著把 Jest 換成 SWC 跟 Vitest 來跑測試，可以看到速度上的確有提升，而且實際把 Jest 替換掉並不會耗費很大的功夫，所以如果你覺得 Jest 跑測試太慢的話，可以考慮使用 SWC 或是 Vitest 來取代 Jest！
+
+替換的過程可以參考：
+
+- [SWC](https://github.com/Jim876633/ithome-2023/commit/9b51fe2f9f72a22ed590d0151dd1d162d73c95b7)
+- [Vitest](https://github.com/Jim876633/ithome-2023/commit/3eb26270d53a87eb21f149923983aa65e120599b)

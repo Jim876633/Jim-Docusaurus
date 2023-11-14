@@ -1,0 +1,30 @@
+---
+title: " [Day 22] React + Jest Redux Toolkit Query 測試 (AI)"
+tags: ["ITHome 2023"]
+---
+
+因為 RTK Query 在結構上就比較複雜，在進行 copilot chat 測試的時候，會需要手動修改很多地方。
+
+## RTK Query 測試
+
+> /tests use the store.dispatch to test give me three test case for the endpoints function
+
+![copilot chat](https://i.imgur.com/SO82fPD.gif)
+
+可以看到他會自動幫我把 MSW 的設定也產出，就需要額外刪除，還有在引入假資料的時候，也要手動修改。
+
+## ItemListPage 測試
+
+> /tests follow the rules:
+>
+> 1. render in beforeEach
+> 2. mock the '@/services/itemList' in beforeEach
+> 3. testing the function 'addItem' and 'removeItem' is called correctly
+
+![copilot chat](https://i.imgur.com/IHDFr0i.gif)
+
+在產測試的時候，可以看到就算已經請他去測試我指定的函式，但他還是沒有遵守我的規則，就需要去額外修改很多部分，導致花的時間跟手寫測試差不多。
+
+## 結論
+
+這一篇 copilot chat 產測試應該是花我最多時間的，怎麼改指令都沒辦法準確的測試或產出我想要的測試程式碼，所以以像 Redux Toolkit Query 這種複雜的結構，有很多外部依賴或是特別的寫法，還是沒辦法完全的交給 copilot chat 來做，以效率來說還不如自己手寫測試。
