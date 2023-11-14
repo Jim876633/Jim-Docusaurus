@@ -101,12 +101,18 @@ const config = {
         },
         items: [
           // {
-          //     type: "doc",
-          //     docId: "intro",
-          //     position: "left",
-          //     label: "Note",
+          //   type: "doc",
+          //   docId: "intro",
+          //   position: "left",
+          //   label: "Note",
           // },
-          // { to: "/blog", label: "Blog", position: "left" },
+          // { to: "/blog", label: "blog", position: "left" },
+          {
+            href: '/tags',
+            label: '📌 Tag',
+            position: 'left',
+
+          },
           {
             href: "https://github.com/Jim876633",
             label: "GitHub",
