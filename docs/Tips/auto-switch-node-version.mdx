@@ -1,6 +1,6 @@
 ---
 title: 【Tip】在不同專案自動切換 Node 版本
-sidebar_position: 4
+sidebar_label: 在不同專案自動切換 Node 版本
 tags: ["Node", "Nvm"]
 ---
 
@@ -15,7 +15,7 @@ tags: ["Node", "Nvm"]
 
 官方提供的方法是在資料夾底下新增 `.nvmrc` 檔，然後在 bash 或 zsh 裡加上一些 script，這樣每一次切換資料夾時，就會自動去抓 `.nvmrc` 裡的版本號，然後呼叫 `nvm use <Version>` 去做切換。
 
-1. 建立 `.nvmrc` 檔案
+### 1. 建立 `.nvmrc` 檔案
 
 在專案的根目錄底下新增 `.nvmrc` 檔，在裡面輸入版本號，可以直接打數字或是打 `v版本`。
 
@@ -32,7 +32,7 @@ echo "lts/*" > .nvmrc # 長期穩定 node.js 版本（LTS）
 echo "node" > .nvmrc # 最新的 node.js 版本
 ```
 
-2. 加入 script
+### 2. 加入 script
 
 這邊以 zsh 為例，先打開 .zshrc 檔
 
