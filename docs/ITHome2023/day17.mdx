@@ -1,0 +1,99 @@
+---
+title: "[Day 17] React + Jest API (MSW) 測試"
+tags: ["ITHome 2023"]
+---
+
+上篇講了如何在開發上導入 MSW，這篇要來介紹如何在測試上使用 MSW。
+
+## 測試導入 MSW
+
+首先在 `src/mocks` 建立一個 `server.js` 內容跟 `browser.js` 一樣：
+
+```js
+// src/mocks/server.js
+import { setupServer } from "msw/node";
+import { handlers } from "./handlers";
+
+export const server = setupServer(...handlers);
+```
+
+差別在於 `server.js` 設置 server 是用 `msw/node` 給 Node.js 環境使用，`browser.js` 則是使用 `msw` 給瀏覽器環境使用。
+
+接著在 `src/setupTests.js` 引入 `server.js`：
+
+```js
+// src/setupTests.js
+import "@testing-library/jest-dom";
+import { server } from "./mocks/server";
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+```
+
+這邊就是在全域的測試設置中，在每次測試前開啟 server，每次測試後重置 server，最後在所有測試結束後關閉 server，這樣就可以在跑測試時使用 MSW 了！
+
+## 測試 API
+
+我以 [Day14](https://github.com/Jim876633/ithome-2023/tree/main/day14) 為範例，在原本的測試中需要自己模擬假資料：
+
+```js
+import { render, screen } from "@testing-library/react";
+import { useFetchUserData } from "@/api/fetchData";
+import { ApiPage } from "./index";
+
+jest.mock("@/api/fetchData");
+
+describe("ApiPage", () => {
+  it("當 isLoading 為 false 畫面顯示 data 資料", () => {
+    const mockData = [
+      { id: 1, name: "John Doe", email: "john.doe@example.com" },
+      { id: 2, name: "Jane Smith", email: "jane.smith@example.com" },
+    ];
+    (useFetchUserData as jest.Mock).mockReturnValue({
+      isLoading: false,
+      data: mockData,
+    });
+
+    render(<ApiPage />);
+    mockData.forEach((user) => {
+      expect(screen.getByText(user.name)).toBeInTheDocument();
+      expect(screen.getByText(user.email)).toBeInTheDocument();
+    });
+  });
+});
+```
+
+使用 MSW 後，可以直接使用寫好的 handler 來模擬假資料：
+
+```js
+import { render, screen } from "@testing-library/react";
+import { useFetchUserData } from "@/api/fetchData";
+import { ApiPage } from "./index";
+import { fakerUserList } from "@/mocks/handlers";
+
+jest.mock("@/api/fetchData");
+
+describe("ApiPage", () => {
+  it("當 isLoading 為 false 畫面顯示 data 資料", () => {
+    // 這邊直接使用 handler 中的假資料
+    const mockData = fakerUserList;
+    (useFetchUserData as jest.Mock).mockReturnValue({
+      isLoading: false,
+      data: mockData,
+    });
+
+    render(<ApiPage />);
+    mockData.forEach((user) => {
+      expect(screen.getByText(user.name)).toBeInTheDocument();
+      expect(screen.getByText(user.email)).toBeInTheDocument();
+    });
+  });
+});
+```
+
+是不是就方便許多了呢！
+
+## 結論
+
+不管有沒有在開發上導入 MSW，都可以在測試上做使用，除了可以方便模擬回傳外，也更方便地管理這些假資料。不過個人還是喜歡在開發時一起做使用，這樣得到的成效會更好。

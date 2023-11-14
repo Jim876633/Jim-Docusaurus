@@ -1,0 +1,158 @@
+---
+title: "[Day 12] React + Jest 彈窗測試"
+tags: ["ITHome 2023"]
+---
+
+在專案中幾乎都會有彈窗的功能，我這邊使用 [react-modal](https://www.npmjs.com/package/react-modal) 來實作彈窗，並且使用 `useContext` 來管理彈窗的狀態，所以這邊分成兩個部分來測試，一個是 ModalPage 頁面開啟 Modal，以及 Modal 元件關閉的測試。
+
+## ModalPage 頁面測試
+
+程式碼：
+
+```jsx
+import { useModalContext } from "@/context/ModalContext";
+import styled from "./index.module.scss";
+import { article1, article2 } from "./data/modal.data";
+
+export const ModalPage = () => {
+  const { openModal } = useModalContext();
+  return (
+    <div className={styled.btn_list}>
+      <button onClick={() => openModal(article1)}>Article1</button>
+      <button onClick={() => openModal(article2)}>Article2</button>
+    </div>
+  );
+};
+```
+
+ModalPage 頁面使用 `useModalContext()` 裡的 `openModal()` 來控制開啟彈窗，並傳入要顯示的文字，
+
+在測試的時候就需要使用 `jest.mock` 模擬 `openModal()`，來判斷是否有被呼叫及參數有無正確傳入。
+
+測試案例：
+
+```jsx
+describe("modal testing", () => {
+  it("點擊 Article1 呼叫 openModal 函式帶入 article1 文字", async () => {});
+  it("點擊 Article2 呼叫 openModal 函式帶入 article2 文字", async () => {});
+});
+```
+
+實際測試：
+
+```jsx
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { ModalPage } from ".";
+import { article1 } from "./data/modal.data";
+import { ModalContext } from "@/context/ModalContext";
+
+describe("modal testing", () => {
+  const user = userEvent.setup();
+  const openModal = jest.fn();
+  const contextProps = {
+    openModal,
+    closeModal: jest.fn(),
+    isOpen: false,
+    content: "",
+  };
+
+  it("點擊 Article1 呼叫 openModal 函式帶入 article1 文字", async () => {
+    render(
+      <ModalContext.Provider value={contextProps}>
+        <ModalPage />
+      </ModalContext.Provider>
+    );
+    const article1Btn = screen.getByRole("button", { name: /article1/i });
+    await user.click(article1Btn);
+    expect(openModal).toHaveBeenCalledWith(article1);
+  });
+});
+```
+
+## Modal 元件測試
+
+再來是 Modal 元件的部分，要測試的是 Modal 元件是否有顯示正確的文字，以及是否有正確的關閉彈窗。
+
+程式碼：
+
+```jsx
+import { useModalContext } from "@/context/ModalContext";
+import ReactModal from "react-modal";
+import styled from "./index.module.scss";
+
+export const Modal = () => {
+  const { isOpen, closeModal, content } = useModalContext();
+  return (
+    <ReactModal
+      isOpen={isOpen}
+      overlayClassName={styled.overlay}
+      className={styled.modal}
+      onRequestClose={closeModal}
+      ariaHideApp={false}
+    >
+      <button
+        data-testid='close-btn'
+        className={styled.close_btn}
+        onClick={closeModal}
+      >
+        X
+      </button>
+      {content}
+    </ReactModal>
+  );
+};
+```
+
+測試案例：
+
+```jsx
+describe("modal testing", () => {
+  it("點擊關閉按鈕，呼叫 closeModal 函式", async () => {});
+  it("輸入 'test content' 文字，畫面顯示 'test content' 文字", async () => {});
+});
+```
+
+實際測試：
+
+```jsx
+import { Modal } from ".";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { ModalContext } from "@/context/ModalContext";
+
+describe("modal testing", () => {
+  const user = userEvent.setup();
+  const closeModal = jest.fn();
+  const contextProps = {
+    openModal: jest.fn(),
+    closeModal,
+    isOpen: true,
+    content: "test content",
+  };
+
+  it("點擊關閉按鈕，呼叫 closeModal 函式", async () => {
+    render(
+      <ModalContext.Provider value={contextProps}>
+        {<Modal />}
+      </ModalContext.Provider>
+    );
+    const closeBtn = screen.getByTestId("close-btn");
+    await user.click(closeBtn);
+    expect(closeModal).toHaveBeenCalled();
+  });
+
+  it("輸入 'test content' 文字，畫面顯示 'test content' 文字", async () => {
+    render(
+      <ModalContext.Provider value={contextProps}>
+        {<Modal />}
+      </ModalContext.Provider>
+    );
+    expect(screen.getByText("test content")).toBeInTheDocument();
+  });
+});
+```
+
+## 結論
+
+在使用像 `useContext()` 等共用狀態的時候，需要依據各個使用元件來分開測試，大部分都還是透過更改 `useContext()` 裡面的狀態值，來測試函式是否有正確呼叫，以及畫面是否有正確顯示。

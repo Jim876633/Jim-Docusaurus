@@ -1,0 +1,39 @@
+---
+title: "[Day 20] React + Jest Redux Toolkit 測試 (AI)"
+tags: ["ITHome 2023"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/ithome2023/day20-1.gif";
+import image_2 from "/img/ithome2023/day20-2.gif";
+import image_3 from "/img/ithome2023/day20-3.jpg";
+
+在使用 copilot chat 做 Redux Toolkit 測試時，因為基本上都把邏輯跟 UI 分開，所以在測試時，就不需要多提供資訊，就可能得到完整且正確的測試程式碼。
+
+## redux toolkit 測試
+
+> /tests
+
+<Img src={image_1} />
+
+在測試 redux reducer 的函式時，所有相關的程式碼都會在同一個檔案，所以 copilot chat 會很精準的分析並給出正確的測試程式碼。
+
+來看一下差別
+
+<Img src={image_3} />
+
+它這邊用了一些我沒用過的語法，像是 `expect.any()` 或是 ` expect.objectContaining()`，一樣都能正確的跑測試。
+
+使用 copilot chat 還能順便學新語法，真的是太讚啦！
+
+## TodoPage 測試
+
+> /tests
+
+<Img src={image_2} />
+
+在測試 todoPage 時，先把 todo 的 reducer 選擇起來，讓 copilot chat 知道有哪些 reducer，接著再進行 todoPage 的測試，他就能依據有的 reducer 來安排測試的順序流程，不然他會憑空產生一些不存在的 reducer，像是在 beforeEach 裏面加上 `cleanup()` 把狀態清除等等...
+
+## 總結
+
+在使用 copilot chat 進行 redux toolkit 測試比想像的還要方便，只要下 `/tests` 就能得到完整的測試程式碼。一開始在進行 todoPage 測試時，它一直會產生一些我沒定義過的 reducer 函式，後來把 reducer 的檔案打開，並選擇起來後，再回到 todoPage 測試，它就會正確的產生測試程式碼了，不確定是不是選擇起來他就有記錄到，有人知道的話可以留言告訴我 😂

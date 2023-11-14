@@ -1,0 +1,86 @@
+---
+title: "[Day 11] React + Jest 路徑測試 (AI)"
+tags: ["ITHome 2023"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/ithome2023/day11-1.gif";
+import image_2 from "/img/ithome2023/day11-2.gif";
+
+在使用 copilot chat 產出路徑測試時，比起跟他詳細說明你要的測試條件，像是使用 `jest.mock` 模擬元件回傳，或是使用 `history` 套件模擬路由行為等等，我這邊提供一個更好的方法，讓 copilot chat 可以完美的達成你的需求。
+
+就是先寫一份 **Template(模板)**！
+
+## Router 導頁測試
+
+直接先寫其中一個路徑的完整測試：
+
+```js
+import { render, screen } from "@testing-library/react";
+import { RouterProvider, createMemoryRouter } from "react-router-dom";
+import { routerConfig } from ".";
+
+// 模擬元件回傳
+jest.mock("@/pages/HomePage/Home/index.tsx", () => {
+  return {
+    Home: () => <div>home page</div>,
+  };
+});
+
+// 測試
+describe("router testing", () => {
+  it("當 router 路徑為 '/home' 顯示 'home page' 文字", () => {
+    const router = createMemoryRouter(routerConfig, {
+      initialEntries: ["/home"],
+    });
+
+    render(<RouterProvider router={router} />);
+
+    expect(screen.getByText(/home page/i)).toBeInTheDocument();
+  });
+});
+```
+
+這時候再請 copilot chat 依據這個模板，把剩下的路徑測試都寫出來：
+
+> /test Generate all route separate unit test with the router/index.test.tsx template
+
+<Img src={image_1} />
+
+## Navbar 路徑測試
+
+Navbar 一樣先寫其中一個路由的完整測試：
+
+```js
+describe("navbar testing", () => {
+  let history: MemoryHistory;
+  const user = userEvent.setup();
+  beforeEach(() => {
+    history = createMemoryHistory();
+    render(
+      <Router location='/home' navigator={history}>
+        <Navbar />
+      </Router>
+    );
+  });
+
+  it("點擊 'home' 連結，網址導頁到 '/home' 路徑", async () => {
+    const homeLink = screen.getByText(/home/i);
+    expect(homeLink).toBeInTheDocument();
+    await user.click(homeLink);
+    expect(history.location.pathname).toBe("/home");
+  });
+});
+```
+
+再把剩下的路徑測試產出來：
+
+> /test Generate all route separate unit test with the navbar/index.test.tsx template
+
+<Img src={image_2} />
+
+## 結論
+
+雖然我只以兩個路徑當作範例，看不太出來成效，但是實際專案可能有幾百個路徑，這時候先寫 template，再讓 copilot chat 根據 template 產出剩下的路徑測試，那個節省的時間可是倍數的提升，而且還不用擔心 copilot chat 產出的測試不符合你的需求。
+
+下次有遇到重複相同結構的程式碼，與其花時間去描述需求，不如就寫一份測試碼範例吧！

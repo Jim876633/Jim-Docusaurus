@@ -1,0 +1,98 @@
+---
+title: "[Day 14] React + Jest API 測試"
+tags: ["ITHome 2023"]
+---
+
+這邊我串接 [https://jsonplaceholder.typicode.com/](https://jsonplaceholder.typicode.com/) API 來做測試，並且使用 [@tanstack/react-query](https://tanstack.com/query/)
+來管理 API 的狀態。
+
+## 程式碼
+
+```jsx
+import { useFetchUserData } from "@/api/fetchData";
+import styled from "./index.module.scss";
+
+export const ApiPage = () => {
+  const { isLoading, data } = useFetchUserData();
+
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
+
+  if (data) {
+    return (
+      <div>
+        {data.map((el) => (
+          <div test-id='item' key={el.id} className={styled.list}>
+            <h3>{el.name}</h3>
+            <p>{el.email}</p>
+          </div>
+        ))}
+      </div>
+    );
+  }
+};
+```
+
+這邊需要模擬 API 狀態，測試有 loading 跟 loading 完後得到回傳的資料，所以需要使用 `jest.mock` 來模擬 `useFetchUserData()`。
+
+```jsx
+describe("ApiPage", () => {
+  it("當 isLoading 為 true 畫面顯示 'Loading...' 文字", () => {});
+  it("當 isLoading 為 false 畫面顯示 data 資料", () => {});
+});
+```
+
+## 測試 isLoading 為 true
+
+```jsx
+import { render, screen } from "@testing-library/react";
+import { useFetchUserData } from "@/api/fetchData";
+import { ApiPage } from "./index";
+
+jest.mock("@/api/fetchData");
+
+describe("ApiPage", () => {
+  it("當 isLoading 為 true 畫面顯示 'Loading...' 文字", () => {
+    (useFetchUserData as jest.Mock).mockReturnValue({
+      isLoading: true,
+      data: null,
+    });
+
+    render(<ApiPage />);
+    expect(screen.getByText("Loading...")).toBeInTheDocument();
+  });
+});
+
+```
+
+## 測試 isLoading 為 false
+
+```jsx
+import { render, screen } from "@testing-library/react";
+import { useFetchUserData } from "@/api/fetchData";
+import { ApiPage } from "./index";
+
+jest.mock("@/api/fetchData");
+
+describe("ApiPage", () => {
+  it("當 isLoading 為 false 畫面顯示 data 資料", () => {
+    const mockData = [
+      { id: 1, name: "John Doe", email: "john.doe@example.com" },
+      { id: 2, name: "Jane Smith", email: "jane.smith@example.com" },
+    ];
+    (useFetchUserData as jest.Mock).mockReturnValue({
+      isLoading: false,
+      data: mockData,
+    });
+
+    render(<ApiPage />);
+    mockData.forEach((user) => {
+      expect(screen.getByText(user.name)).toBeInTheDocument();
+      expect(screen.getByText(user.email)).toBeInTheDocument();
+    });
+  });
+});
+```
+
+在測試 API 時，需要模擬 react-query 的狀態，以及回傳的資料來進行測試，使用上非常的不方便，還需要另外寫假資料來測，後面會介紹一個好用的套件來幫助我們測試 API。

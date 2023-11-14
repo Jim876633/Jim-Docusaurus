@@ -1,0 +1,143 @@
+---
+title: "[Day 16] MSW 介紹"
+tags: ["ITHome 2023"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/ithome2023/day16-1.jpeg";
+import image_2 from "/img/ithome2023/day16-2.jpg";
+import image_3 from "/img/ithome2023/day16-3.jpg";
+
+前面兩篇介紹了 API 的測試方法，不過可以發現在測試上，會需要自己模擬回傳的測試資料，假設前端在開發時，還有另外建立一個 mock server 來進行開發，就會變成需要建立兩份假資料，一個是給 mock server 用的，一個是給測試用的，這樣就會非常的耗時，而且一旦資料有變動，就需要同步更新兩份資料，這樣在維護上就會方長不方便。
+
+今天要介紹的 [MSW](https://mswjs.io/) 就是一個可以幫助我們在開發時，同時可以進行 API 測試的 mock server，這樣就可以省去維護兩份資料的麻煩。
+
+## Mock Service Worker (MSW)
+
+那 MSW 是什麼呢？官方的介紹是這樣的：
+
+> Mock by intercepting requests on the network level. Seamlessly reuse the same mock definition for testing, development, and debugging.
+
+簡單來說，就是透過攔截網路請求的方式，來回傳模擬的假資料，可以看一下官方的圖：
+
+<Img src={image_1} />
+
+當 MSW 攔截到請求時，會去檢查是否有符合的模擬資料，如果有的話，就會回傳模擬資料，如果沒有的話，就會繼續發送請求到真正的 API。
+
+使用 MSW 的好處有：
+
+- 使用上非常簡單好上手
+- 一份模擬資料，可以同時用在開發時和測試時。
+- `npm run start` 可以同時啟動 mock server 和前端專案，不需要另外開啟一個 mock server。
+- 會實際的發出請求，可以測試 API 是否正常運作。
+- 可以把 Mock Service 建在同一個專案底下（不過有些人不喜歡這樣，這個好處見仁見智）。
+
+當然他也有一些缺點，像是：
+
+- API 回傳資料格式不像 [json-server](https://www.npmjs.com/package/json-server) 一樣方便撰寫。
+- 因為 Mock 資料建立在專案底下，所以會增加專案的大小。
+
+不過以測試來說，MSW 還是非常好用的，接下來就來介紹一下 MSW 的使用方法。
+
+## 安裝
+
+MSW 的安裝非常簡單，首先先在專案底下安裝 `msw` 套件：
+
+```bash
+npm install msw --save-dev
+```
+
+## 建立假資料
+
+在 `src` 底下建立一個 `mocks` 資料夾，並在裡面建立一個 `handlers.js` 檔案，這個檔案就是用來撰寫模擬資料的地方。
+
+寫法會像這樣：
+
+```js
+// src/mocks/handlers.js
+import { rest } from "msw";
+
+const fetchUserUrl = "https://jsonplaceholder.typicode.com/users";
+
+export const handlers = [
+  rest.get(fetchUserUrl, (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json([
+        {
+          id: 1,
+          name: "John Doe",
+          username: "johndoe",
+          email: "john.doe@example.com",
+        },
+      ])
+    );
+  }),
+];
+```
+
+這邊我們模擬了一個 `GET` 的請求，當請求到 `https://jsonplaceholder.typicode.com/users` 時，就會回傳一個假的使用者資料。
+
+_＊這邊也可以使用 [fakerjs](https://fakerjs.dev/) 來產生假資料，會方便很多！_
+
+## 攔截 http 請求
+
+要在開發時開啟 Mock Server 需要先寫攔截 http request 的程式碼，不過這邊我們不需要自己寫，MSW 非常好心的幫我們寫好了，只要下指令：
+
+```bash
+npx msw init <PUBLIC_DIR> --save
+```
+
+`PUBLIC_DIR` 是指前端專案的 `public` 資料夾，[官網](https://mswjs.io/docs/getting-started/integrate/browser#where-is-my-public-directory)也有整理了各個框架的根目錄資訊。
+
+那這邊我是使用 Vite，所以我們可以下：
+
+```bash
+npx msw init ./public --save
+```
+
+這時候就會在 `public` 資料夾下建立一個 `mockServiceWorker.js` 檔案，裏面就有攔截 http request 的程式碼了。
+
+## Mock Server 啟動！
+
+有了攔截器後，就要來開啟 Mock Server 了，在 `Mock` 的資料夾下建立一個 `browser.js` 檔案，在裡面進行 worker 的設定：
+
+```js
+// src/mocks/browser.js
+import { setupWorker } from "msw";
+import { handlers } from "./handlers";
+
+export const worker = setupWorker(...handlers);
+```
+
+接著在 `main.jsx` 中引入 `browser.js`，這邊設定只在開發模式下啟動 Mock Server：
+
+```js
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+import "./index.css";
+import { worker } from "./mocks/browser.js";
+
+if (process.env.NODE_ENV === "development") {
+  worker.start();
+}
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+```
+
+接著只要啟動專案，就可以看到 Mock Server 已經啟動了！
+
+<Img src={image_2} />
+
+當看到 <strong style="color: red;">[MSW] Mocking enabled.</strong> 就代表已經啟動了，如果 MSW 發現沒有符合的模擬資料，也會很好心的顯示 warning 提醒你。
+
+那這邊我建立的模擬資料，就有被 MSW 所攔截到，可以在 console 很清楚的看到回傳的資料
+
+<Img src={image_3} />
+
+是不是超級方便的啊～大家可以玩看看，下一篇來介紹 MSW 的測試方法。

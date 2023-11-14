@@ -1,0 +1,31 @@
+---
+title: " [Day 18] React + Jest API (MSW) 測試 (AI)"
+tags: ["ITHome 2023"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/ithome2023/day18-1.gif";
+import image_2 from "/img/ithome2023/day18-2.jpg";
+
+雖然在上一篇提到使用 MSW 能幫助我們寫測試更方便，不過在使用 copilot chat 時，反而是一個阻礙，因為 copilot chat 本來就會自動給你他模擬的資料，現在變成需要跟他說模擬的資料在哪。
+
+## API (MSW) 測試
+
+> /tests follow the rule:
+>
+> 1.  use jest.mock
+> 2.  the data use the fakerUserList from src/mocks/handlers
+
+<Img src={image_1} />
+
+可以看到雖然只有請他使用我寫好的資料，但是他會把我寫過的 server 設定又在寫一次，所以需要再額外把這些刪掉，才能得到正確的結果。
+
+來看一下差別：
+
+<Img src={image_2} />
+
+除了剛剛說的問題，其他都是正確的！
+
+## 結論
+
+雖然在使用 MSW 進行手寫測試時，會方便許多，但在應用 copilot chat 時，反而需要給它多一點資訊，才能得到我們想要的測試結果，所以在實際使用上就是看個人喜好了～

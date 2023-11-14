@@ -1,0 +1,54 @@
+---
+title: "[Day 13] React + Jest 彈窗測試 (AI)"
+tags: ["ITHome 2023"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/ithome2023/day13-1.gif";
+import image_2 from "/img/ithome2023/day13-2.gif";
+
+copilot chat 的部分一樣依照兩個檔案分別做測試
+
+## ModalPage 頁面測試
+
+頁面測試需要給他 `ModalContext.provider` 的 value 值，並請他使用在 `./data/modal.data` 裡面的資料來進行判斷。
+
+> /tests mock openModal use ModalContext.provider. The value type is
+>
+> ```
+> {
+> isOpen: boolean;
+> openModal: (text?: string) => void;
+> closeModal: () => void;
+> content: string;
+> };
+> ```
+>
+> and the text use the data in ./data/modal.data
+
+<Img src={image_1} />
+
+## Modal 元件測試
+
+元件測試一樣請他模擬 `closeModal()` 函式，不過因為還要測試彈窗內容顯示是否正確，所以這邊直接跟他說給我兩個測試案例，一個是模擬 `closeModal()` 函式，另一個是測試彈窗內容是否正確。
+
+> /tests two test case
+>
+> 1. mock closeModal use ModalContext.provider. The value type is
+>
+> ```
+>    {
+>    isOpen: boolean;
+>    openModal: (text?: string) => void;
+>    closeModal: () => void;
+>    content: string;
+>    };
+> ```
+>
+> 2. test content correct
+
+<Img src={image_2} />
+
+## 結論
+
+像使用外部的 `useContext()` 做測試時，需要提供完整的 value 內容，才能讓測試順利進行，因為前面有提過 copilot chat 只會根據當前打開的檔案進行分析，所以只要測試需要使用到當前檔案以外的資料時，都需要事先提供給 copilot chat，這樣他才能幫你產生正確的程式碼。

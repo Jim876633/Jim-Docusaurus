@@ -1,0 +1,183 @@
+---
+title: "[Day 19] React + Jest Redux Toolkit 測試"
+tags: ["ITHome 2023"]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/ithome2023/day19-1.gif";
+
+這一篇的測試比較偏專屬 React 的 [Redux Toolkit](https://redux-toolkit.js.org/) 測試，如果沒有使用 Redux 的話，可以跳過這一篇～
+
+<Img src={image_1} />
+
+## 程式碼
+
+以 TodoList 為例，會有一個 `todoSlice`，裡面有 `addTodo`、`removeTodo`、`toggleTodo` 三個 action，我們會測試這三個 action 是否正常運作。
+
+```js
+export const todoSlice = createSlice({
+  name: "todo",
+  initialState,
+  reducers: {
+    addTodo: (state, action: PayloadAction<string>) => {
+      state.todoList.push({
+        title: action.payload,
+        id: Math.random(),
+        isDone: false,
+      });
+    },
+    removeTodo: (state, action: PayloadAction<number>) => {
+      state.todoList = state.todoList.filter(
+        (todo) => todo.id !== action.payload
+      );
+    },
+    toggleTodo: (state, action: PayloadAction<number>) => {
+      state.todoList = state.todoList.map((todo) =>
+        todo.id === action.payload ? { ...todo, isDone: !todo.isDone } : todo
+      );
+    },
+  },
+});
+```
+
+TodoPage 則會使用到 `todoSlice`，並且使用 `useSelector` 取得 `todoList`，並且使用 `useDispatch` 去 dispatch action。
+
+```jsx
+import { addTodo, removeTodo, toggleTodo } from "@/store/todo";
+import useAppDispatch from "@/utils/hooks/useAppDispatch";
+import useAppSelector from "@/utils/hooks/useAppSelector";
+import { useState } from "react";
+import styled from "./index.module.scss";
+
+export const TodoPage = () => {
+  const todoList = useAppSelector((state) => state.todo.todoList);
+  const dispatch = useAppDispatch();
+
+  const [todo, setTodo] = useState("");
+
+  const addTodoHandler = () => {
+    dispatch(addTodo(todo));
+    setTodo("");
+  };
+
+  return (
+    <div className={styled.container}>
+      <input
+        type='text'
+        value={todo}
+        onChange={(e) => setTodo(e.target.value)}
+      />
+      <button onClick={addTodoHandler}>ADD</button>
+      {todoList.map((todo) => (
+        <li
+          key={todo.id}
+          className={
+            todo.isDone ? `${styled.todo} ${styled.done}` : styled.todo
+          }
+          onClick={() => dispatch(toggleTodo(todo.id))}
+        >
+          <input type='checkbox' checked={todo.isDone} readOnly />
+          <span>{todo.title}</span>
+          <button onClick={() => dispatch(removeTodo(todo.id))}> remove</button>
+        </li>
+      ))}
+    </div>
+  );
+};
+```
+
+在測試時，就會分別就這兩個部分進行測試。
+
+## redux toolkit 測試
+
+```jsx
+import todoSlice, { TodoState, addTodo, removeTodo, toggleTodo } from "./todo";
+
+describe("todoSlice", () => {
+  let initialState: { todoList: TodoState[] };
+  const todo1 = { id: 1, title: "Test Todo 1", isDone: false };
+  const todo2 = { id: 2, title: "Test Todo 2", isDone: false };
+  const todo3 = { id: 3, title: "Test Todo 3", isDone: false };
+  const state = { todoList: [todo1, todo2, todo3] };
+
+  beforeEach(() => {
+    initialState = { todoList: [] };
+  });
+
+  it("當 addTodo 函式輸入 'Test Todo' todoList 新增一項 todo title 為 Test Todo 且 isDone 為 false", () => {
+    const actual = todoSlice.reducer(initialState, addTodo("Test Todo"));
+    expect(actual.todoList.length).toEqual(1);
+    expect(actual.todoList[0].title).toEqual("Test Todo");
+    expect(actual.todoList[0].isDone).toEqual(false);
+  });
+
+  it("當 removeTodo 函式輸入 2 則只移除 id 為 2 的 todo", () => {
+    const actual = todoSlice.reducer(state, removeTodo(2));
+    expect(actual.todoList.length).toEqual(2);
+    expect(actual.todoList).toContain(todo1);
+    expect(actual.todoList).toContain(todo3);
+    expect(actual.todoList).not.toContain(todo2);
+  });
+
+  it("當 toggleTodo 函式輸入 2 則 id 為 2 的 todo isDone 為 true", () => {
+    const actual = todoSlice.reducer(state, toggleTodo(2));
+    expect(actual.todoList[1].isDone).toEqual(true);
+  });
+});
+```
+
+依據不同情況給入相對應的初始值，並且測試是否有正確的回傳值。
+
+## TodoPage 測試
+
+```jsx
+import { render, screen } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { store } from "@/store";
+import { TodoPage } from ".";
+import userEvent from "@testing-library/user-event";
+
+describe("TodoPage", () => {
+  const user = userEvent.setup();
+  beforeEach(() => {
+    render(
+      <Provider store={store}>
+        <TodoPage />
+      </Provider>
+    );
+  });
+
+  it("當輸入「New Todo」並點擊 add 按鈕，顯示「New Todo」文字", async () => {
+    const inputElement = screen.getByRole("textbox");
+    const addButtonElement = screen.getByRole("button", { name: /add/i });
+
+    await user.type(inputElement, "New Todo");
+    await user.click(addButtonElement);
+
+    const todoElement = screen.getByText("New Todo");
+    expect(todoElement).toBeInTheDocument();
+  });
+
+  it("當點擊「New Todo」文字，checkbox 會被勾選", async () => {
+    const todoElement = screen.getByText("New Todo");
+    await user.click(todoElement);
+
+    const checkboxElement = screen.getByRole("checkbox");
+    expect(checkboxElement).toBeChecked();
+  });
+
+  it("當點擊 remove 按鈕，'New Todo' 文字不會顯示", async () => {
+    const removeButtonElement = screen.getByRole("button", { name: /remove/i });
+    await user.click(removeButtonElement);
+
+    const todoElement = screen.queryByText("New Todo");
+    expect(todoElement).not.toBeInTheDocument();
+  });
+});
+```
+
+TodoPage 就會是測試使用者操作的部分，是否有正確的 UI 顯示、勾選、移除等等。
+
+## 總結
+
+Redux toolkit 的測試乍聽之下好像很難測，不過因為 redux 就是各種函式統一管理，所以測試起來也不會太難，就像是一般的函式測試，只不過要依據不同的情況給入不同的初始值，才能測試出不同的結果。
