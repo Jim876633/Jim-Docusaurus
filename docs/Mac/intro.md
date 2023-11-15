@@ -1,8 +1,7 @@
 ---
 title: 【Mac】入坑 Mac 了 ！！
-sidebar_position: 1
+sidebar_label: 入坑 Mac 了 ！！
 tags: ["Mac"]
-hide_title: true
 ---
 
 ## 契機

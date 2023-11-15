@@ -1,6 +1,6 @@
 ---
 title: 【Docusaurus】介紹、建立步驟
-sidebar_position: 1
+sidebar_label: 介紹、建立步驟
 tags: ["Docusaurus"]
 ---
 
