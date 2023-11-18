@@ -1,0 +1,101 @@
+---
+title: 【Other】GiHub 推出的新字體 Monaspace！
+sidebar_label: 新字體 Monaspace！
+tags: ["Other", "GitHub"]
+---
+
+import { Img } from "@site/src/components/Width";
+import image_1 from "/img/other/monaspace-1.jpg";
+import image_2 from "/img/other/monaspace-2.jpg";
+import image_3 from "/img/other/monaspace-3.jpg";
+import image_4 from "/img/other/monaspace-4.png";
+import image_5 from "/img/other/monaspace-5.png";
+import image_6 from "/img/other/monaspace-6.png";
+import image_7 from "/img/other/monaspace-7.png";
+import image_8 from "/img/other/monaspace-8.png";
+import image_9 from "/img/other/monaspace-9.jpg";
+
+[Monaspace](https://monaspace.githubnext.com/) 是 [GitHub Next](https://githubnext.com/) 團隊其中一個 project。先來講講什麼是 **GitHub Next**，這個團隊就是 GitHub 的 R&D(Research and Development) Team，主要的研究產品都會在 GitHub Next 上面進行，像是 GitHub Copilot、GitHub Copilot Lab、Code Brushes 等等，而在最近 2023/11/09 上線的 Monaspace 就是 GitHub 推出的新產品。
+
+一開始我想說 Monaspce 怎麼感覺很熟悉，原來跟一般我們使用的 Monospace 長得超像，只是把**「o」**改成**「a」**，而 Monospace 的意思是**等寬字體**，一般程式碼都會使用等寬字體，在 Vscode 中的預設字體就是 _Consolas, 'Courier New', monospace"_，大部分認為等寬字體可以幫助程式碼對齊，讓程式碼更容易閱讀。
+
+不過呢也有很多人覺得 Monospace 不好閱讀，因為每個字元的寬度都是一樣的，所以會造成一些字元看起來很窄，像是「m」、「w」 等等，而有些字體就會看起來很寬，像是「i」、「l」 等等。所以 Monaspace 就是來解決這個問題，在現有的等寬字體上，調整這些在視覺上會有影響的字體，讓程式碼看起來更舒服。
+
+看一下官方 Monaspace 的字體對比圖：
+
+<Img src={image_1} />
+
+把 i 跟 m 調整過後看起來就好看很多！他們把這個調整叫做 **Texture healing（紋理修復）**，而這次所有推出的新字體都有這個功能，目前只有推出 5 種字體，分別是 Noen、Argon、tKrypton、Xenon、Radon，而這些字體都是以**元素**命名，撇除氦(Helium) 其他的就是惰性氣體的名字 氖（Ne）、氬（Ar）、氪（Kr）、氙（Xe）、氡（Rn），而為什麼要使用惰性氣體取名字，官方沒有特別解釋原因，不知道是不是因為這些原子結構比較穩固（等寬？），純屬個人猜測哈哈，有人知道的話可以在底下留言！
+
+<Img src={image_2} />
+
+除此字體之外，Monaspace 也有包含 Code ligatures (程式碼連字) 可以去設定一些常用的符號連字，像是 `->`、`=>`、`===` 等等，這些連字可以讓程式碼看起來更美觀，而這些連字也是可以自訂的，可以去看看官方的[說明](https://github.com/githubnext/monaspace#coding-ligatures)。
+
+## 安裝
+
+有提供幾種安裝方式：
+
+1. 最簡單的就是直接下載字體檔，然後放到電腦的字體資料夾。
+
+2. 如果用 Mac 可以下：
+
+```bash
+  brew tap githubnext/tap
+  brew install monaspace
+```
+
+安裝完可以去 `~/Library/Fonts` 看看有沒有安裝成功。
+
+<Img src={image_3} />
+
+詳細的可以看[Desktop Installation](https://github.com/githubnext/monaspace#desktop-installation)
+
+## 使用方法
+
+在 Vscode 打開 User Setting 的設定檔，加上
+
+```json
+  "editor.fontFamily": "'Monaspace Neon', monospace",
+```
+
+就可以使用 Monaspace Neon 這個字體了，如果要使用其他的字體，只要把 Neon 改成其他的字體名稱就可以了。
+
+實際在程式碼看到的效果：
+
+- Neon
+
+<Img src={image_4} />
+
+- Argon
+
+<Img src={image_5} />
+
+- Krypton
+
+<Img src={image_6} />
+
+- Xenon
+
+<Img src={image_7} />
+
+- Radon
+
+<Img src={image_8} />
+
+我自己是比較喜歡 _Argon_ 跟 _Radon_，最後是用 _Argon_，看起來很清爽而且數字閱讀起來很舒服！
+
+---
+
+再來是程式碼連字的部分，可以在 User Setting 的設定檔加上
+
+```json
+   "editor.fontLigatures": "'ss01', 'ss02'",
+```
+
+可以把想加的連字規則加上去，比較常用的會是運算符號 `ss01`、`ss02`，使用後會像這樣：
+
+<Img src={image_9} width='500px' center />
+
+## 目前問題
+
+因為這個 project 才剛推出，還有很多 Issue 問題，好像在某些 IDE 像是 JetBrain 等等會有無法使用的情況，可以持續關注看看後續的更新，希望大家都可以找到喜歡的 coding 字體！！
