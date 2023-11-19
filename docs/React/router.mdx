@@ -1,0 +1,210 @@
+---
+title: 【React】React router (v6)
+sidebar_label: React router (v6)
+tags: [React, Router]
+---
+
+在學 React 的時候，一定會接觸到 React router 來建立路由。在沒有 Next.js 的 Page router 及 App router 以前，React router 是最常用的路由套件。在去年 2022/09/14 發佈了 [v6.4](https://github.com/remix-run/react-router/releases?page=4) 版本，從這個版本開始，新增了很多新功能，主要集中在 API fetching、Data loading 等功能上，而要使用這些功能必須把原本的 `BrowserRouter` 換成 `createBrowserRouter` API 及 `<RouterProvider/>` 元件，這一篇就來介紹 v6 的新功能及用法。
+
+## createBrowserRouter + RouterProvider
+
+`creactBrowserRouter` + `<RouterProvider/>` 取代了原本的 `<BrowserRouter/>` 元件，讓路由的結構能更好閱讀及管理。`creactBrowserRouter` 可以接受以物件形式組成的 Nest Router Config，而在引入根元件時，只要使用 `<RouterProvider />` 再把 `creactBrowserRouter` API 產生的 router 傳入就可以了。
+
+物件形式：
+
+```jsx title="router/index.js"
+import { createBrowserRouter } from "react-router-dom";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Home />,
+    children: [
+      {
+        path: "about",
+        element: <About />,
+      },
+    ],
+  },
+]);
+export default router;
+```
+
+除了物件形式，也可以接受使用像原本的 Nest Component 的結構，需要另外使用 `createRoutesFromElements` 來包裹：
+
+```jsx {7} title="router/index.js"
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+} from "react-router-dom";
+
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route path='/' element={<Home />}>
+      <Route path='about' element={<About />} />
+    </Route>
+  )
+);
+export default router;
+```
+
+使用 `<RouterProvider/>`：
+
+```jsx title="App.jsx"
+import { RouterProvider } from "react-router-dom";
+import router from "./router";
+
+function App() {
+  return <RouterProvider router={router} />;
+}
+```
+
+## Data Loading
+
+以往在進到某個頁面，需要 call API 來渲染畫面，通常會在 `useEffect` 中 call API，然後把資料存在 state 中，再用 state 來渲染畫面。但是這樣的寫法會有幾個問題：
+
+- 進到頁面時，畫面會先渲染一次，然後 call API，再渲染一次
+- 如果 API call 失敗，畫面會一直停留在 loading 狀態
+
+所以在設計的時候都會需要建立幾個 flag 來控制，例如 `isLoading`、`isError`、`data` 等等，這樣的寫法會讓程式碼變得很冗長。如果有使用像 [TanStack Query](https://tanstack.com/query/v4/docs/react/overview)、[RTK Query](https://redux-toolkit.js.org/rtk-query/overview) 等套件，可以幫助我們處理這些問題。不過如果純粹想在 Router 切換時去管理 Data Fetching，就可以使用 v6 的 loader 功能。
+
+首先建立一個 `fetchData()` 函式：
+
+```js
+export const fetchData = (url) => {
+  const res = await fetch(url);
+  const data = await res.json();
+  return data;
+};
+```
+
+傳入 loader 參數中：
+
+```jsx {11} title="router/index.js"
+import { createBrowserRouter } from "react-router-dom";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Home />,
+    children: [
+      {
+        path: "about",
+        element: <About />,
+        loader: () => fetchData("API_URL"),
+      },
+    ],
+  },
+]);
+```
+
+這樣就可以在進到 `<About/>` 頁面時，自動 call API 等待資料回傳後才會渲染畫面。react-router-dom 也提供了 `useLoaderData` 的 hook，可以在頁面中取得回傳的 data：
+
+```jsx {4} title="pages/About.jsx"
+import { useLoaderData } from "react-router-dom";
+
+const About = () => {
+  const data = useLoaderData();
+  return <div>{JSON.stringify(data)}</div>;
+};
+
+export default About;
+```
+
+### 管理 loading 狀態
+
+不過不像其他狀態管理套件會回傳 isLoading 或 isError 等狀態，useLoaderData 只會回傳 data。所以如果要顯示 loading 狀態，有兩種方法：
+
+1. 使用 `useNavigation` hook
+
+   `useNavigation` 會回傳當前的 state 狀態，總共會有四種狀態：
+
+   - **idle**：頁面渲染沒有被擱置時。
+   - **submitting**：route action 被呼叫時，會用在表單送出。
+   - **loading**：route loader 被呼叫時。
+
+   以 loader 來說會經歷以下階段：
+
+   ```
+    idle → loading → idle
+   ```
+
+   而 action 就會多一個 submitting 階段：
+
+   ```
+    idle → submitting → loading → idle
+   ```
+
+   :::info 路由 action
+   Route Action 可以參考 [action](https://reactrouter.com/en/main/route/action)，主要是來處理表單送出、頁面跳轉等行為。除了 "GET" 以外的方法，都會被視為 "submitting" 狀態。
+   :::
+
+   我們就可以在 layout 元件用這個 hook 來判斷是否在 loading 狀態：
+
+   ```jsx {5,6} title="Layout.jsx"
+   import { useNavigation } from "react-router-dom";
+
+   const Layout = () => {
+     const { state } = useNavigation();
+     if (state === "loading") return <div>Loading...</div>;
+     if (state === "idle") return <Outlet />;
+   };
+
+   export default Layout;
+   ```
+
+   :::caution 注意
+   要注意的是，如果使用 `useNavigation` 來判斷是否在 loading 狀態，需要寫在 layout 元件中，也就是含有 `<Outlet/>` 的元件中，如果寫在子元件中，會一直是 "idle" 狀態。
+   :::
+
+2. 使用 `<Suspense/>` + `defer` + `<Await/>`
+
+   `<Suspense/>` 是 React 18 提供的功能，直翻的話是「懸念」，在開發上使用時可以翻譯成**未完成狀態**。我的理解是進行非同步處理時，等待事情完成才進行渲染。常會搭配 `lazy` 來進行元件的延遲載入。
+
+   React router v6 提供 `defer` API 來讓 loader 裡的函式進行延遲執行，並且搭配 `<Await/>` 來接收 loader 回傳的資料。
+
+   使用 `defer` 延遲執行:
+
+   ```jsx {11-14} title="router/index.js"
+   import { createBrowserRouter } from "react-router-dom";
+
+   const router = createBrowserRouter([
+     {
+       path: "/",
+       element: <Home />,
+       children: [
+         {
+           path: "about",
+           element: <About />,
+           loader: () =>
+             defer({
+               data: fetchData("API_URL"),
+             }),
+         },
+       ],
+     },
+   ]);
+   ```
+
+   使用 `<Suspense/>` + `<Await/>`：
+
+   ```jsx {7-11} title="pages/About.jsx"
+   import { Suspense } from "react";
+   import { useLoaderData } from "react-router-dom";
+
+   const About = () => {
+     const { data } = useLoaderData();
+     return (
+       <Suspense fallback={<div>Loading...</div>}>
+         <Await resolve={data}>
+           {(resData) => <div>{JSON.stringify(resData)}</div>}
+         </Await>
+       </Suspense>
+     );
+   };
+
+   export default About;
+   ```
+
+   `<Suspense/>` 的 **fallback** 傳入的就是當 `<Await/>` 還沒 resolve data 時顯示的 loading 畫面，而 `<Await/>` 的 Children 會傳入 resolve 後的 response data，可以直接在 Children 中使用。
