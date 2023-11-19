@@ -39,8 +39,8 @@ const DocList = () => {
             </li>
           ) : (
             <li key={doc.id}>
-              {doc.date} 更新文章
-              <a href={doc.href}>{doc.title}</a> - {doc.label}
+              {doc.date} 更新文章 <a href={doc.href}>{doc.title}</a> -{" "}
+              {doc.label}
             </li>
           );
         })}
