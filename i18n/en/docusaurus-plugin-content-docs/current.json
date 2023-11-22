@@ -62,5 +62,29 @@
   "sidebar.tutorialSidebar.category.Unit test": {
     "message": "Unit test",
     "description": "The label for category Unit test in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.JavaScript": {
+    "message": "JavaScript",
+    "description": "The label for category JavaScript in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Unit Test": {
+    "message": "Unit Test",
+    "description": "The label for category Unit Test in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.CSS": {
+    "message": "CSS",
+    "description": "The label for category CSS in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Other": {
+    "message": "Other",
+    "description": "The label for category Other in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.2023 鐵人賽": {
+    "message": "2023 鐵人賽",
+    "description": "The label for category 2023 鐵人賽 in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.2023 鐵人賽.link.generated-index.description": {
+    "message": "2023 鐵人賽系列文「React 測試 x AI：探索測試新境界，測試不再枯燥乏味！」整理",
+    "description": "The generated-index page description for category 2023 鐵人賽 in sidebar tutorialSidebar"
   }
 }
