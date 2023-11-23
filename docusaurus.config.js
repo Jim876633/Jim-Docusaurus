@@ -137,15 +137,15 @@ const config = {
           //       },
           //     ],
           //   },
-          {
-            title: "Community",
-            items: [
-              {
-                label: "GitHub",
-                href: "https://github.com/Jim876633",
-              },
-            ],
-          },
+          // {
+          //   title: "Community",
+          //   items: [
+          //     {
+          //       label: "GitHub",
+          //       href: "https://github.com/Jim876633",
+          //     },
+          //   ],
+          // },
         ],
         copyright: `Copyright © ${new Date().getFullYear()} Jim's note, Inc. Built with Docusaurus.`,
       },
