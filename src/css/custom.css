@@ -32,7 +32,7 @@
   --ifm-color-primary-lightest: #9ed9f6;
   --tag-color: #39719b;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
-  --subscribeBlock: rgb(236, 234, 234);
+  --subscribeBlock: rgb(245 251 255);
 }
 table {
   table-layout: fixed;
