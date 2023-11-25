@@ -1,7 +1,7 @@
 {
   "index_name": "Jim-Docusaurus",
-  "start_urls": ["https://jim876633.github.io/Jim-Docusaurus/"],
-  "sitemap_urls": ["https://jim876633.github.io/Jim-Docusaurus/sitemap.xml"],
+  "start_urls": ["https://jimhuang.dev"],
+  "sitemap_urls": ["https://jimhuang.dev/sitemap.xml"],
   "sitemap_alternate_links": true,
   "stop_urls": ["/tests"],
   "selectors": {
