@@ -4,8 +4,8 @@
   <ShortName>Jim&#39;s notes </ShortName>
   <Description>Search Jim&#39;s notes </Description>
   <InputEncoding>UTF-8</InputEncoding>
-  <Image width="16" height="16" type="image/x-icon">https://jim876633.github.io/Jim-Docusaurus/https://jim876633.github.io/Jim-Docusaurus/img/favicon-32x32.png</Image>
-  <Url type="text/html" method="get" template="https://jim876633.github.io/Jim-Docusaurus/search?q={searchTerms}"/>
-  <Url type="application/opensearchdescription+xml" rel="self" template="https://jim876633.github.io/Jim-Docusaurus/opensearch.xml" />
-  <moz:SearchForm>https://jim876633.github.io/Jim-Docusaurus/</moz:SearchForm>
+  <Image width="16" height="16" type="image/x-icon">https://jimhuang.dev/img/favicon-32x32.png</Image>
+  <Url type="text/html" method="get" template="https://jimhuang.dev/search?q={searchTerms}"/>
+  <Url type="application/opensearchdescription+xml" rel="self" template="https://jimhuang.dev/opensearch.xml" />
+  <moz:SearchForm>https://jimhuang.dev/</moz:SearchForm>
 </OpenSearchDescription>
