@@ -79,9 +79,8 @@ function formatDocList(items) {
  */
 async function fetchDocs(docsList) {
   const docs = [...docsList];
-  const docUrlList = docsList.map(
-    (doc) => `https://jim876633.github.io${doc.href}`
-  );
+  console.log(docsList);
+  const docUrlList = docsList.map((doc) => `https://jimhuang.dev${doc.href}`);
   const results = await Promise.all(
     docUrlList.map((url) => fetch(url).then((res) => res.text()))
   );
