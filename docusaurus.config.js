@@ -10,11 +10,11 @@ require("dotenv").config();
 const config = {
   title: "Jim's notes ",
   tagline: "Jim's notes",
-  url: "https://jim876633.github.io",
-  baseUrl: "/Jim-Docusaurus/",
+  url: "https://jimhuang.dev",
+  baseUrl: "/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
-  favicon: "https://jim876633.github.io/Jim-Docusaurus/img/favicon-32x32.png",
+  favicon: "/img/favicon-32x32.png",
   deploymentBranch: "gh-pages",
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
