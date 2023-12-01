@@ -17,6 +17,7 @@ const DocList = () => {
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   });
+
   if (isLoading) {
     return (
       <>
@@ -35,7 +36,7 @@ const DocList = () => {
         {data.map((doc) => {
           return sm ? (
             <li key={doc.id}>
-              {doc.date.slice(5)} <a href={doc.href}>{doc.title}</a>
+              {doc.date?.slice(5)} <a href={doc.href}>{doc.title}</a>
             </li>
           ) : (
             <li key={doc.id}>
@@ -79,7 +80,6 @@ function formatDocList(items) {
  */
 async function fetchDocs(docsList) {
   const docs = [...docsList];
-  console.log(docsList);
   const docUrlList = docsList.map((doc) => `https://jimhuang.dev${doc.href}`);
   const results = await Promise.all(
     docUrlList.map((url) => fetch(url).then((res) => res.text()))
