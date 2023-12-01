@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
+const breakpoints = {
+  sm: 635,
+};
 
 const useMedia = () => {
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
-
-  const breakpoints = {
-    sm: 635,
-  };
 
   const [sm, setSm] = useState(false);
 
@@ -24,6 +24,8 @@ const useMedia = () => {
 
       setSm(isSm);
     };
+
+    handleResize();
 
     window.addEventListener("resize", handleResize);
 
