@@ -28,7 +28,14 @@ jobs:
       - name: Install dependencies
         run: npm install --frozen-lockfile
       - name: generate changelog.json
-        run: node scripts/generateChangelog.js
+        if: contains(github.event.head_commit.message, 'CHANGELOG')
+        run: |
+          node scripts/generateChangelog.js
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "generate changelog.json"
+          git push
       - name: Build website
         run: npm run build
 
