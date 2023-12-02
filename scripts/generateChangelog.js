@@ -37,5 +37,5 @@ html.querySelectorAll('h2').forEach((item, i) => {
 })
 
 // Write the JSON to a file
-fs.writeFileSync('./static/changelog.json', JSON.stringify(changelogJSON));
+fs.writeFileSync('./static/data/changelog.json', JSON.stringify(changelogJSON));
 
