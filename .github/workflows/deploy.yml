@@ -27,6 +27,8 @@ jobs:
 
       - name: Install dependencies
         run: npm install --frozen-lockfile
+      - name: generate changelog.json
+        run: node scripts/generateChangelog.js
       - name: Build website
         run: npm run build
 
