@@ -139,27 +139,27 @@ export default About;
     idle → submitting → loading → idle
    ```
 
-   :::info 路由 action
-   Route Action 可以參考 [action](https://reactrouter.com/en/main/route/action)，主要是來處理表單送出、頁面跳轉等行為。除了 "GET" 以外的方法，都會被視為 "submitting" 狀態。
-   :::
+:::info 路由 action
+Route Action 可以參考 [action](https://reactrouter.com/en/main/route/action)，主要是來處理表單送出、頁面跳轉等行為。除了 "GET" 以外的方法，都會被視為 "submitting" 狀態。
+:::
 
-   我們就可以在 layout 元件用這個 hook 來判斷是否在 loading 狀態：
+我們就可以在 layout 元件用這個 hook 來判斷是否在 loading 狀態：
 
-   ```jsx {5,6} title="Layout.jsx"
-   import { useNavigation } from "react-router-dom";
+```jsx {5,6} title="Layout.jsx"
+import { useNavigation } from "react-router-dom";
 
-   const Layout = () => {
-     const { state } = useNavigation();
-     if (state === "loading") return <div>Loading...</div>;
-     if (state === "idle") return <Outlet />;
-   };
+const Layout = () => {
+  const { state } = useNavigation();
+  if (state === "loading") return <div>Loading...</div>;
+  if (state === "idle") return <Outlet />;
+};
 
-   export default Layout;
-   ```
+export default Layout;
+```
 
-   :::caution 注意
-   要注意的是，如果使用 `useNavigation` 來判斷是否在 loading 狀態，需要寫在 layout 元件中，也就是含有 `<Outlet/>` 的元件中，如果寫在子元件中，會一直是 "idle" 狀態。
-   :::
+:::caution 注意
+要注意的是，如果使用 `useNavigation` 來判斷是否在 loading 狀態，需要寫在 layout 元件中，也就是含有 `<Outlet/>` 的元件中，如果寫在子元件中，會一直是 "idle" 狀態。
+:::
 
 2. 使用 `<Suspense/>` + `defer` + `<Await/>`
 
