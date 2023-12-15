@@ -164,7 +164,7 @@ const config = {
         appId: process.env.APPLICATION_ID,
       },
     }),
-  plugins: [],
+  plugins: ['docusaurus-plugin-sass'],
 };
 
 module.exports = config;
