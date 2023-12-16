@@ -1,0 +1,97 @@
+---
+title: 【Npm】npm 和 npx 的差別？
+sidebar_label: npm 和 npx 的差別？
+tags: ["Npm", "Npx"]
+---
+
+## npm
+
+[npm](https://www.npmjs.com/) 是 Node.js 的套件管理工具，可以用來安裝、更新、移除套件，也可以用來管理套件之間的相依性。
+
+如果要安裝套件的話，可以下指令：
+
+```bash
+npm install --save <package-name>
+```
+
+例如：`npm install 
+ react`，這個指令會在本地端當前資料夾底下創建一個 `node_modules` 資料，在裡面安裝 react 套件，並且會將 react 套件的資訊寫入 package.json 檔案中的 **dependencies** 屬性中。
+
+:::info
+在 [npm v5.0.0](https://blog.npmjs.org/post/161081169345/v500) 之後，`npm install` 指令會自動將套件安裝到 dependencies 中，不需要再加上 `--save` 參數。
+:::
+
+如果要安裝開發時才會用到的套件的話，可以下指令：
+
+```bash
+npm install --save-dev <package-name>
+```
+
+例如：`npm install --save-dev SASS`，一樣會安裝套件在 `node_modules` 裡，並將 SASS 套件的資訊寫入 package.json 檔案中的 **devDependencies** 屬性中。
+
+```json {4,8} title="package.json"
+{
+  "name": "my-app",
+  "version": "0.1.0",
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "devDependencies": {
+    "SASS": "^1.39.0"
+  }
+}
+```
+
+### dependencies 和 devDependencies 的差別
+
+- **dependencies**：在打包完後，會一起打包進去的套件，會**影響程式執行**的套件，例如：react、react-dom 等等。
+
+- **devDependencies**：在打包完後，不會一起打包進去的套件，通常用於**開發時**才需要的套件，像是 SASS 只會在開發時需要編譯成 CSS，打包完後就會轉意成 CSS，所以就不再需要 SASS 了；又或者像是測試用的套件，例如：mocha、jest 等等，會在開發時使用，或是寫在 CI/CD 中，但在實際執行程式時是不需要的。
+
+:::tip
+`--save-dev` 參數可以簡寫成 `-D`。
+:::
+
+### 全域安裝套件
+
+如果要安裝全域的套件的話，可以下指令：
+
+```bash
+npm install -g <package-name>
+```
+
+就會把套件安裝在本地端的全域資料夾中，檔案位置會在 node 資料夾底下。以 Mac 來說，我使用 nvm 安裝 node.js，則全域套件的位置就會在 `/Users/<username>/.nvm/versions/node/<nodeVersion>/lib/node_modules` 底下。
+
+:::warning[注意]
+可以看到全域套件的位置是在特定的 node 版本資料夾底下，所以要注意如果切到不同的 node 版本的話，就無法使用安裝在其他版本的全域套件！
+:::
+
+大部分的套件都不太會安裝在全域，基本上跟執行程式有關的套件都會安裝在 project 包裡面，不過有些套件還是可以安裝在全域的，像是：
+
+- eslint、prettier：這種檢查及 format 程式碼用的套件，不一定會安裝在專案裡。
+- yeoman、generator：用來快速建立專案的 template 工具，也會安裝在全域。
+
+## npx
+
+npx 是 [npm 5.2.0](https://blog.npmjs.org/post/162844303435/v520-2017-07-05.html) 版本之後才有的指令，可以在不安裝套件的情況下，執行套件中的指令，像是可能比較常聽到的：`npx create-react-app my-app`，他其實就是取代：
+
+```bash
+npm install create-react-app
+create-react-app my-app
+```
+
+因為我們並不需要 create-react-app 這個套件，只是要用他的指令來建立 react 專案，所以就可以用 npx 來執行 create-react-app 的指令。
+
+其他像測試套件也可以用 npx 來執行：
+
+```bash
+npx jest
+```
+
+以 jest 為例 npx 的執行過程會先檢查專案包 `node_modules` 裡是否有 jest 套件，如果沒有的話就會安裝在暫時的資料夾 `~/npm/_npx` 裡，然後再執行 jest 指令。執行完後就會把暫時的套件刪除（不過因為 npm cache 的關係會看到有些套件還是留在裡面）。
+
+## 參考資料
+
+- [[NodeJs] npm --save 到底是什麼? --save-dev 不一樣嗎?](https://medium.com/itsems-frontend/nodejs-npm-dependencies-devdependencies-8934f641c8ef)
+- [用 npx 代替 npm run xxx – 以套件 mocha 為例](https://hot50773.medium.com/npx-%E5%AD%B8%E7%BF%92%E7%AD%86%E8%A8%98-c9c6074c9a64)
