@@ -19,6 +19,11 @@
   --doc-sidebar-width: 300px;
   --subscribeBlock: #f0f7ff;
   --ifm-background-color: #fff;
+  --changelog-dot-size: 10px;
+  --changelog-dot-top: 8px;
+  --changelog-line-size: 2px;
+  --changelog-primary: #4e7a9c;
+  --changelog-primary-dark: #1a3447;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -33,6 +38,8 @@
   --tag-color: #39719b;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
   --subscribeBlock: rgb(245 251 255);
+  --changelog-primary: #cde3ee;
+  --changelog-primary-dark: #ade4ff;
 }
 table {
   table-layout: fixed;

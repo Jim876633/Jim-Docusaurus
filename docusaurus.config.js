@@ -107,13 +107,13 @@ const config = {
           //   position: "left",
           //   label: "Note",
           // },
-          // { to: "/blog", label: "blog", position: "left" },
           {
             href: '/tags',
             label: '📌 Tag',
             position: 'left',
 
           },
+          { to: "/changelog", label: "⏳ Changelog", position: "left" },
           {
             href: "https://github.com/Jim876633",
             label: "GitHub",
