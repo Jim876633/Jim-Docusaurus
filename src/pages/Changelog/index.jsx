@@ -1,3 +1,4 @@
+import BrowserOnly from "@docusaurus/BrowserOnly";
 import Layout from "@theme/Layout";
 import parse from "html-react-parser";
 import React from "react";
@@ -53,4 +54,4 @@ const Changelog = () => {
     </Layout>
   );
 };
-export default Changelog;
+export default () => <BrowserOnly>{() => <Changelog />}</BrowserOnly>;
