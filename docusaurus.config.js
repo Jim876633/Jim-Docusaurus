@@ -116,7 +116,7 @@ const config = {
           { to: "/changelog", label: "⏳ Changelog", position: "left" },
           {
             href: "https://github.com/Jim876633",
-            label: "GitHub",
+            className: "header-github-link",
             position: "right",
           },
           // {
