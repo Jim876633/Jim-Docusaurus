@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: npm install --frozen-lockfile
       - name: generate changelog.json
-        if: contains(github.event.head_commit.message, 'CHANGELOG')
+        if: contains(github.event.head_commit.message, 'CHANGELOG.md')
         run: |
           node scripts/generateChangelog.js
             if [[ -n $(git status -s) ]]; then
