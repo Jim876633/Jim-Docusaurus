@@ -4,6 +4,7 @@ import React from "react";
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useDocsSidebar } from "@docusaurus/theme-common/internal";
 import useMedia from "@site/src/hooks/useMedia.jsx";
+import { isDev } from "../constants/common";
 
 const DocList = () => {
   const { sm } = useMedia();
@@ -35,8 +36,9 @@ const DocList = () => {
       <ul className='doc-list'>
         {data.map((doc) => {
           return sm ? (
-            <li key={doc.id}>
-              {doc.date?.slice(5)} <a href={doc.href}>{doc.title}</a>
+            <li key={doc.id} className='intro_sm'>
+              <span>{doc.date?.slice(5)}</span>
+              <a href={doc.href}>{doc.title}</a>
             </li>
           ) : (
             <li key={doc.id}>
@@ -80,7 +82,8 @@ function formatDocList(items) {
  */
 async function fetchDocs(docsList) {
   const docs = [...docsList];
-  const docUrlList = docsList.map((doc) => `https://jimhuang.dev${doc.href}`);
+  const domain = isDev ? "http://localhost:3000" : "https://jimhuang.dev";
+  const docUrlList = docsList.map((doc) => `${domain}${doc.href}`);
   const results = await Promise.all(
     docUrlList.map((url) => fetch(url).then((res) => res.text()))
   );
@@ -92,10 +95,21 @@ async function fetchDocs(docsList) {
     const body = html.body;
     const time = body.querySelector("time");
 
-    if (time) {
+    if (time && !isDev) {
       const timeStamp = time.getAttribute("datetime");
       docs[i].timeStamp = new Date(timeStamp).getTime();
       docs[i].date = new Date(timeStamp).toLocaleDateString("zh-TW", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+    }
+
+    // dev mode 取不到實際的 html
+    if (isDev) {
+      const today = new Date();
+      docs[i].timeStamp = today.getTime();
+      docs[i].date = today.toLocaleDateString("zh-TW", {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",

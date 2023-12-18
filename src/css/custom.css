@@ -76,6 +76,11 @@ html[data-theme="dark"] blockquote {
   animation: flash 1s infinite ease-in-out;
 }
 
+.intro_sm {
+  display: flex;
+  gap: 5px;
+}
+
 .header-github-link:hover {
   opacity: 0.6;
 }
