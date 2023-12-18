@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 
 const breakpoints = {
   sm: 635,
@@ -12,7 +12,7 @@ const useMedia = () => {
 
   const [sm, setSm] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const handleResize = () => {
       const { innerWidth, innerHeight } = window;
       const isSm = innerWidth <= breakpoints.sm;
