@@ -84,7 +84,7 @@ echo "test" | npx commitlint
 
 <Img src={image_2} width='700px' />
 
-:::caution 注意
+:::warning 注意
 如果在 package.json 有設定 `"type": "module"`，記得要把 `commitlint.config.js` 檔改成 `commitlint.config.cjs`，在執行 script 時要執行 `echo "test" | npx commitlint --config` 不然會有 ESModule 的報錯。
 :::
 
@@ -217,7 +217,7 @@ module.exports = {
 
 詳細內容可以參考[設定範例](https://github.com/leoforfree/cz-customizable/blob/master/cz-config-EXAMPLE.js)。
 
-:::caution 注意
+:::warning 注意
 一樣如果在 package.json 有設定 `"type": "module"`，記得要把 `.cz-config.js` 檔改成 `.cz-config.cjs`，不然會有 ESModule 的報錯，然後要在 package.json 的 config 加上 config 的路徑。
 
 ```json {6-8} title="package.json"
