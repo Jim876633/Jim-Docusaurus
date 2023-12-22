@@ -1,0 +1,46 @@
+---
+title: 【Docusaurus】在 Docusaurus 新增搜尋功能
+sidebar_label: 在 Docusaurus 新增搜尋功能
+tags: ["Docusaurus"]
+---
+
+import { Img } from "@site/src/components/Width";
+import image_1 from "/img/docusaurus/search-local-1.jpg";
+
+在前面一篇 [【Docusaurus】在 Docusaurus 導入 Algolia 搜尋](blog/Docusaurus/algolia) 有提到可以使用 Algolia 來實作搜尋效果，雖然是官方推薦的，但如果只是個人部落格，很難審核通過。
+
+最近來發現，除了 Algolia 外，官方也有推薦幾個開發者做好的[搜尋套件](https://docusaurus.io/community/resources#search)，其中 [@easyops-cn/docusaurus-search-local](https://github.com/easyops-cn/docusaurus-search-local) 為最多人使用的套件。
+
+<Img src={image_1} />
+
+這邊推薦的原因還有因為這個套件是中國開發者開發的，所以有支援中文搜尋，而且畫面跟 Algolia 也很像，所以如果不想設定 Alogolia，可以考慮這個套件～
+
+## 安裝
+
+```bash
+npm i @easyops-cn/docusaurus-search-local
+```
+
+## 設定
+
+在 `docusaurus.config.js` 中新增 `plugins` 設定：
+
+```js
+const config = {
+  themes: [
+    [
+      "@easyops-cn/docusaurus-search-local",
+      {
+        hashed: true,
+        language: ["en", "zh"],
+        highlightSearchTermsOnTargetPage: true,
+        explicitSearchResultPath: true,
+      },
+    ],
+  ],
+};
+```
+
+官方有提供很多客製化的設定，可以參考 [官方說明](https://github.com/easyops-cn/docusaurus-search-local?tab=readme-ov-file#theme-options)。
+
+比起 Algolia，它有一個 Hightlight 的功能，可以在搜尋結果中，將關鍵字標示出來，這個功能我還蠻喜歡的！
