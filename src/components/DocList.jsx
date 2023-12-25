@@ -26,6 +26,9 @@ const DocList = () => {
       </>
     );
   }
+  if (data.length === 0) {
+    return null;
+  }
   return (
     <div id='jim-doc-list'>
       <Tag color='var(--tag-color)' className='flash'>
