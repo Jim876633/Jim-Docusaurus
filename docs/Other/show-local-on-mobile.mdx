@@ -1,0 +1,123 @@
+---
+title: 【Other】如何在手機或其他裝置顯示你的 localhost 網頁
+sidebar_label: 如何在手機或其他裝置顯示你的 localhost 網頁
+tags: ["Other"]
+---
+
+import { Img } from "@site/src/components/Width";
+import image_1 from "/img/other/show-local-1.jpg";
+import image_2 from "/img/other/show-local-2.jpg";
+import image_3 from "/img/other/show-local-3.jpg";
+
+在開發的時候，雖然可以在 devtool 中模擬手機的畫面，但是有時候還是想要在手機上看看實際的畫面；或是在還沒部署前，想要讓外部人員瀏覽開發中的頁面，這時候就需要把你的 localhost 對外開放，讓外部人員可以透過網址連到你的 localhost，以下會介紹三個常見的方法。
+
+## 使用本機 IP
+
+這個方法只限於在同一個網路下才可以使用，原理是透過本機的 IP 來連接，所以只要在同一個網路下，就可以透過 IP 連接到你的 localhost。
+
+1. 首先先確認你的本機 IP，可以透過下面的指令：
+
+   ```bash
+   ipconfig getifaddr en0
+   ```
+
+   或是如果是 mac 的話可以到 **Setting > Network > Wi-Fi > Details > TCP/IP > IP address** 來查看，通常是 `192.168.x.x` 這樣的格式。
+
+2. 接著在你的專案 run start 的地方加上 `--host` 參數，並把值設為你的本機 IP，例如：
+
+   ```bash
+   npm run start --host 192.168.x.x
+   ```
+
+   然後重新啟動專案。
+
+3. 最後就可以在手機上輸入 `192.168.x.x:3000` 來連接你的 localhost 了。
+
+## 使用 Vscode Forward a Port
+
+Vscode 在 [v1.82](https://code.visualstudio.com/updates/v1_82#_builtin-port-forwarding) 的更新中，提供了 Forward a port 的功能，使用 [Microsoft Dev Tunnels](https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/get-started?tabs=windows) 將 port 轉送到 Azure 的雲端系統，並建立可以對外存取的 URL，讓外部人員可以透過網址連接到你的 localhost。
+
+1. 開啟命令列，輸入 `>Forward a Port`。
+
+   <Img src={image_1} />
+
+2. 輸入已經在專案中 run start 的 port，例如 `3000`。
+
+   <Img src={image_2} />
+
+3. 登入 GitHub 帳號。
+
+   需要登入 GitHub 帳號，才可以生成不同的 dev tunnels ID，登入後就可以在 PORTS 頁面看到對外開放的網址了。
+
+   <Img src={image_3} />
+
+:::info
+預設 Visibility 是 _Private_，必須要本人登入 GitHub 帳號，才可以進入網址；如果要讓其他人也可以進入，可以按右鍵調整 Port Visibility 改成 _Public_。
+:::
+
+:::danger
+目前看起來每次的 **Forwarded Address** 的開頭都是固定的，應該是參照 github 帳號來生成的，所以在使用上還是要多注意。
+:::
+
+目前使用下來，個人覺得連接速度偏慢，不知道之後會不會有所調整。更詳細的可以參考 [使用 Dev Tunnels (開發人員通道) 快速打造一個對外公開的測試連結](https://blog.miniasp.com/post/2023/12/25/Port-forwarding-local-services-with-Dev-Tunnels)。
+
+## 使用 ngrok
+
+ngrok 也是一個將本機 port 對外開放的服務，需要先[註冊帳號](https://ngrok.com/)，然後下載 ngrok 的執行檔，如果用 Mac 的話可以透過 Homebrew 安裝：
+
+```bash
+brew install --cask ngrok
+```
+
+接著根據官網的說明設定你的 Authtoken:
+
+```bash
+ngrok config add-authtoken <YOUR_AUTHTOKEN>
+```
+
+### Invalid Host Header
+
+如果在開啟的時候遇到 `Invalid Host Header`，可能是因為專案是使用 [webpack-dev-server](https://webpack.js.org/configuration/dev-server/)，會默認檢查 hostname 是否正確，有兩個解決方法：
+
+1. 直接在 ngrok 後面加上 --host-Header 覆蓋 Host Header(推薦)
+
+   ```bash
+   ngrok http 3000 --host-header="localhost:3000"
+   ```
+
+2. 調整 webpack config 把檢查關掉(不推薦)
+
+   webpack-dev-server v3：
+
+   ```js
+   devServer: {
+   disableHostCheck: true,
+   }
+   ```
+
+   webpack-dev-server v4：
+
+   ```js
+   devServer: {
+   allowedHosts: "all",
+   }
+   ```
+
+:::warning
+雖然 ngrok 是免費的，不過免費版一次只能開一個 tunnel，如果要同時開多個 tunnel，就需要升級成付費版。
+:::
+
+---
+
+## 常見問題
+
+如果專案有串接 mock server，就會有兩個 localhost，一個是前端的，一個是 mock server 的。這時候如果只把前端的 localhost 對外開放，那麼 mock server 的 localhost 就會無法連接。
+
+解決方法：
+
+1. 把 mock server 的 localhost 也對外開放，再替換掉前端的 API 網址。
+2. 在前端使用 proxy server 來轉發 API。
+
+## 參考資料
+
+- [options has an unknown property 'disableHostCheck'.](https://github.com/webpack/webpack-dev-server/issues/4142)
