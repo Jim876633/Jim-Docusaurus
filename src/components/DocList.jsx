@@ -64,7 +64,7 @@ export default DocList;
 function formatDocList(items) {
   return items.flatMap((item) => {
     if (!item.items) {
-      const label = item.href.split("/")[2] || "Intro";
+      const label = item.href.split("/")[1] || "Intro";
       return {
         title: item.label,
         id: item.docId,
