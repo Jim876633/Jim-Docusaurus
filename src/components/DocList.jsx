@@ -4,6 +4,7 @@ import React from "react";
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useDocsSidebar } from "@docusaurus/theme-common/internal";
 import useMedia from "@site/src/hooks/useMedia.jsx";
+import { isDev } from "../constants/common";
 
 const DocList = () => {
   const { sm } = useMedia();
@@ -83,60 +84,43 @@ function formatDocList(items) {
  * @returns
  */
 async function fetchDocs(docsList) {
-  const timeout = 2000;
-  const batchSize = 10;
-  const promiseList = [];
   const docs = [...docsList];
-  const domain = "https://jimhuang.dev";
+  const domain = isDev ? "http://localhost:3000" : "https://jimhuang.dev";
   const docUrlList = docsList.map((doc) => `${domain}${doc.href}`);
+  const results = await Promise.all(
+    docUrlList.map((url) => fetch(url).then((res) => res.text()))
+  );
 
-  for (let i = 0; i < docs.length; i += batchSize) {
-    const batchDocs = docs.slice(i, i + batchSize);
-    const batchDocUrlList = docUrlList.slice(i, i + batchSize);
-    const res = fetchWithTimeout(
-      "https://jim-docusaurus-api.netlify.app/api/docs",
-      { docs: batchDocs, docUrlList: batchDocUrlList },
-      timeout
-    );
-    promiseList.push(res);
-  }
+  results.forEach((data, i) => {
+    // translate to html
+    const parser = new DOMParser();
+    const html = parser.parseFromString(data, "text/html");
+    const body = html.body;
+    const time = body.querySelector("time");
 
-  const docItemList = (await Promise.all(promiseList))
-    .flatMap((item) => item)
-    .filter((item) => item);
+    if (time && !isDev) {
+      const timeStamp = time.getAttribute("datetime");
+      docs[i].timeStamp = new Date(timeStamp).getTime();
+      docs[i].date = new Date(timeStamp).toLocaleDateString("zh-TW", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+    }
 
-  docItemList.sort((a, b) => b.timeStamp - a.timeStamp);
-
-  return docItemList.slice(0, 10);
+    // dev mode 取不到實際的 html
+    if (isDev) {
+      const today = new Date();
+      docs[i].timeStamp = today.getTime();
+      docs[i].date = today.toLocaleDateString("zh-TW", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+    }
+  });
+  docs.sort((a, b) => b.timeStamp - a.timeStamp);
+  const pureDocs = docs.filter((d) => d.label !== "Intro");
+  const lastTenDocs = pureDocs.slice(0, 10);
+  return lastTenDocs;
 }
-
-/**
- * fetch with timeout setting abort controller
- * @param  url
- * @param  body
- * @param  timeoutPerRequest
- * @returns
- */
-const fetchWithTimeout = async (url, body, timeoutPerRequest) => {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutPerRequest);
-
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    });
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    // Handle fetch or parsing errors
-    console.error(`Error fetching data from ${url}:`, error);
-    return null;
-  } finally {
-    clearTimeout(timeoutId);
-  }
-};
