@@ -73,7 +73,7 @@ jobs:
           for file in $COMMIT_FILES; do
             echo "$file"
             if [[ "$file" == "docs/"* ]]; then
-              echo "FILE_PATH=$(echo "$file" | sed 's/\.mdx//')" >> $GITHUB_ENV
+              echo "FILE_PATH=$(echo "$file" | sed 's|^docs/\(.*\)\.mdx$|\1|')" >> $GITHUB_ENV
             elif [[ "$file" == "blog/"* ]]; then
               echo "FILE_PATH=$(echo "$file" | sed 's/\([0-9]\{4\}\)-\([0-9]\{2\}\)-\([0-9]\{2\}\)-\([^\.]*\)\.\(md\|mdx\)/\/\1\/\2\/\3\/\4/')" >> $GITHUB_ENV
             fi
