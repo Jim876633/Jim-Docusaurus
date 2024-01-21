@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Spin, Tag } from "antd";
-import React from "react";
+import React, { useState } from "react";
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useDocsSidebar } from "@docusaurus/theme-common/internal";
 import useMedia from "@site/src/hooks/useMedia.jsx";
@@ -11,6 +11,8 @@ const DocList = () => {
   const { items } = useDocsSidebar();
   const docs = formatDocList(items);
 
+  const [showCount, setShowCount] = useState(10);
+
   const { isLoading, data } = useQuery({
     queryKey: ["docs"],
     queryFn: () => fetchDocs(docs),
@@ -18,6 +20,12 @@ const DocList = () => {
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   });
+
+  const clickMoreHandler = () => {
+    if (data.length > showCount) {
+      setShowCount(showCount + 10);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -33,11 +41,11 @@ const DocList = () => {
   return (
     <div id='jim-doc-list'>
       <Tag color='var(--tag-color)' className='flash'>
-        Latest 10 article
+        Latest Article
       </Tag>
       <br />
       <ul className='doc-list'>
-        {data.map((doc) => {
+        {data.slice(0, showCount).map((doc) => {
           return sm ? (
             <li key={doc.id} className='intro_sm'>
               <span>{doc.date?.slice(5)}</span>
@@ -51,6 +59,13 @@ const DocList = () => {
           );
         })}
       </ul>
+      {showCount < data.length ? (
+        <button className='more_btn' onClick={clickMoreHandler}>
+          <span>...</span>
+        </button>
+      ) : (
+        <span>...End</span>
+      )}
     </div>
   );
 };
@@ -121,6 +136,5 @@ async function fetchDocs(docsList) {
   });
   docs.sort((a, b) => b.timeStamp - a.timeStamp);
   const pureDocs = docs.filter((d) => d.label !== "Intro");
-  const lastTenDocs = pureDocs.slice(0, 10);
-  return lastTenDocs;
+  return pureDocs;
 }
