@@ -76,7 +76,7 @@ html[data-theme="dark"] blockquote {
 }
 
 .doc-list {
-  margin-top: 1rem;
+  margin: 1rem 0 0;
   padding: 0;
 }
 
@@ -115,6 +115,28 @@ code {
   font-weight: bold;
   color: var(--code-color);
   background: var(--code-background);
+}
+
+.more_btn {
+  padding: 5px 10px;
+  border: 1px solid rgba(91, 98, 107, 0.5);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.more_btn:hover {
+  background: var(--tag-color);
+  border: 1px solid var(--ifm-color-primary);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.more_btn span {
+  display: grid;
+  place-content: center;
+  height: 5px;
+  padding-bottom: 6px;
 }
 
 @keyframes flash {
