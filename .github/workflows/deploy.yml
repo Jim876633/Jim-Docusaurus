@@ -63,8 +63,10 @@ jobs:
           user_email: jim30223@gmail.com
           cname: jimhuang.dev
       - name: Run the Docker container
+        if: contains(github.event.head_commit.message, 'feature_blog') || contains(github.event.head_commit.message, 'feature_docs')
         run: docker run -e APPLICATION_ID -e API_KEY -e "CONFIG=$(cat config.json)" algolia/docsearch-scraper
       - name: Get commit details
+        if: contains(github.event.head_commit.message, 'feature_blog') || contains(github.event.head_commit.message, 'feature_docs')
         run: |
           COMMIT_FILES=$(git diff --name-only ${{ github.event.before }}..${{ github.sha }})
           echo "AUTHOR_NAME=$(git log --format='%an' -n 1 ${{ github.sha }})" >> $GITHUB_ENV
@@ -83,6 +85,7 @@ jobs:
             echo "COMMIT_TYPE='Docs'" >> $GITHUB_ENV
           fi
       - name: Send Line Notification
+        if: contains(github.event.head_commit.message, 'feature_blog') || contains(github.event.head_commit.message, 'feature_docs')
         run: |
           echo "FILE_PATH: $FILE_PATH"
           echo "COMMIT_TYPE: $COMMIT_TYPE"
