@@ -12,7 +12,6 @@ env:
   APPLICATION_ID: ${{secrets.ALGOLIA_APPLICATION_ID}}
   MAIL_CHIMP_API_URL: ${{vars.MAIL_CHIMP_API_URL}}
   GROUP_ID: ${{secrets.GROUP_ID}}
-  LINE_ACCESS_TOKEN: ${{secrets.LINE_ACCESS_TOKEN}}
   BASEURL: ${{vars.BASEURL}}
 
 jobs:
@@ -85,6 +84,8 @@ jobs:
             echo "COMMIT_TYPE=Docs" >> $GITHUB_ENV
           fi
       - name: Send Line Notification
+        env:
+          LINE_ACCESS_TOKEN: ${{secrets.LINE_ACCESS_TOKEN}}
         if: contains(github.event.head_commit.message, 'feature_blog') || contains(github.event.head_commit.message, 'feature_docs')
         run: |
           echo "FILE_PATH: $FILE_PATH"
