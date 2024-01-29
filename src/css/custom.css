@@ -38,6 +38,10 @@
   --highlight-blue-2: #7897c5;
   --highlight-red-1: #f2dede;
   --highlight-red-2: #a94442;
+  --text-yellow: #daa22b;
+  --text-green: #3c763d;
+  --text-blue: #7897c5;
+  --text-red: #df1b18;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -201,4 +205,28 @@ code {
 .highlight-red {
   background-color: var(--highlight-red-1);
   border: 1px solid var(--highlight-red-2);
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                  Text css                                  */
+/* -------------------------------------------------------------------------- */
+
+.text-yellow {
+  color: var(--highlight-yellow-2);
+}
+
+.text-green {
+  color: var(--highlight-green-2);
+}
+
+.text-blue {
+  color: var(--highlight-blue-2);
+}
+
+.text-red {
+  color: var(--text-red);
+}
+
+.bold {
+  font-weight: bold;
 }
