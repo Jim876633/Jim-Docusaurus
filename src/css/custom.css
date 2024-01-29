@@ -30,6 +30,14 @@
   --changelog-primary-dark: #1a3447;
   --code-color: #1c4867;
   --code-background: var(--ifm-code-background);
+  --highlight-yellow-1: #fde6cc;
+  --highlight-yellow-2: #daa22b;
+  --highlight-green-1: #dff0d8;
+  --highlight-green-2: #3c763d;
+  --highlight-blue-1: #dae8fc;
+  --highlight-blue-2: #7897c5;
+  --highlight-red-1: #f2dede;
+  --highlight-red-2: #a94442;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -53,6 +61,7 @@
   --code-color: #fff;
   --code-background: rgba(255, 255, 255, 0.3);
 }
+
 table {
   table-layout: fixed;
   display: table;
@@ -75,23 +84,15 @@ html[data-theme="dark"] blockquote {
   color: #bcc3cc;
 }
 
-.doc-list {
-  margin: 1rem 0 0;
-  padding: 0;
+code {
+  font-weight: bold;
+  color: var(--code-color);
+  background: var(--code-background);
 }
 
-.doc-list li {
-  list-style: none;
-}
-
-.flash {
-  animation: flash 1s infinite ease-in-out;
-}
-
-.intro_sm {
-  display: flex;
-  gap: 5px;
-}
+/* -------------------------------------------------------------------------- */
+/*                             NavLink github css                             */
+/* -------------------------------------------------------------------------- */
 
 .header-github-link:hover {
   opacity: 0.6;
@@ -111,10 +112,26 @@ html[data-theme="dark"] blockquote {
     no-repeat;
 }
 
-code {
-  font-weight: bold;
-  color: var(--code-color);
-  background: var(--code-background);
+/* -------------------------------------------------------------------------- */
+/*                               Index page css                               */
+/* -------------------------------------------------------------------------- */
+
+.doc-list {
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.doc-list li {
+  list-style: none;
+}
+
+.flash {
+  animation: flash 1s infinite ease-in-out;
+}
+
+.intro_sm {
+  display: flex;
+  gap: 5px;
 }
 
 .more_btn {
@@ -152,4 +169,36 @@ code {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Highlight css                               */
+/* -------------------------------------------------------------------------- */
+
+.highlight {
+  display: inline-block;
+  border-radius: 5px;
+  padding: 0 4px;
+  color: black;
+  margin: 1px 2px;
+}
+
+.highlight-yellow {
+  background-color: var(--highlight-yellow-1);
+  border: 1px solid var(--highlight-yellow-2);
+}
+
+.highlight-green {
+  background-color: var(--highlight-green-1);
+  border: 1px solid var(--highlight-green-2);
+}
+
+.highlight-blue {
+  background-color: var(--highlight-blue-1);
+  border: 1px solid var(--highlight-blue-2);
+}
+
+.highlight-red {
+  background-color: var(--highlight-red-1);
+  border: 1px solid var(--highlight-red-2);
 }
