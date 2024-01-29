@@ -14,6 +14,10 @@
   --ifm-color-primary-lighter: #34678d;
   --ifm-color-primary-lightest: #39719b;
   --ifm-code-font-size: 95%;
+  --ifm-code-padding-vertical: 0.1rem;
+  --ifm-code-padding-horizontal: 0.5rem;
+
+  /* custom variables */
   --tag-color: #49b7ee;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.5);
   --doc-sidebar-width: 300px;
@@ -24,6 +28,16 @@
   --changelog-line-size: 2px;
   --changelog-primary: #4e7a9c;
   --changelog-primary-dark: #1a3447;
+  --code-color: #1c4867;
+  --code-background: var(--ifm-code-background);
+  --highlight-yellow-1: #fde6cc;
+  --highlight-yellow-2: #daa22b;
+  --highlight-green-1: #dff0d8;
+  --highlight-green-2: #3c763d;
+  --highlight-blue-1: #dae8fc;
+  --highlight-blue-2: #7897c5;
+  --highlight-red-1: #f2dede;
+  --highlight-red-2: #a94442;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -35,12 +49,19 @@
   --ifm-color-primary-light: #65c2f1;
   --ifm-color-primary-lighter: #74c8f2;
   --ifm-color-primary-lightest: #9ed9f6;
+  --ifm-code-padding-vertical: 0.1rem;
+  --ifm-code-padding-horizontal: 0.5rem;
+
+  /* custom variables */
   --tag-color: #39719b;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
   --subscribeBlock: rgb(245 251 255);
   --changelog-primary: #cde3ee;
   --changelog-primary-dark: #ade4ff;
+  --code-color: #fff;
+  --code-background: rgba(255, 255, 255, 0.3);
 }
+
 table {
   table-layout: fixed;
   display: table;
@@ -63,23 +84,15 @@ html[data-theme="dark"] blockquote {
   color: #bcc3cc;
 }
 
-.doc-list {
-  margin-top: 1rem;
-  padding: 0;
+code {
+  font-weight: bold;
+  color: var(--code-color);
+  background: var(--code-background);
 }
 
-.doc-list li {
-  list-style: none;
-}
-
-.flash {
-  animation: flash 1s infinite ease-in-out;
-}
-
-.intro_sm {
-  display: flex;
-  gap: 5px;
-}
+/* -------------------------------------------------------------------------- */
+/*                             NavLink github css                             */
+/* -------------------------------------------------------------------------- */
 
 .header-github-link:hover {
   opacity: 0.6;
@@ -99,6 +112,50 @@ html[data-theme="dark"] blockquote {
     no-repeat;
 }
 
+/* -------------------------------------------------------------------------- */
+/*                               Index page css                               */
+/* -------------------------------------------------------------------------- */
+
+.doc-list {
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.doc-list li {
+  list-style: none;
+}
+
+.flash {
+  animation: flash 1s infinite ease-in-out;
+}
+
+.intro_sm {
+  display: flex;
+  gap: 5px;
+}
+
+.more_btn {
+  padding: 5px 10px;
+  border: 1px solid rgba(91, 98, 107, 0.5);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.more_btn:hover {
+  background: var(--tag-color);
+  border: 1px solid var(--ifm-color-primary);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.more_btn span {
+  display: grid;
+  place-content: center;
+  height: 5px;
+  padding-bottom: 6px;
+}
+
 @keyframes flash {
   0% {
     opacity: 1;
@@ -112,4 +169,36 @@ html[data-theme="dark"] blockquote {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Highlight css                               */
+/* -------------------------------------------------------------------------- */
+
+.highlight {
+  display: inline-block;
+  border-radius: 5px;
+  padding: 0 4px;
+  color: black;
+  margin: 1px 2px;
+}
+
+.highlight-yellow {
+  background-color: var(--highlight-yellow-1);
+  border: 1px solid var(--highlight-yellow-2);
+}
+
+.highlight-green {
+  background-color: var(--highlight-green-1);
+  border: 1px solid var(--highlight-green-2);
+}
+
+.highlight-blue {
+  background-color: var(--highlight-blue-1);
+  border: 1px solid var(--highlight-blue-2);
+}
+
+.highlight-red {
+  background-color: var(--highlight-red-1);
+  border: 1px solid var(--highlight-red-2);
 }

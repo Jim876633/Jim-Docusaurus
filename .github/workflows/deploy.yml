@@ -8,9 +8,11 @@ on:
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
 env:
   # Setting an environment variable with the value of a configuration variable
-  API_KEY: ${{ vars.API_KEY }}
-  APPLICATION_ID: ${{vars.APPLICATION_ID}}
+  API_KEY: ${{ secrets.ALGOLIA_API_KEY }}
+  APPLICATION_ID: ${{secrets.ALGOLIA_APPLICATION_ID}}
   MAIL_CHIMP_API_URL: ${{vars.MAIL_CHIMP_API_URL}}
+  GROUP_ID: ${{secrets.GROUP_ID}}
+  BASEURL: ${{vars.BASEURL}}
 
 jobs:
   deploy:
@@ -60,7 +62,46 @@ jobs:
           user_email: jim30223@gmail.com
           cname: jimhuang.dev
       - name: Run the Docker container
-        env:
-          APPLICATION_ID: ${{ secrets.ALGOLIA_APPLICATION_ID }}
-          API_KEY: ${{ secrets.ALGOLIA_API_KEY }}
+        if: contains(github.event.head_commit.message, 'feature_blog') || contains(github.event.head_commit.message, 'feature_docs')
         run: docker run -e APPLICATION_ID -e API_KEY -e "CONFIG=$(cat config.json)" algolia/docsearch-scraper
+      - name: Get commit details
+        if: contains(github.event.head_commit.message, 'feature_blog') || contains(github.event.head_commit.message, 'feature_docs')
+        run: |
+          COMMIT_FILES=$(git diff --name-only ${{ github.event.before }}..${{ github.sha }})
+          echo "AUTHOR_NAME=$(git log --format='%an' -n 1 ${{ github.sha }})" >> $GITHUB_ENV
+          for file in $COMMIT_FILES; do
+            echo "$file"
+            if [[ "$file" == "docs/"* ]]; then
+              echo "FILE_PATH=$(echo "$file" | sed 's|^docs/\(.*\)\.mdx$|\1|')" >> $GITHUB_ENV
+            elif [[ "$file" == "blog/"* ]]; then
+              echo "FILE_PATH=$(echo "$file" | sed 's/\([0-9]\{4\}\)-\([0-9]\{2\}\)-\([0-9]\{2\}\)-\([^\.]*\)\.\(md\|mdx\)/\/\1\/\2\/\3\/\4/')" >> $GITHUB_ENV
+            fi
+          done
+          echo "Commit Message: ${{ github.event.head_commit.message }}"
+          if [[ "${{ github.event.head_commit.message }}" == *feature_blog* ]]; then
+            echo "COMMIT_TYPE=Blog" >> $GITHUB_ENV
+          elif [[ "${{ github.event.head_commit.message }}" == *feature_docs* ]]; then
+            echo "COMMIT_TYPE=Docs" >> $GITHUB_ENV
+          fi
+      - name: Send Line Notification
+        env:
+          LINE_ACCESS_TOKEN: ${{secrets.LINE_ACCESS_TOKEN}}
+        if: contains(github.event.head_commit.message, 'feature_blog') || contains(github.event.head_commit.message, 'feature_docs')
+        run: |
+          echo "FILE_PATH: $FILE_PATH"
+          echo "COMMIT_TYPE: $COMMIT_TYPE"
+          echo "Author: $AUTHOR_NAME"
+          if [[ $FILE_PATH && $COMMIT_TYPE ]]; then
+            curl -v POST https://api.line.me/v2/bot/message/push \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $LINE_ACCESS_TOKEN" \
+            -d "{
+                  \"to\": \"$GROUP_ID\",
+                  \"messages\": [
+                    {
+                      \"type\":\"text\",
+                      \"text\":\"$AUTHOR_NAME published a $COMMIT_TYPE article, check it out!\n$BASEURL/$FILE_PATH\"
+                    }
+                  ]
+                }"
+          fi

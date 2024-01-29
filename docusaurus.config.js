@@ -1,8 +1,8 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const { themes } = require('prism-react-renderer')
-const lightCodeTheme = themes.oceanicNext
+const { themes } = require("prism-react-renderer");
+const lightCodeTheme = themes.oceanicNext;
 const darkCodeTheme = themes.dracula;
 require("dotenv").config();
 
@@ -34,8 +34,8 @@ const config = {
     localeConfigs: {
       "zh-Hant-TW": {
         label: "繁體中文",
-      }
-    }
+      },
+    },
   },
 
   presets: [
@@ -86,12 +86,12 @@ const config = {
         },
         {
           name: "Jim's Blog",
-          content: 'Jim docusaurus blog'
+          content: "Jim docusaurus blog",
         },
         {
-          name: 'robots',
-          content: 'max-image-preview:large'
-        }
+          name: "robots",
+          content: "max-image-preview:large",
+        },
       ],
       navbar: {
         title: "Jim's note",
@@ -108,16 +108,17 @@ const config = {
           //   label: "Note",
           // },
           {
-            href: '/tags',
-            label: '📌 Tag',
-            position: 'left',
-
+            href: "/tags",
+            label: "📌 Tag",
+            position: "left",
           },
           { to: "/changelog", label: "⏳ Changelog", position: "left" },
           {
             href: "https://github.com/Jim876633",
             className: "header-github-link",
             position: "right",
+            "aria-label": "GitHub repository",
+            title: "GitHub",
           },
           // {
           //   type: 'localeDropdown',
@@ -153,7 +154,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
-        additionalLanguages: ['bash', 'json', 'css', 'scss', 'python']
+        additionalLanguages: ["bash", "json", "css", "scss", "python"],
       },
       colorMode: {
         respectPrefersColorScheme: true,
@@ -164,7 +165,7 @@ const config = {
         appId: process.env.APPLICATION_ID,
       },
     }),
-  plugins: ['docusaurus-plugin-sass'],
+  plugins: ["docusaurus-plugin-sass"],
 };
 
 module.exports = config;
