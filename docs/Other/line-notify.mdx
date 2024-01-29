@@ -1,0 +1,367 @@
+---
+title: 【Other】如何串接 Line 通知
+sidebar_label: 如何串接 Line 通知
+tags: ["Line Bot", "Line Notify", "CI/CD"]
+---
+
+import Highlight from "@site/src/components/Highlight";
+import Text from "@site/src/components/Text";
+import { Img } from "@site/src/components/Width";
+import image_1 from "/img/other/line-notify/line-bot-1.jpg";
+import image_2 from "/img/other/line-notify/line-bot-2.jpg";
+import image_3 from "/img/other/line-notify/line-bot-3.jpg";
+import image_4 from "/img/other/line-notify/line-bot-4.jpg";
+import image_5 from "/img/other/line-notify/line-bot-5.jpg";
+import image_6 from "/img/other/line-notify/line-bot-6.jpg";
+import image_7 from "/img/other/line-notify/line-bot-7.jpg";
+import image_8 from "/img/other/line-notify/line-bot-8.jpg";
+import image_9 from "/img/other/line-notify/line-bot-9.jpg";
+import image_10 from "/img/other/line-notify/line-bot-10.jpg";
+import image_11 from "/img/other/line-notify/line-notify-1.jpg";
+import image_12 from "/img/other/line-notify/line-notify-2.jpg";
+import image_13 from "/img/other/line-notify/line-notify-3.jpg";
+import image_14 from "/img/other/line-notify/line-notify-4.jpg";
+import image_15 from "/img/other/line-notify/line-notify-5.jpg";
+import image_16 from "/img/other/line-notify/line-notify-6.jpg";
+import image_17 from "/img/other/line-notify/line-notify-7.jpg";
+import image_18 from "/img/other/line-notify/line-notify-8.jpg";
+import image_19 from "/img/other/line-notify/line-notify-9.jpg";
+
+在串接 Line 通知時，有兩種方式可以選擇：
+
+1. <Highlight color='blue'>Line Bot</Highlight>：常見的官方帳號都是使用 Line Bot
+   來發送訊息，一個 Line Bot 就是一個獨立帳號，有非常友善的 UI
+   介面，就算不寫程式也可以輕鬆設定自動回覆及主動發送訊息，客製化程度高，可以透過
+   **Webhook** 來接收使用者訊息，並能根據接收到的訊息來做回覆。
+
+2. <Highlight color='green'>Line Notify</Highlight>：Line
+   提供的通知服務，可以透過 API
+   及一些平台連動來發送訊息，但不能讀取使用者訊息事件，只能主動發送訊息，客製化程度低。
+
+在選擇上可以根據需求來決定，如果只是單純的發送訊息，可以使用 **Line Notify**，如果需要像客服一樣有自動回覆的功能，就需要使用 **Line Bot**。
+
+{/* truncate */}
+
+## Line Bot
+
+### 建立 Line Bot
+
+登入 [Line Developers](https://developers.line.biz/en/)，點選 **Create new provider** 建立新的 Provider。
+
+<Img src={image_1} />
+
+取一個名稱，並點選 **Create**。
+
+<Img src={image_2} />
+
+建立完後，選擇 **Create a Messaging API channel** 建立新的 Channel。
+
+<Img src={image_3} />
+
+把必填的資料填完，就建立完成了！
+
+<Img src={image_4} />
+
+### Line Bot 發送訊息
+
+要使用 Line Bot 發送訊息，需要取得：
+
+- Channel access token
+- User ID / Group ID
+
+#### 1. 取得 Channel access token
+
+進入 Channel 裡的 **Messaging API**，在 Channel access token 欄位點選 **Issue** 就可以取得了，這個 token 是不會過期的，如果想要重置，可以點選 **Reissue**。
+
+<Img src={image_5} />
+
+:::info
+在 Account features 的設定裡，需要先開關以下設定：
+
+- **Allow bot to join group chats**：允許 Bot 加入群組
+- **Auto-replay messages**：關閉自動回覆訊息
+- **Greeting message**：關閉加入好友時的歡迎訊息
+
+:::
+
+#### 2. 取得 User ID / Group ID
+
+<Highlight>User ID</Highlight>
+
+如果是跟自己的帳號聊天，只要跟 Line bot 加好友，然後在 Basic settings 裡面就可以看到 **User ID**，使用 Channel access token 跟 User ID 就可以透過 line bot 發送訊息給自己。
+
+```bash {3,5} title="Termial"
+curl -v POST https://api.line.me/v2/bot/message/push \
+-H 'Content-Type: application/json' \
+-H 'Authorization: Bearer <CHANNEL_ACCESS_TOKEN>' \
+-d '{
+    "to": "<USER_ID>",
+    "messages":[
+      {
+        "type":"text",
+        "text":"Hello, world",
+      }
+    ]
+}'
+```
+
+<Highlight>Group ID</Highlight>
+
+不過如果是群組 ID 就辦法直接取得，需要另外建一個 **Webhook** 來接收 line 事件，並取得群組 ID。
+
+1. 建立接收 line 事件的 API
+
+   這邊使用 Line 提供的 [line-bot-sdk-nodejs](https://github.com/line/line-bot/line-bot-sdk-nodejs) 套件來建立 API，並使用 [Express](https://expressjs.com/) 來建立 server。
+
+   ```js {14} title="index.js"
+   const express = require("express");
+   const line = require("@line/bot-sdk");
+   require("dotenv").config();
+
+   const app = express();
+
+   const config = {
+     channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
+     channelSecret: process.env.CHANNEL_SECRET,
+   };
+
+   app.post("/webhook", line.middleware(config), (req, res) => {
+     // 可以在這邊取得群組 ID
+     console.log(req.body.events[0].source);
+     Promise.all(req.body.events.map(handleEvent)).then((result) =>
+       res.json(result)
+     );
+   });
+
+   const client = new line.messagingApi.MessagingApiClient({
+     channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
+   });
+   function handleEvent(event) {
+     if (event.type !== "message" || event.message.type !== "text") {
+       return Promise.resolve(null);
+     }
+
+     // 測試回覆訊息
+     return client.replyMessage({
+       replyToken: event.replyToken,
+       messages: [
+         {
+           type: "text",
+           text: event.message.text,
+         },
+       ],
+     });
+   }
+
+   app.listen(3000);
+
+   console.log("Server running at http://localhost:3000/");
+   ```
+
+2. 使用 ngrok 來建立 https 的環境
+
+   因為 line 的 Webhook 必須是 https，所以這裡使用 [ngrok](https://ngrok.com/) 來建立 https 。
+
+   ```bash
+   ngrok http 3000
+   ```
+
+   然後把 https 的網址 + 接收的路徑貼到 Webhook URL 裡面，並點選 <Highlight>Verify</Highlight> 進行連線驗證。
+
+   <Img src={image_6} width='600px' center />
+
+   驗證完後，記得把 <Highlight>Use webhook</Highlight> 的選項打勾，才能收到 line 的事件。
+
+3. 取得群組 ID
+
+   把 line bot 加入群組後，就可以在 console 裡面看到群組 ID 了。
+
+   <Img src={image_7} width='600px' />
+
+   把 User ID 替換成群組 Group ID，就可以透過 line bot 發送訊息給群組了。
+
+### 使用 Github Action 發送通知
+
+這邊就實作串接 Line Bot。當我發佈文章時，會透過 Github Action 發送通知給群組。
+
+```yml title=".github/workflows/deploy.yml"
+- name: Send Line Notification
+  env:
+    LINE_ACCESS_TOKEN: ${{secrets.LINE_ACCESS_TOKEN}}
+  run: |
+    curl -v POST https://api.line.me/v2/bot/message/push \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $LINE_ACCESS_TOKEN" \
+    -d "{
+          \"to\": \"$GROUP_ID\",
+          \"messages\": [
+            {
+              \"type\":\"text\",
+              \"text\":\"$AUTHOR_NAME published a $COMMIT_TYPE article, check it out!\n$BASEURL/$FILE_PATH\"
+            }
+          ]
+        }"
+```
+
+<Img src={image_8} width='500px' />
+
+### Line Bot 用量限制
+
+Line Bot 有[用量限制](https://developers.line.biz/en/reference/messaging-api/#rate-limits)，官方有定義一些 API 的上限，如果超過限制，就會無法發送訊息。
+
+要準確的知道用量限制，可以在 [Line Official Account Manager](https://manager.line.biz/) 的分析裡面看到使用狀況。
+
+<Img src={image_9} />
+
+按下「確認訊息用量」，就可以看到訊息用量，目前免費方案一個月有 200 則免費訊息，應該是蠻夠用的！
+
+<Img src={image_10} />
+
+## Line Notify
+
+在 Line Notify 底下，還分成兩種方式：
+
+1. <Highlight>發行存取權杖</Highlight>
+   ：指定好友及群組，發行不同的存取權杖，建立較快速方便。
+
+2. <Highlight>登錄服務帳號</Highlight>：使用 Oauth 2.0
+   進行身份驗證，設定較複雜，需要建立 Server 接收使用者驗證。
+
+這兩個的 API 文件都是同一份，所以在發通知上的方法及範圍是一樣的，都是需要取得 `access_token` 來發送通知，差別在於使用登錄服務多了一個身份驗證的步驟，**可以讓非好友的使用者也可以透過身分驗證來接收通知**。
+
+所以在選擇上，如果只是要發送訊息給好友或群組，可以使用**發行存取權杖**，如果想要讓非好友的使用者也可以接收通知，就需要使用**登錄服務帳號**。
+
+### 取得 Access Token
+
+<Highlight>發行存取權杖</Highlight>
+
+流程會是：
+
+1. 選擇要發送的好友或群組
+2. 取得存取權杖 `access_token`
+
+先登入 [Line Notify](https://notify-bot.line.me/zh_TW/)，進入個人頁面，點選「發行權杖」。
+
+<Img src={image_12} width='500px' />
+
+先隨意填選寫權杖名稱，點選「透過 1 對 1 聊天接收 LINE Notify 的通知」。
+
+<Img src={image_13} width='400px' />
+
+就會出現一個 Line Notify 好友。
+
+<Img src={image_14} width='400px' />
+
+加入 Line Notify 好友後，再新建一個群組權杖，選擇要加入的群組。
+
+<Img src={image_15} width='400px' />
+
+點選「發行」，就會出現權杖 Token，<Text color='red' bold>記得先複製起來</Text>。
+
+<Img src={image_17} width='400px' />
+
+Line Notify 就會通知你已連動設定完成，並提醒你將 Line Notify 加入群組。
+
+<Img src={image_16} width='400px' />
+
+在 Line Notify 的首頁也會看到連動的帳號清單，想要取消連動可以點選「解除」。
+
+<Img src={image_18} width='700px' />
+
+<Highlight>登錄服務帳號</Highlight>
+
+流程會是：
+
+1. 利用 `client_id` 及 `redirect_uri` 取得 `Code`
+2. 利用 `Code`、`client_id`、`client_secret` 取得 `access_token`
+
+保哥在 [上手 LINE Notify 不求人：一行代碼都不用寫的推播通知方法](https://blog.miniasp.com/post/2020/02/17/Go-Through-LINE-Notify-Without-Any-Code) 寫得很清楚，可以參考這一篇！
+
+:::info 注意事項
+如果在使用 code 取得 access_token 失敗，需要重新取得，因為 code 是一次性的。
+:::
+
+### 發送通知
+
+Line Notify 的 [API 文件](https://notify-bot.line.me/doc/en/)，都寫得蠻清楚的，使用 `access_token` 來發 API 就可以了。
+
+```bash title="Termial"
+curl POST \
+-H "Authorization: Bearer <access_token>" \
+-F "message=<message>" \
+https://notify-api.line.me/api/notify
+```
+
+除了 message 之外還有其他參數可以使用：
+
+- **imageThumbnail**：圖片縮圖 URL (240×240px)
+- **imageFullsize**：圖片原圖 URL (2048×2048px)
+- **imageFile**：圖片檔案 (.jpg, .png)
+- **stickerPackageId**：貼圖包 ID
+- **stickerId**：貼圖 ID
+- **notificationDisabled**：發送訊息時，是否要顯示通知
+
+\* _貼圖 ID 可以在 [貼圖列表](https://developers.line.biz/en/docs/messaging-api/sticker-list/#send-sticker) 找到，點選貼圖後，可以看到貼圖的 ID。_
+
+### 使用 Github Actions 發送通知
+
+把剛剛複製的權杖 Token 貼到 Gitlab CI/CD > Variables 的變數設定中。
+
+並在 gitlab-ci.yml 中加入發送通知的指令。
+
+```yml
+- name: Send Line Notification
+  env:
+    LINE_ACCESS_TOKEN: ${{secrets.LINE_ACCESS_TOKEN}}
+  run: |
+    curl POST \
+    -H "Authorization: Bearer $LINE_ACCESS_TOKEN" \
+    -F "message=$message" \
+    https://notify-api.line.me/api/notify
+```
+
+<Img src={image_19} width='500px' />
+
+### 取得使用者資訊
+
+如果想要取得使用者資訊，可以使用 status API。
+
+```bash title="Termial"
+curl GET \
+-H 'Authorization: Bearer <access_token>' \
+https://notify-api.line.me/api/status
+```
+
+可以得到使用者類型 (User / Group)，以及使用者名稱。
+
+### Line Notify 使用限制
+
+在 curl 後面加上 `-v`，可以看到 API 的詳細資訊。
+
+```bash title="Termial"
+curl -v GET \
+-H 'Authorization: Bearer <access_token>' \
+https://notify-api.line.me/api/status
+```
+
+<Img src={image_11} width='400px' />
+
+- **X-RateLimit-Limit**：每小時發 API 次數限制
+- **X-RateLimit-ImageLimit**：每小時上傳圖片次數限制
+- **X-RateLimit-Remaining**：發 API 剩餘次數
+- **X-RateLimit-ImageRemaining**：上傳圖片剩餘次數
+- **X-RateLimit-Reset**：下一個次數重置的時間
+
+每一個 `access_token` 都是固定每小時 1000 次，時間到會重置，所以對於一般的使用者來說是非常夠用的！
+
+## Line Bot vs Line Notify
+
+最後來簡單比較一下 Line Bot 跟 Line Notify 的差異：
+
+|          | Line Bot                                                      | Line Notify                                     |
+| -------- | ------------------------------------------------------------- | ----------------------------------------------- |
+| 用途     | <li>自動回覆功能，可以跟使用者互動</li> <li>主動發送訊息</li> | 只能主動發送訊息                                |
+| 發送對象 | 好友、群組                                                    | 好友、群組                                      |
+| 建立難度 | <li>使用 UI 介面簡單</li> <li>使用 WebHook 較複雜</li>        | <li>沒有 UI 介面</li><li>使用 API 發送簡單</li> |
+| 發送限制 | 每月 200 則免費訊息                                           | 每小時 1000 則免費訊息                          |
+| 定位     | 客服                                                          | 通知服務                                        |
