@@ -205,6 +205,16 @@ curl -v POST https://api.line.me/v2/bot/message/push \
 
 <Img src={image_8} width='500px' />
 
+:::warning
+如果發 API 的時候遇到
+
+```
+{"message":"Failed to send messages"}
+```
+
+有可能是因為 Group ID 輸入錯誤，不同的 Provider 會產生不同的 Group ID，所以如果有更換 Line Bot 要記得重新取得 Group ID。
+:::
+
 ### Line Bot 用量限制
 
 Line Bot 有[用量限制](https://developers.line.biz/en/reference/messaging-api/#rate-limits)，官方有定義一些 API 的上限，如果超過限制，就會無法發送訊息。
