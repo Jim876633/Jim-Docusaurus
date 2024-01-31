@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Spin, Tag } from "antd";
 import React, { useState } from "react";
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import Link from "@docusaurus/Link";
 import { useDocsSidebar } from "@docusaurus/theme-common/internal";
 import useMedia from "@site/src/hooks/useMedia.jsx";
 import { isDev } from "../constants/common";
@@ -49,11 +50,11 @@ const DocList = () => {
           return sm ? (
             <li key={doc.id} className='intro_sm'>
               <span>{doc.date?.slice(5)}</span>
-              <a href={doc.href}>{doc.title}</a>
+              <Link to={doc.href}>{doc.title}</Link>
             </li>
           ) : (
             <li key={doc.id}>
-              {doc.date} 更新文章 <a href={doc.href}>{doc.title}</a> -{" "}
+              {doc.date} 更新文章 <Link to={doc.href}>{doc.title}</Link> -{" "}
               {doc.label}
             </li>
           );
