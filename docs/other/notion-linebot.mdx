@@ -1,0 +1,87 @@
+---
+title: 【Other】建立 Line bot 串接 Notion API
+sidebar_label: 建立 Line bot 串接 Notion API
+tags: ["line bot", "notion"]
+---
+
+import Highlight from "@site/src/components/Highlight";
+import { Img } from "@site/src/components/Width";
+import image_1 from "/img/other/notion-linebot/notion-linebot-1.jpg";
+import image_2 from "/img/other/notion-linebot/notion-linebot-2.jpg";
+import image_3 from "/img/other/notion-linebot/notion-linebot-3.jpg";
+import image_4 from "/img/other/notion-linebot/notion-linebot-4.jpg";
+import image_5 from "/img/other/notion-linebot/notion-linebot-5.jpg";
+
+## 前言
+
+會需要串接 Line Bot 跟 Notion API，是因為我常常在 FB 或 IG 等社群軟體看到一些不錯的文章或影片，就會分享到 Line 的群組，然後有空的時候就會把它整理成 Notion 的 DataBase 來記錄哪些有看過哪些還沒，但是這樣的流程實在是太麻煩了，而且有時候還要去對哪些已經複製過了，所以就想說看能不能用 <Highlight color='green'>Line Bot</Highlight> + <Highlight color='blue'>Notion API</Highlight> 來幫我做這件事情。
+
+## 建立 Line Bot
+
+建立 Line 通知的介紹可以參考我之前寫的文章 [如何串接 Line 通知](/docs/other/line-notify)，因為需要去監聽 Line 群組的訊息，所以我選擇的是建立 Line Bot，而不是 Line Notify。
+
+## 建立 Notion integrations
+
+要在 Notion 串接 API 需要先建立 [Integrations](https://developers.notion.com/docs/create-a-notion-integration)，才能指定特定的 Workspace 來跟 Notion API 互動，官方文件的說明寫的很清楚，這邊就大概說明一下建置的流程。
+
+1. 先登入 [My Integrations](https://www.notion.so/my-integrations)，然後按下 New integration 按鈕
+
+<Img src={image_1} />
+
+為你的 Integrations 取一個名字，這個名字會 Workspace 選取 Integrations 時顯示。
+
+<Img src={image_2} />
+
+建完後會得到一個 Secrets Token，這個 Token 會用在 Notion API 的驗證中，可以先把它複製起來。
+
+<Img src={image_3} />
+
+再來就是把 Integrations 加入到 Notion 裡，進入到想要存取的 Notion Workspace，點擊右上角的 「...」 圖示，然後在 **Add connections** 中就可以看到剛剛建立的 Integrations，點擊後就連結完成了。
+
+<Img src={image_4} width='500px' />
+
+<Img src={image_5} width='500px' />
+
+:::info
+如果沒有引入 Notion Integrations 的話，發 API 回傳的 results 會是空字串
+:::
+
+## 建立 Server
+
+使用 Node 的話，Line 官方有提供 [@line/bot-sdk](https://github.com/line/line-bot-sdk-nodejs)，Notion 官方有提供 [notion-sdk-js](https://github.com/makenotion/notion-sdk-js)，讓我們更方便的操作這些 API，這邊使用 [Express](https://expressjs.com/) 來建立 Server，並用 [Netify](https://www.netlify.com/) 來進行部署。
+
+```bash
+npm install express notion-sdk-js @line/bot-sdk
+```
+
+使用 Netlify 測試需要安裝
+
+```bash
+npm install -D netlify-cli
+# 使用 Express 需額外安裝
+npm install serverless-http
+```
+
+詳細的程式碼可以參考 [line-bot-write-notion](https://github.com/Jim876633/line-bot-write-notion/blob/main/api/server.js)
+
+## 補充
+
+在建立 Webhook 接收 Line Bot 訊息時，突然想到如果有人直接使用這個 API 發訊息的話，不就任何人都可以寫入我的 Notion 了嗎？
+
+後來找到 Line 官方文件中 [Signature validation](https://developers.line.biz/en/reference/messaging-api/#signature-validation) ，才發現 Line Bot 有提供**簽章**的功能，可以用來驗證訊息是否是從 Line Bot 發出的，這樣就可以避免有人直接使用這個 API 了。
+
+```js
+const crypto = require("crypto");
+
+const signature = crypto
+  .createHmac("SHA256", config.channelSecret)
+  .update(JSON.stringify(req.body))
+  .digest("base64");
+
+if (signature === req.headers["x-line-signature"]) {
+  // 驗證成功
+  // ...do something
+}
+```
+
+簽章的原理就是 Line Bot 發 Webhook 會在 Header 帶一個 `X-Line-Signature` 的欄位，裡面的值就是簽章，而簽章的值是由 Channel Secret 跟 Request Body 用 HMAC-SHA256 產生的，所以我們只要把 Channel Secret 跟 Request Body 用 HMAC-SHA256 產生簽章，然後跟 `X-Line-Signature` 的值比對是不是一樣的，就可以驗證訊息是否是從 Line Bot 發出的了！
