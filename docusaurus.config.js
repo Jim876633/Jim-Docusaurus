@@ -165,7 +165,7 @@ const config = {
         appId: process.env.APPLICATION_ID,
       },
     }),
-  plugins: ["docusaurus-plugin-sass"],
+  plugins: ["docusaurus-plugin-sass", "docusaurus-plugin-get-docs-create-date"],
 };
 
 module.exports = config;
