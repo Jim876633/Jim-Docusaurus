@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkmy_website=self.webpackChunkmy_website||[]).push([[4692],{5540:e=>{e.exports=JSON.parse('{"title":"Vue2","slug":"/category/vue2","permalink":"/en/category/vue2","navigation":{"previous":{"title":"Vue","permalink":"/en/category/vue"},"next":{"title":"Vuex","permalink":"/en/category/vuex"}}}')}}]);
