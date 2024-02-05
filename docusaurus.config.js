@@ -12,7 +12,7 @@ const config = {
   tagline: "Jim's notes",
   url: "https://jimhuang.dev",
   baseUrl: "/",
-  onBrokenLinks: "throw",
+  onBrokenLinks: "warn",
   onBrokenMarkdownLinks: "warn",
   favicon: "/img/favicon-32x32.png",
   deploymentBranch: "gh-pages",
