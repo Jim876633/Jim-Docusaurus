@@ -30,7 +30,7 @@ const config = {
   // to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: "zh-Hant-TW",
-    locales: ["en", "zh-Hant-TW"],
+    locales: ["zh-Hant-TW"],
     localeConfigs: {
       "zh-Hant-TW": {
         label: "繁體中文",
