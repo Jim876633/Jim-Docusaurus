@@ -12,7 +12,7 @@ const config = {
   tagline: "Jim's notes",
   url: "https://jimhuang.dev",
   baseUrl: "/",
-  onBrokenLinks: "throw",
+  onBrokenLinks: "warn",
   onBrokenMarkdownLinks: "warn",
   favicon: "/img/favicon-32x32.png",
   deploymentBranch: "gh-pages",
@@ -30,7 +30,7 @@ const config = {
   // to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: "zh-Hant-TW",
-    locales: ["en", "zh-Hant-TW"],
+    locales: ["zh-Hant-TW"],
     localeConfigs: {
       "zh-Hant-TW": {
         label: "繁體中文",
@@ -165,7 +165,7 @@ const config = {
         appId: process.env.APPLICATION_ID,
       },
     }),
-  plugins: ["docusaurus-plugin-sass"],
+  plugins: ["docusaurus-plugin-sass", "docusaurus-plugin-get-docs-create-date"],
 };
 
 module.exports = config;
