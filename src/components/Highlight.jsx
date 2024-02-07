@@ -1,4 +1,4 @@
-const Highlight = ({ children, color }) => {
+const Highlight = ({ children, color, block }) => {
   let highlightClassName = "";
   switch (color) {
     case "yellow":
@@ -16,6 +16,14 @@ const Highlight = ({ children, color }) => {
     default:
       highlightClassName = "highlight-yellow";
       break;
+  }
+  if (block) {
+    return (
+      <>
+        <div className={`${highlightClassName} highlight`}>{children}</div>
+        <p />
+      </>
+    );
   }
 
   return <span className={`${highlightClassName} highlight`}>{children}</span>;
