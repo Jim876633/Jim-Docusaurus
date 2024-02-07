@@ -25,6 +25,7 @@
     "@tanstack/react-query-devtools": "^4.29.6",
     "antd": "^5.5.1",
     "clsx": "^1.2.1",
+    "docusaurus-plugin-get-docs-create-date": "^1.0.4",
     "docusaurus-plugin-sass": "^0.2.5",
     "dotenv": "^16.0.3",
     "fs": "^0.0.1-security",
