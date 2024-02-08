@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmy_website=self.webpackChunkmy_website||[]).push([[8225],{1353:t=>{t.exports=JSON.parse('{"title":"JavaScript","slug":"/category/javascript","permalink":"/category/javascript","navigation":{"previous":{"title":"git tag","permalink":"/git/tag"},"next":{"title":"ECMAScript 2023 \u65b0\u529f\u80fd\u4ecb\u7d39","permalink":"/javascript/ES2023"}}}')}}]);

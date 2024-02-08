@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkmy_website=self.webpackChunkmy_website||[]).push([[3202],{4935:p=>{p.exports=JSON.parse('{"label":"Npx","permalink":"/tags/npx","allTagsPath":"/tags","count":1,"items":[{"id":"npm/npm-npx","title":"\u3010Npm\u3011npm \u548c npx \u7684\u5dee\u5225\uff1f","description":"npm","permalink":"/npm/npm-npx"}],"unlisted":false}')}}]);
