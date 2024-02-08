@@ -1,0 +1,291 @@
+---
+title: 【Npm】使用 semantic-release 自動發布 npm 套件
+sidebar_label: 使用 semantic-release 自動發布 npm 套件
+tags: ["Npm", "semantic-release", "CI/CD"]
+---
+
+import Highlight from "@site/src/components/Highlight";
+import { Img } from "@site/src/components/Width";
+import image_1 from "@site/static/img/npm/npm-publish/npm-publish-1.jpg";
+import image_2 from "@site/static/img/npm/npm-publish/npm-publish-2.jpg";
+
+# 使用 semantic-release 自動發布 npm 套件
+
+發佈及更新 npm 套件，會需要幾個步驟：
+
+1. 修改 `package.json` 及 `package-lock.json` 的版本號
+2. 執行 `npm publish` 來發佈套件
+3. 將新版本的 commit 押上 tag
+4. 更新 `CHANGELOG.md` 來記錄版本更新的內容
+5. 更新 release note 來告知使用者有新版本的套件
+
+{/* truncate */}
+
+## 手動發布
+
+先來看看如果是手動發布的話，會需要做哪些事情。
+
+### 修改版本號
+
+除了手動修改 `package.json` 及 `package-lock.json` 的版本號之外，也可以使用 `npm version` 來更新版本號。
+
+```bash
+npm version <版本號>
+```
+
+這樣會自動更新兩個檔案的版本號，並且產生一個 commit 及 tag。
+
+<Img src={image_1} />
+
+如果不想手動打數字，可以使用 major, minor, patch 來更新版本號。
+
+```bash
+npm version major # 主要版本號 1.0.0 -> 2.0.0
+npm version minor # 次要版本號 1.0.0 -> 1.1.0
+npm version patch # 修訂版本號 1.0.0 -> 1.0.1
+```
+
+:::info 小知識
+如果 `package.json` 跟 `package-lock.json` 的版本號不一致，在 npm install 的時候會強制更新 `package-lock.json` 的版本號跟 `package.json` 一致。
+:::
+
+### 發佈套件到 npm
+
+首先要先登入 npm
+
+```bash
+npm login
+```
+
+然後執行 `npm publish` 來發佈套件。
+
+```bash
+npm publish
+```
+
+### 將最新的 commit 加上 tag
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+下 Tag 的方法可以參考 [git tag](https:/jimhuang.dev/git/tag)
+
+### 更新 changelog
+
+更新 `CHANGELOG.md` 來記錄版本更新的內容
+
+changelog 的規範及介紹可以參考[如何維護更新日誌](https://keepachangelog.com/zh-TW/1.1.0/)
+
+### 更新 release note
+
+在 github 上 release note 通常會選擇一個 tag 來發布，並且在 release note 上寫上版本更新的內容。
+
+:::info changelog 及 release note 的差異
+changelog 主要是給開發者看的，內容會比較詳細，且較多技術細節，而 release note 是給使用者看的，概述版本更新的內容。
+
+不過大部分套件的 changelog 跟 release note 都沒有區分的那麼清楚，有時候還會看到 release note 直接就放 changelog 的連結。
+:::
+
+## semantic-release 發布
+
+看完了手動發布的步驟，其實說多也不多，不過如果每次發佈新版本都要手動做這些事情，還是會覺得有點麻煩。而且有時候也容易忘記更新版本號，或者版本號的更新不符合 [SemVer](https://semver.org/) 的規範等等。
+
+而 semantic-release 就可以一次解決這些問題！基本上你設定好之後，只需要把此次更新的 branch merge 到 main branch，然後 push 到遠端，semantic-release 就可以一次把上面所有的步驟都幫你做完！是不是很心動啊！讓我們來看看怎麼設定吧！
+
+### 安裝套件
+
+首先先跟著[官網](https://semantic-release.gitbook.io/semantic-release/usage/installation#installation)安裝 semantic-release
+
+```bash
+npm install -D semantic-release
+```
+
+semantic-release 底下有很多的 plugin 來分別處理上面不同的步驟，在你安裝 semantic-release 時，會自動幫你安裝一些預設的 plugin：
+
+- [@semantic-release/commit-analyzer](https://github.com/semantic-release/commit-analyzer)：分析 commit message 來決定版本號及發佈的類型
+- [@semantic-release/release-notes-generator](https://github.com/semantic-release/release-notes-generator)：根據 commit message 來產生 release note 的內容傳給其他 plugin
+- [@semantic-release/npm](https://github.com/semantic-release/npm)：發佈 npm 套件
+- [@semantic-release/github](https://github.com/semantic-release/github)：更新 release note 到 github
+
+除了預設 plugin 外，如果需要壓 tag 及建立 changelog，還需要額外安裝：
+
+```bash
+npm install @semantic-release/changelog @semantic-release/git -D
+```
+
+- [@semantic-release/changelog](https://github.com/semantic-release/changelog)：根據 release note 來建立/更新 changelog
+- [@semantic-release/git](https://github.com/semantic-release/git)：把新版本的 commit 壓上 tag，並且 push 到遠端
+
+:::info
+用 semantic-release 建立的 changelog 會跟 release note 一樣。
+:::
+
+### 設定 .releaserc.json
+
+可以設定 .releaserc.json 來客製化 semantic-release 的設定。
+
+```json
+{
+  "branches": ["main"],
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "angular",
+        "releaseRules": [{ "type": "chore", "release": "patch" }]
+      }
+    ],
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    "@semantic-release/npm",
+    "@semantic-release/github",
+    "@semantic-release/git"
+  ]
+}
+```
+
+> branches：設定要觸發 semantic-release 的 branch
+
+在 plugin 裡的 _commit-analyzer_ 可以設定 commit message 的分析格式，預設使用的是 Angular 提出的 [commit 規範](https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#-commit-message-guidelines)，也可以自己客製化。除了 angluar 外，還有其他的 preset 可以選擇，例如 eslint, atom, ember 等等。
+
+下面是套件內的設定檔，可以看到預設的 releaseRules。
+
+```js title="@semantic-release/commit-analyzer/lib/default-release-rules.js"
+export default [
+  { breaking: true, release: "major" },
+  { revert: true, release: "patch" },
+  // Angular
+  { type: "feat", release: "minor" },
+  { type: "fix", release: "patch" },
+  { type: "perf", release: "patch" },
+  // Atom
+  { emoji: ":racehorse:", release: "patch" },
+  { emoji: ":bug:", release: "patch" },
+  { emoji: ":penguin:", release: "patch" },
+  { emoji: ":apple:", release: "patch" },
+  { emoji: ":checkered_flag:", release: "patch" },
+  // Ember
+  { tag: "BUGFIX", release: "patch" },
+  { tag: "FEATURE", release: "minor" },
+  { tag: "SECURITY", release: "patch" },
+  // ESLint
+  { tag: "Breaking", release: "major" },
+  { tag: "Fix", release: "patch" },
+  { tag: "Update", release: "minor" },
+  { tag: "New", release: "minor" },
+  // Express
+  { component: "perf", release: "patch" },
+  { component: "deps", release: "patch" },
+  // JSHint
+  { type: "FEAT", release: "minor" },
+  { type: "FIX", release: "patch" },
+];
+```
+
+angular 預設的只有 `feat`、`fix`、`perf` 會被視為 release 的 commit，如果有其他的 commit type 也想要被視為 release 的話，就可以透過 releaseRules 來額外的設定。
+
+:::warning 注意事項
+
+1. 雖然 plugin 有預設 4 個 plugin，但是只要有新增 `.releaserc.json` 裡面的 plugin，就需要把所有的 plugin 都加上去，因為新增的 plugin 欄位會覆蓋掉預設的 plugin。
+2. plugin 的順序也很重要，因為 semantic-release 會依照 plugin 的順序來執行的，順序會是
+   commit-analyzer -> release-notes-generator -> changelog -> npm/ github / git。
+
+:::
+
+### 設定 npm configuration
+
+如果有 `.npmrc` 會直接讀取裡面的設定，或是可以直接在 `package.json` 裡面設定
+
+```json
+{
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest"
+  }
+}
+```
+
+### 執行 semantic-release
+
+可以在 script 裡面加上 semantic-release 的指令
+
+```json
+{
+  "scripts": {
+    "release": "semantic-release"
+  }
+}
+```
+
+或是直接用 npx 執行
+
+```bash
+npx semantic-release
+```
+
+如果你直接在本地端執行 semantic-release，會發現有些步驟被 skip 掉，因為 semantic-release 很多步驟都是依賴於 CI/CD 及環境變數來執行，例如更新 release note 到 github，或是發佈 npm 套件等等，所以建議要在 CI/CD 上執行 release。
+
+## 設定 CI/CD
+
+官網有提供各式的 [CI configurations](https://semantic-release.gitbook.io/semantic-release/recipes/ci-configurations) 設定方法，這邊以 **Github Action** 為例。
+
+```yaml {33-35} title=".github/workflows/release.yml"
+name: Release
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read # for checkout
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to be able to publish a GitHub release
+      issues: write # to be able to comment on released issues
+      pull-requests: write # to be able to comment on released pull requests
+      id-token: write # to enable use of OIDC for npm provenance
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
+```
+
+:::warning 注意事項
+permissions 一定要設定，才能在 Github 上去發佈 release note 及更新 changelog 等寫入權限。
+:::
+
+這邊會需要兩個環境變數：
+
+- <Highlight>GITHUB_TOKEN</Highlight>：用來更新 release note 及 CHANGELOG.md 到
+  github
+- <Highlight>NPM_TOKEN</Highlight>：用來發佈 npm 套件
+
+GITHUB_TOKEN 可以直接使用 `secrets.GITHUB_TOKEN`，Github 會自動產生 Token，不需要額外設定。
+
+NPM_TOKEN 需要在 npm 的網站上產生 Classic Tokens，然後在 github 上設定環境變數。
+
+<Img src={image_2} />
+
+## 參考資料
+
+- [發佈 npm 套件 - 從手動到自動(0)：專案與套件建置篇](https://pjchender.dev/devops/devops-publish-npm-0/)
+- [What is difference between release notes and changelog?](https://stackoverflow.com/questions/51621400/what-is-difference-between-release-notes-and-changelog)
