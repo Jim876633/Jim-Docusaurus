@@ -97,8 +97,8 @@ const config = {
         title: "Jim's note",
         logo: {
           alt: "My Site Logo",
-          src: "img/logo.png",
-          srcDark: "img/logo-darkmode.png",
+          src: "img/logo-small.png",
+          srcDark: "img/logo-darkmode-small.png",
         },
         items: [
           // {
