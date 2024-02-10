@@ -1,10 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
-import { Spin, Tag } from "antd";
-import React, { useState } from "react";
-// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Link from "@docusaurus/Link";
 import { useDocsSidebar } from "@docusaurus/theme-common/internal";
 import useMedia from "@site/src/hooks/useMedia.jsx";
+import { useQuery } from "@tanstack/react-query";
+import { Skeleton, Tag } from "antd";
+import React, { useState } from "react";
+import InfiniteScroll from "react-infinite-scroll-component";
+// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const DocList = () => {
   const { sm } = useMedia();
@@ -21,51 +22,61 @@ const DocList = () => {
     staleTime: Infinity,
   });
 
-  const clickMoreHandler = () => {
+  const loadMoreHandler = async () => {
     if (data.length > showCount) {
       setShowCount(showCount + 10);
     }
   };
 
-  if (isLoading) {
-    return (
-      <>
-        <Spin />
-        <br />
-      </>
-    );
-  }
-  if (data.length === 0) {
-    return null;
-  }
   return (
     <div id='jim-doc-list'>
       <Tag color='var(--tag-color)' className='flash'>
         Latest Article
       </Tag>
       <br />
-      <ul className='doc-list'>
-        {data.slice(0, showCount).map((doc) => {
-          return sm ? (
-            <li key={doc.id} className='intro_sm'>
-              <span>{doc.date?.slice(5)}</span>
-              <Link to={doc.href}>{doc.title}</Link>
-            </li>
-          ) : (
-            <li key={doc.id}>
-              {doc.date} 更新文章 <Link to={doc.href}>{doc.title}</Link> -{" "}
-              {doc.label}
-            </li>
-          );
-        })}
-      </ul>
-      {showCount < data.length ? (
-        <button className='more_btn' onClick={clickMoreHandler}>
-          <span>...</span>
-        </button>
-      ) : (
-        <span>...End</span>
-      )}
+      <div id='scrollableDiv' className='doc-list'>
+        {isLoading ? (
+          <Skeleton
+            theme='light'
+            active
+            paragraph={{ rows: 6, width: ["50%", "80%", "70%", "70%", "60%"] }}
+            title={false}
+            className='doc-list-skeleton'
+          />
+        ) : (
+          <InfiniteScroll
+            dataLength={showCount}
+            next={loadMoreHandler}
+            hasMore={data.length > showCount}
+            loader={
+              <Skeleton
+                active
+                paragraph={{ rows: 2, width: ["50%", "80%"] }}
+                title={false}
+              />
+            }
+            scrollableTarget='scrollableDiv'
+            endMessage={<i>...End</i>}
+          >
+            <ul>
+              {data.slice(0, showCount).map((doc) => {
+                const item = sm ? (
+                  <li key={doc.id} className='intro_sm'>
+                    <span>{doc.date?.slice(5)}</span>
+                    <Link to={doc.href}>{doc.title}</Link>
+                  </li>
+                ) : (
+                  <li key={doc.id}>
+                    {doc.date} 更新文章 <Link to={doc.href}>{doc.title}</Link> -{" "}
+                    {doc.label}
+                  </li>
+                );
+                return item;
+              })}
+            </ul>
+          </InfiniteScroll>
+        )}
+      </div>
     </div>
   );
 };
