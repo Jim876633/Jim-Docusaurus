@@ -27,6 +27,10 @@ const SubscribeBlock = () => {
   };
 
   const subscribeHandler = async () => {
+    if (email === "") {
+      setErrorMsg("Please enter your email address");
+      return;
+    }
     if (isLoading) return;
     setEmail("");
     mutate(email);
@@ -52,8 +56,8 @@ const SubscribeBlock = () => {
       }
       style={{
         width: "100%",
-        backgroundColor: "var(--subscribeBlock)",
-        border: "1px solid #97d6fa",
+        backgroundColor: "var(--subscribe-block)",
+        border: "1px solid var(--subscribe-block-border)",
       }}
       bodyStyle={{ paddingBottom: "36px", paddingTop: "16px" }}
     >
@@ -69,11 +73,9 @@ const SubscribeBlock = () => {
         />
         <Button
           loading={isLoading}
-          type='primary'
           onClick={subscribeHandler}
-          style={{
-            borderRadius: "0 6px 6px 0",
-          }}
+          type='primary'
+          className='subscribe_btn'
         >
           Submit
         </Button>
