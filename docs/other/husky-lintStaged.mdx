@@ -231,6 +231,19 @@ npx husky-init && npm install lint-staged --save-dev
 
 這個 script 會在 npm install 的時候執行，用意是當其他人下載專案包時可以自動執行 husky install，載入 `.husky.sh` 的執行檔。
 
+:::info
+如果專案資料夾跟 .git 資料夾**不在同一層**（像是 monorepo），可以參考 [Project Not in Git Root Directory](https://typicode.github.io/husky/how-to.html#project-not-in-git-root-directory)。
+
+主要是直接改 package.json 裡 script 的 prepare 指令
+
+```bash
+"prepare": "cd ../ && husky install <ProjectFolderName>/.husky"
+```
+
+這樣的用意是先 cd 到有 .git 資料夾的地方，再執行 husky install，並且指定 husky 的路徑。
+
+:::
+
 ### 設定指令
 
 先把 `.hsuky/pre-commit` 裡的 `npm test` 改成呼叫 `lint-staged` 的指令。
