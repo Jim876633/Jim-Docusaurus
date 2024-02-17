@@ -249,9 +249,9 @@ npx husky-init && npm install lint-staged --save-dev
 先把 `.hsuky/pre-commit` 裡的 `npm test` 改成呼叫 `lint-staged` 的指令。
 
 ```bash {5} title='.husky/pre-commit'
-# .husky/pre-commit
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
 
 npx lint-staged
 ```
@@ -274,7 +274,9 @@ npx lint-staged
 
 <Img src={image_3} width='500px' />
 
-### 使用 Vscode Source Control 發 commit 問題踩雷
+## 踩雷經驗
+
+### 使用 Vscode Source Control 發 commit 時，lint-staged 不執行
 
 有些會習慣使用 Vscode 內建的 commit 按鈕來操作，一樣可以進行 lint-staged，只是過程會顯示在 Vscode 的 output 裡
 
@@ -285,6 +287,29 @@ npx lint-staged
 ```bash
 nvm alias default {{ > 14 的版本號 }}
 ```
+
+### 手動加 pre-commit 檔案，但是 husky 不執行
+
+如果你**手動新增** pre-commit 檔案，可能會遇到 `The '.husky/pre-commit' hook was ignored because it's not set as executable.` 的錯誤訊息，這是因為手動新增的話，檔案沒有執行權限，可以透過下面指令加上執行權限。
+
+```bash
+chmod +x .husky/pre-commit
+```
+
+或是刪除 pre-commit 檔案，使用 husky 的 add 指令：
+
+```bash
+npx husky add .husky/pre-commit
+```
+
+這樣 husky 就會自動幫你新增有權限的 pre-commit 檔案。
+
+:::info
+
+在 husky 的[原始碼](https://github.com/typicode/husky/blob/3c0e08d3ca4d01d04ebb92089e68c47e131ab6be/src/index.ts#L77C1-L77C22)可以看到 husky 在 set 檔案的地方有加上權限 `{mode: 0o0755}`，這代表的是 755 的權限，權限說明可以看 [chmod](https://www.runoob.com/linux/linux-comm-chmod.html)。
+
+有興趣了解 husky 原理的可以參考 [husky 源码浅析 ](https://www.cnblogs.com/zi-yang/p/17852654.html)，寫的超級詳細的！
+:::
 
 ## 參考資料
 
