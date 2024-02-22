@@ -1,4 +1,4 @@
-const Highlight = ({ children, color, block }) => {
+const Highlight = ({ children, color, block, bold, style }) => {
   let highlightClassName = "";
   switch (color) {
     case "yellow":
@@ -17,16 +17,32 @@ const Highlight = ({ children, color, block }) => {
       highlightClassName = "highlight-yellow";
       break;
   }
+  const customStyle = {
+    fontWeight: bold ? "bold" : "normal",
+    ...style,
+  };
   if (block) {
     return (
       <>
-        <div className={`${highlightClassName} highlight`}>{children}</div>
+        <div
+          className={`${highlightClassName} highlight`}
+          style={{ ...customStyle }}
+        >
+          {children}
+        </div>
         <p />
       </>
     );
   }
 
-  return <span className={`${highlightClassName} highlight`}>{children}</span>;
+  return (
+    <span
+      className={`${highlightClassName} highlight`}
+      style={{ ...customStyle }}
+    >
+      {children}
+    </span>
+  );
 };
 
 export default Highlight;
