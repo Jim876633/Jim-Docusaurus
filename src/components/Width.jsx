@@ -1,3 +1,4 @@
+import BrowserOnly from "@docusaurus/BrowserOnly";
 import useMedia from "@site/src/hooks/useMedia.jsx";
 import React from "react";
 
@@ -23,19 +24,23 @@ export const Block = ({
   width = "100%",
   center = false,
   style = {},
-}) => {
-  const { sm } = useMedia();
-  const customStyle = {
-    width: `min(100%,${width})`,
-    margin: center ? "0 auto" : "0",
-    display: "flex",
-    flexDirection: sm ? "column" : "row",
-    gap: "10px",
-    alignItems: "center",
-    ...style,
-  };
-  return <div style={{ ...customStyle }}>{children}</div>;
-};
+}) => (
+  <BrowserOnly>
+    {() => {
+      const { sm } = useMedia();
+      const customStyle = {
+        width: `min(100%,${width})`,
+        margin: center ? "0 auto" : "0",
+        display: "flex",
+        flexDirection: sm ? "column" : "row",
+        gap: "10px",
+        alignItems: "center",
+        ...style,
+      };
+      return <div style={{ ...customStyle }}>{children}</div>;
+    }}
+  </BrowserOnly>
+);
 
 export const ImgBlock = ({ style, width = "100%", src }) => {
   const customStyle = {
