@@ -1,0 +1,227 @@
+---
+title: 【Git】Git rebase 介紹：竟然可以合併多個 commit！
+sidebar_label: git rebase
+tags: ["Git", "Rebase"]
+---
+
+import { Img, Block, ImgBlock } from "@site/src/components/Width";
+import Highlight from "@site/src/components/Highlight";
+import Text from "@site/src/components/Text";
+import image_1 from "/img/git/rebase/rebase-1.jpg";
+import image_2 from "/img/git/rebase/rebase-2.jpg";
+import image_3 from "/img/git/rebase/rebase-3.jpg";
+import image_4 from "/img/git/rebase/rebase-4.jpg";
+import image_5 from "/img/git/rebase/rebase-5.jpg";
+import image_6 from "/img/git/rebase/rebase-6.jpg";
+import image_7 from "/img/git/rebase/rebase-7.jpg";
+import image_8 from "/img/git/rebase/rebase-8.gif";
+import image_9 from "/img/git/rebase/rebase-9.jpg";
+import image_10 from "/img/git/rebase/rebase-10.jpg";
+import image_11 from "/img/git/rebase/rebase-11.jpg";
+import image_12 from "/img/git/rebase/rebase-12.gif";
+import image_13 from "/img/git/rebase/rebase-13.jpg";
+import image_14 from "/img/git/rebase/rebase-14.gif";
+import image_15 from "/img/git/rebase/rebase-15.jpg";
+import image_16 from "/img/git/rebase/rebase-16.gif";
+import image_17 from "/img/git/rebase/rebase-17.jpg";
+import image_18 from "/img/git/rebase/rebase-18.gif";
+import image_19 from "/img/git/rebase/rebase-19.jpg";
+import image_20 from "/img/git/rebase/rebase-20.jpg";
+
+一般在合併分支時，比較常見的方式是使用 `git merge`，在看 git graph 的時候也比較容易看出分支的合併情況。不過當分支越來越多時，git graph 會變得越來越複雜，有些人反而喜歡分支乾淨一點，因此有另外一種合併分支的方式，那就是使用 `git rebase`。
+
+## git rebase 是什麼？
+
+rebase 的意思是重新定位基礎，也就是說，當你使用 `git rebase` 時，你會把你的分支重新定位到另一個 commit 上。
+
+來看一下 git merge 和 git rebase 的差異：
+
+<Highlight block>git merge</Highlight>
+
+<Block block>
+  <ImgBlock src={image_1} />
+  <ImgBlock src={image_2} />
+</Block>
+
+<br />
+
+<Highlight block>git rebase</Highlight>
+
+<Block>
+  <ImgBlock src={image_3} />
+  <ImgBlock src={image_4} />
+</Block>
+
+可以看到，使用 `git merge` 時，會在分支上產生一個新的 commit，而使用 `git rebase` 時，則是把分支上的 commit 移動到另一個 commit 上。
+
+那 `git rebase` 之所以可以這麼做，就是因為他不僅改變了分支的基礎，也改變了分支上的 commit 時間順序及 commit hash。
+
+<Block block>
+  <ImgBlock src={image_5} />
+  <ImgBlock src={image_6} />
+</Block>
+
+所以在使用 `git rebase` 時，要特別注意，<Text color='red' bold>不要</Text>在已經 push 到遠端的分支上使用 `git rebase`，因為這樣會改變遠端分之的 commit 歷史記錄，盡量都是在本地端分支上使用 `git rebase`。
+
+## git rebase 誰接誰？
+
+在使用 `git merge` 的時候，要把 <Highlight color='blue'>features</Highlight> 分支合併到 <Highlight color='green'>master</Highlight> 分支，會使用以下指令：
+
+```bash
+git checkout master
+# 切換到 master 分支
+git merge features
+```
+
+用中文翻起來會比較不直覺，會覺得 A merge B 應該是從 A 合併到 B，但實際上是從 B 合併到 A。
+
+之前聽過一個解釋的方法，是**把 merge 當作是 pull 的意思**，也就是說，`git merge features` 可以理解為，從 <Highlight color='green'>master</Highlight> 分支拉 <Highlight color='blue'>features</Highlight> 分支進來。（不知道有沒有幫助理解，我自己是覺得好理解很多）
+
+而在使用 `git rebase` 的時候，順序跟 `git merge` 是相反的，要把 <Highlight color='blue'>features</Highlight> 分支 rebase 到 <Highlight color='green'>master</Highlight> 分支，會使用以下指令：
+
+```bash
+git checkout features
+# 切換到 features 分支
+git rebase master
+```
+
+:::tip 小技巧
+剛開始在使用的時候，常常忘記是要切到哪個分支作操作，後來發現一個小技巧，不管是 `git merge` 還是 `git rebase`，只要哪一個分支會被**更動**，就切到哪一個分支，舉例來說：
+
+- **A merge B**：A 會新增一個 commit，所以切到 A 分支
+- **B rebase A**：B 會被更改歷史記錄，所以切到 B 分支
+
+:::
+
+## git rebase 錯了怎麼辦？
+
+在使用 `git rebase` 的時候，如果想要取消 rebase，<Text color='red' bold>不要使用</Text> `git reset`，因為 `git reset` 是把 HEAD 從現在的 commit hash 退回到上一個 commit hash，而 `git rebase` 會修改歷史記錄，所以用 `git reset` 沒辦法回復到 rebase 之前的狀態。
+
+這時候可以使用 `git reset ORIG_HEAD --hard` 來退回 rebase，**ORIG_HEAD** 是當你操作 git 時，如果是比較重要的改變 (Ex: git merge/git rebase)，git 會幫你記錄你的 HEAD，這樣就可以用來回復到改變之前的狀態。
+
+:::info 補充
+**ORIG_HEAD** 的內容可以在 `.git/ORIG_HEAD` 檔案中找到，打開可以看到一個 commit 的 hash 值，這個 hash 值就是你上一次重大操作 git 時的 HEAD。
+
+而在下 `git reset ORIG_HEAD --hard` 時，因為他本身也是一個重大操作，所以也會再次更新 ORIG_HEAD 的內容，也就是說 `git reset ORIG_HEAD` 只能使用一次且為最後一次的重大操作，如果要回復到更早的狀態，可以使用 `git reflog` 來查看歷史記錄，再使用 `git reset` 來退回。
+:::
+
+## git rebase interactive 互動模式
+
+`git rebase` 有提供一個 **Interactive (互動) 模式**，讓你能夠修改 commit 的順序及內容，這個模式可以幫你修改及合併多個 commit，讓你的歷史記錄更加乾淨。
+
+使用方式如下：
+
+```bash
+# 顯示從指定的 commit 到目前的 commit（不包含指定的 commit）
+git rebase -i <commit hash>
+# 顯示最近的 n 個 commit
+git rebase -i HEAD~n
+```
+
+當你進入互動模式後，預設會使用 vim 來進行編輯，假設我輸入 `git rebase -i HEAD~2`，會看到以下畫面：
+
+<Img src={image_7} width='700px' center />
+
+由上往下是<Text  bold>從舊到新</Text>的 commit，而在每一行的開頭會有一個動作，這邊列出常見的動作分別是：
+
+- **pick**：保留該 commit
+- **reword**：保留該 commit，並開啟 vim 讓你修改 commit message
+- **edit**：保留該 commit，但在 rebase 過程中會暫停，可以輸入 `git commit --amend` 來修改 commit 內容，或是 `git rebase --continue` 來繼續 rebase。
+- **squash**：合併該 commit 到前一個 commit，會進入 vim 讓你選擇要保留的 commit message
+- **fixup**：合併該 commit 到前一個 commit，但不保留 commit message，直接使用前一個 commit 的 message
+- **drop**：刪除該 commit
+
+:::info Vim 基本操作
+
+- `i`：可以進入編輯模式，就是一般的文字編輯
+- `esc`：離開編輯模式，回到一般模式才可以進行下面指令操作
+- `:wq`：儲存並離開
+- `:q!`：不儲存並離開
+- `:cq`：關閉並退出，在 reflog 中不會留下記錄
+
+:::
+
+### pick & drop
+
+當你進入互動模式後，預設所有的 commit 都是 **pick**，也就是保留該 commit，如果你想要刪除某個 commit，可以把該行的 pick 改成 **drop**，或是直接刪除該行。
+
+- 使用 <Highlight bold>drop</Highlight> 及刪除整行：
+
+<Img src={image_8} width='700px' center />
+
+<Block block width='700px' center>
+  <ImgBlock src={image_9} />
+  <ImgBlock src={image_10} />
+</Block>
+
+:::info vim 指令
+
+- `dw`：刪除一個單字
+- `dd`：刪除一整行
+
+:::
+
+### reword & edit
+
+想要修改 commit message，可以把 pick 改成 reword，這樣在 rebase 過程中會進入 vim 讓你修改 commit message。
+
+- 使用 <Highlight bold>reword</Highlight> 修改 commit message：
+
+<Img src={image_16} width='700px' center />
+
+<Block block width='700px' center>
+  <ImgBlock src={image_9} />
+  <ImgBlock src={image_15} />
+</Block>
+
+如果你在修改 commit 內容時，想要暫停 rebase 去做其他事情 _(Ex: 新增檔案)_ ，可以把 pick 改成 **edit**，這樣在 rebase 過程中會暫停，做完事情後，可以輸入 `git commit --amend` 來修改最近的 commit 訊息，或是 `git rebase --continue` 來繼續 rebase。
+
+- 使用 <Highlight bold>edit</Highlight> 暫停 rebase 來新增檔案：
+
+<Img src={image_18} width='700px' center />
+
+<Block block width='700px' center>
+  <ImgBlock src={image_9} />
+  <ImgBlock src={image_17} />
+</Block>
+
+<Block block width='700px' center>
+  <ImgBlock src={image_19} />
+  <ImgBlock src={image_20} />
+</Block>
+
+:::info
+
+如果只是要修改最近一次的 commit message，可以使用 `git commit --amend` 來修改，會比較方便。
+
+:::
+
+### fixup & squash
+
+squash 和 fixup 都是合併 commit 的動作，不過 **fixup** 會直接使用前一個 commit 的 message。
+
+- 使用 <Highlight bold>fixup</Highlight> 合併 commit：
+
+<Img src={image_12} width='700px' center />
+
+<Block block width='700px' center>
+  <ImgBlock src={image_9} />
+  <ImgBlock src={image_11} />
+</Block>
+
+而 squash 會進入 vim 列出所有的 commit message，讓你選擇要保留的 message。
+
+- 使用 <Highlight bold>squash</Highlight> 合併 commit：
+
+<Img src={image_14} width='700px' center />
+
+<Block block width='700px' center>
+  <ImgBlock src={image_9} />
+  <ImgBlock src={image_13} />
+</Block>
+
+## 參考資料
+
+- [另一種合併方式](https://gitbook.tw/chapters/branch/merge-with-rebase)
+- [使用 Git Rebase Interactive 模式整理 Commit](https://www.gss.com.tw/blog/%E4%BD%BF%E7%94%A8-git-rebase-interactive-%E6%A8%A1%E5%BC%8F%E6%95%B4%E7%90%86-commit)
+- [送 PR 前，使用 Git rebase 來整理你的 commit 吧！](https://medium.com/starbugs/use-git-interactive-rebase-to-organize-commits-85e692b46dd)
