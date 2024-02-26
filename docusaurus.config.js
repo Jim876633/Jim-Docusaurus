@@ -108,11 +108,17 @@ const config = {
           //   label: "Note",
           // },
           {
+            type: "docSidebar",
+            sidebarId: "interview",
+            position: "left",
+            label: "📚 Frontend Q&A",
+          },
+          {
             href: "/tags",
             label: "📌 Tag",
-            position: "left",
+            position: "right",
           },
-          { to: "/changelog", label: "⏳ Changelog", position: "left" },
+          { to: "/changelog", label: "⏳ Changelog", position: "right" },
           {
             href: "https://github.com/Jim876633",
             className: "header-github-link",
