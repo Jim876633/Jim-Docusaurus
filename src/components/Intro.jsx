@@ -1,3 +1,4 @@
+import BrowserOnly from "@docusaurus/BrowserOnly";
 import { useColorMode } from "@docusaurus/theme-common";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConfigProvider, theme } from "antd";
@@ -23,7 +24,7 @@ const Intro = () => {
         <a href='mailto:jim.huang112@gmail.com'>jim.huang112@gmail.com</a>
         <br />
         <br />
-        <DocList />
+        <BrowserOnly>{() => <DocList />}</BrowserOnly>
         <br />
         <SubscribeBlock />
         {/* <ReactQueryDevtools /> */}
