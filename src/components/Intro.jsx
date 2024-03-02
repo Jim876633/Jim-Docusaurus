@@ -26,7 +26,7 @@ const Intro = () => {
         <br />
         <BrowserOnly>{() => <DocList />}</BrowserOnly>
         <br />
-        <SubscribeBlock />
+        <BrowserOnly>{() => <SubscribeBlock />}</BrowserOnly>
         {/* <ReactQueryDevtools /> */}
       </ConfigProvider>
     </QueryClientProvider>
