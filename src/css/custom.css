@@ -43,14 +43,14 @@
   --highlight-red-2: #a94442;
   --text-yellow: #daa22b;
   --text-green: #3c763d;
-  --text-blue: #7897c5;
+  --text-blue: #4876c0;
   --text-red: #df1b18;
   --scrollbar-thumb: #c1c1c1;
   --scrollbar-thumb-hover: #a8a8a8;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme="dark"] {
+html[data-theme="dark"] {
   --ifm-color-primary: #49b7ee;
   --ifm-color-primary-dark: #2daceb;
   --ifm-color-primary-darker: #1ea6ea;
@@ -60,6 +60,8 @@
   --ifm-color-primary-lightest: #9ed9f6;
   --ifm-code-padding-vertical: 0.1rem;
   --ifm-code-padding-horizontal: 0.5rem;
+  --ifm-background-color: #1d232e;
+  --ifm-background-surface-color: #2d3544;
 
   /* custom variables */
   --tag-color: #39719b;
@@ -71,6 +73,18 @@
   --changelog-primary-dark: #ade4ff;
   --code-color: #fff;
   --code-background: rgba(255, 255, 255, 0.3);
+  --highlight-yellow-1: #f9d6a1;
+  --highlight-yellow-2: #daa22b;
+  --highlight-green-1: #d4edda;
+  --highlight-green-2: #3c763d;
+  --highlight-blue-1: #d6e4f0;
+  --highlight-blue-2: #7897c5;
+  --highlight-red-1: #f2dede;
+  --highlight-red-2: #a94442;
+  --text-yellow: #daa22b;
+  --text-green: #3c763d;
+  --text-blue: #4876c0;
+  --text-red: #df1b18;
   --scrollbar-thumb: #a8a8a8;
   --scrollbar-thumb-hover: #c1c1c1;
 }
@@ -236,15 +250,15 @@ code {
 /* -------------------------------------------------------------------------- */
 
 .text-yellow {
-  color: var(--highlight-yellow-2);
+  color: var(--text-yellow);
 }
 
 .text-green {
-  color: var(--highlight-green-2);
+  color: var(--text-green);
 }
 
 .text-blue {
-  color: var(--highlight-blue-2);
+  color: var(--text-blue);
 }
 
 .text-red {
@@ -253,4 +267,22 @@ code {
 
 .bold {
   font-weight: bold;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Sounds Button CSS                             */
+/* -------------------------------------------------------------------------- */
+
+.sounds_btn {
+  border: none;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  background-color: transparent;
+  transition: transform 0.2s ease;
+}
+
+.sounds_btn:hover {
+  transition: transform 0.2s ease;
+  transform: scale(1.5);
 }
