@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmy_website=self.webpackChunkmy_website||[]).push([[6241],{1030:e=>{e.exports=JSON.parse('{"title":"Mac","slug":"/category/mac","permalink":"/category/mac","navigation":{"previous":{"title":"Achor Positioning","permalink":"/css/anchor-positioning"},"next":{"title":"\u5165\u5751 Mac \u4e86 \uff01\uff01","permalink":"/mac/intro"}}}')}}]);
