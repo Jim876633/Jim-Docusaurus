@@ -1,0 +1,137 @@
+---
+title: 【React】Zustand - Side Project 狀態管理好幫手！
+sidebar_label: Zustand
+tags: [React, Zustand]
+---
+
+import { Img } from "@site/src/components/Width";
+import image_1 from "/img/react/zustand/zustand-1.jpg";
+import CodeSandbox from "@site/src/components/CodeSandbox.jsx";
+import TextPronounce from "@site/src/components/TextPronounce.jsx";
+
+Zustand <TextPronounce text='zustand' lang='de-AT' /> 是一個輕量級的狀態管理套件，原始碼沒有很多行，卻非常的好用。不像 Redux 那樣需要設定很多東西，只要一個簡單的 hook 就可以使用，很適合在做 Side Project 的時候使用。
+
+<Img src={image_1} />
+
+以常見的 React 狀態管理的套件來比較，可以看到 react-redux 依舊是最多人使用的，不過 zustand 每週也有將近 300 萬的下載量，使用人數也是很多的。
+
+## 安裝
+
+```bash
+npm install zustand
+```
+
+## 使用方法
+
+1. 先用 `create` 來建立一個 store
+
+```tsx
+import create from "zustand";
+
+const useCountStore = create((set) => ({
+  count: 0,
+  increment: () => set((state) => ({ count: state.count + 1 })),
+  decrement: () => set((state) => ({ count: state.count - 1 })),
+}));
+```
+
+2. 在 component 中使用
+
+```tsx
+function Counter() {
+  const { count, increment, decrement } = useCountStore();
+
+  return (
+    <div>
+      <button onClick={decrement}>-</button>
+      <h1>{count}</h1>
+      <button onClick={increment}>+</button>
+    </div>
+  );
+}
+```
+
+<CodeSandbox
+  url='https://codesandbox.io/embed/7d26zr?fontsize=14&hidenavigation=1&theme=dark'
+  title='zustand-basic'
+  codebasePath='/src/store.js'
+/>
+
+基本上就是這樣，是不是非常方便使用！一個 `create` 就可以建立一個 store，然後在 component 中使用 hook 就可以取得 store 的資料和方法。
+
+下面來詳細的介紹一下 zustand 的使用方法及常用的功能。
+
+## Set State
+
+在 zustand 中，要改變 state 的值，可以在 `create` 中使用 `set` 方法，這個方法會接收一個 callback function，會收到目前的 state，再回傳一個新的 state。
+
+```jsx {5-6}
+import create from "zustand";
+
+const useCountStore = create((set) => ({
+  count: 0,
+  increment: () => set((state) => ({ count: state.count + 1 })),
+  decrement: () => set((state) => ({ count: state.count - 1 })),
+}));
+```
+
+你可能會注意到他是使用 mutable 的方式來改變 state，因為 zustand 跟 redux 一樣都會自動幫你處理 immutable 的問題，所以可以直接改變 state 的值。
+
+:::warning
+
+雖然 zustand 可以直接改變 state，但是只限於第一層的值，如果是巢狀的物件或陣列，還是要使用 immutable 的方式來改變。
+
+```jsx {7}
+import create from "zustand";
+
+const useCountStore = create((set) => ({
+  count: { value: 0 },
+  increment: () =>
+    set((state) => ({
+      count: { ...state.count, vlaue: state.count.value + 1 },
+    })),
+}));
+```
+
+:::
+
+## 合併多個 store
+
+當專案越來越大，store 會越建越多，為了方便管理，可以將多個獨立的 store slice 合併成一個。
+
+假設有兩個 store slice，也就是 `create` 裡面的 function。
+
+```jsx
+export const createSlice1 = (set) => ({
+  value1: 0,
+  increment1: () => set((state) => ({ value1: state.value1 + 1 })),
+});
+```
+
+```jsx
+export const createSlice2 = (set) => ({
+  value2: 0,
+  increment2: () => set((state) => ({ value2: state.value2 + 1 })),
+});
+```
+
+用 `create` 把兩個 function 合併成一個。
+
+```jsx
+import create from "zustand";
+import { createSlice1 } from "./slice1";
+import { createSlice2 } from "./slice2";
+
+export const useStore = create((set) => ({
+  ...createSlice1(set),
+  ...createSlice2(set),
+}));
+```
+
+這樣就可以在 component 中使用 `useStore` 來取得兩個 store slice 的資料和方法。
+
+<CodeSandbox
+  url='https://codesandbox.io/embed/hwyqlf?fontsize=14&hidenavigation=1&theme=dark'
+  title='zustand-combine-store'
+  codebasePath='/src/store/index.js'
+/>
