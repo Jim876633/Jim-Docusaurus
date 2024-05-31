@@ -12,7 +12,9 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations --locale en",
     "copy-docs": "cp -r docs/** i18n/en/docusaurus-plugin-content-docs/current",
-    "write-heading-ids": "docusaurus write-heading-ids"
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "gc": "node scripts/generateChangelog.js",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@docusaurus/core": "^3.0.1",
@@ -39,7 +41,8 @@
     "sass": "^1.69.5"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "^3.0.1"
+    "@docusaurus/module-type-aliases": "^3.0.1",
+    "husky": "^8.0.0"
   },
   "browserslist": {
     "production": [

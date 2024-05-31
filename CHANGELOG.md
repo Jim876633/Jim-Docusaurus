@@ -8,7 +8,7 @@
 
 ## 2023-04-23
 
-### 新增 Algola 搜尋
+### 新增 Algolia 搜尋
 
 文章：[在 Docusaurus 導入 Algolia 搜尋](/Docusaurus/algolia)
 
@@ -87,3 +87,9 @@ const config = {
 - [marked](https://www.npmjs.com/package/marked)：將 markdown 轉成 html string
 - [jsdom](https://www.npmjs.com/package/jsdom)：將 html string 轉成 DOM 物件
 - [html-react-parser](https://www.npmjs.com/package/html-react-parser)：將 DOM 物件轉成 React component
+
+## 2024-05-04
+
+### 新增 TextPronounce Component
+
+因為有些專有名詞光看會不知道怎麼發音，所以新增 TextPronounce Component，可以在文章中加入發音按鈕，使用 Web Speech API [SpeechSynthesisUtterance](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesisUtterance) 來發音，按第二次發音會把語速調慢一點。
