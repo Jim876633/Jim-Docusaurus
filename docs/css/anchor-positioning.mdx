@@ -1,0 +1,91 @@
+---
+title: 【CSS】Achor Positioning API 讓你寫 Tooltips 更方便！
+sidebar_label: Achor Positioning
+tags: [CSS, Anchor Positioning]
+---
+
+import { Img } from "@site/src/components/Width";
+import image_1 from "/img/css/anchor-positioning/can-i-use.jpg";
+
+在開發中很常遇到 Tooltip 的需求，大部分都是使用套件來達成，但在客製化上就需要花時間去調整，而今年 W3C 提出了 [Anchor Positioning API](https://www.w3.org/TR/css-anchor-position-1/)，讓我們可以更方便的實現 Tooltip 的功能。
+
+目前 2024/05/30 只有 Chrome 跟 edge 有支援，支援度還是蠻低的，可以參考 [Can I Use](https://caniuse.com/?search=anchor%20position)。
+
+<Img src={image_1} />
+
+而 [Chrome for Developers](https://developer.chrome.com/blog/anchor-positioning-api?hl=zh-tw) 的 Blog 有寫一篇介紹，還蠻詳細的，幫大家整理一下重點功能。
+
+## Anchor Positioning API
+
+雖然說是 Tooltips，但其實 Anchor Positioning API 的重點在於動態的定位元素，也就是錨點定位（Achor Positioning），所以像是 Popover、Dropdown 也可以使用這個 API。
+
+先來建立兩個元素，一個是要被定位的元素，另一個是定位的元素。
+
+```html
+<!-- 被定位元素 -->
+<div class="achor">!</div>
+
+<!-- 定位元素 -->
+<div class="anchor-content">
+  <p>This is the anchor content</p>
+</div>
+```
+
+1. 設定被定位的元素名稱
+
+首先先在要定位的元素上定義 `achor-name` 唯一值，寫法上跟 css 變數一樣前面要加上 `--` 前綴。
+
+```css
+.achor {
+  achor-name: --myAchor;
+}
+```
+
+2. 指定設定好的名稱
+
+接著在定位的元素上設定 `position-achor` 屬性，指定要被定位的元素名稱。
+
+```css
+.anchor-content {
+  position-anchor: --myAchor;
+}
+```
+
+3. 定位元素的位置
+
+最後就是設定定位元素的位置，主要是用 `position` 屬性來設定。
+
+```css
+.anchor-content {
+  position-anchor: --myAchor;
+  position: fixed;
+  right: anchor(left);
+  top: anchor(bottom);
+}
+```
+
+以 `right: anchor(left)` 為例，`right` 為定位元素的右邊邊界，`anchor(left)` 為被定位元素的左邊邊界。
+
+這樣就可以讓定位元素的右邊對齊被定位元素的左邊了。
+
+<iframe
+  height='500'
+  style={{ width: "100%" }}
+  title='Anchor Position'
+  src='https://codepen.io/jim876633/embed/qBGRxjo?default-tab=css%2Cresult'
+  frameborder='no'
+  loading='lazy'
+  allowtransparency='true'
+  allowfullscreen='true'
+></iframe>
+
+<br />
+<br />
+
+:::info
+
+因為 anchor positioning API 是使用 position 定位的，所以需要設定 `position: absolute` 或 `position: fixed`。
+
+Chrome for Developers 的 blog 是使用 `position: absolute`，不過 W3C 的文件是推薦 `position: fixed`，這樣就不會受到父元素的影響。
+
+:::
