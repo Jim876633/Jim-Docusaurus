@@ -8,6 +8,17 @@ const TextPronounce = ({ text, lang = "en-US" }) => (
     {() => {
       const [slowRate, setSlowRate] = useState(false);
       const [isVoiceEnd, setIsVoiceEnd] = useState(false);
+
+      const isSpeechSynthesisSupported = useMemo(() => {
+        return (
+          "speechSynthesis" in window && "SpeechSynthesisUtterance" in window
+        );
+      }, [window]);
+
+      if (!isSpeechSynthesisSupported) {
+        return null;
+      }
+
       const msg = useMemo(() => new SpeechSynthesisUtterance(text), [text]);
       const playSound = async () => {
         let rate = 0.8;
