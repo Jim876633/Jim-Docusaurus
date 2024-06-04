@@ -92,4 +92,4 @@ const config = {
 
 ### 新增 TextPronounce Component
 
-因為有些專有名詞光看會不知道怎麼發音，所以新增 TextPronounce Component，可以在文章中加入發音按鈕，使用 Web Speech API [SpeechSynthesisUtterance](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesisUtterance) 來發音，按第二次發音按鈕會把語速調慢一點。
+因為有些專有名詞光看會不知道怎麼發音，所以新增 TextPronounce Component，可以在文章中加入發音按鈕，使用 Web Speech API [SpeechSynthesisUtterance](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesisUtterance) 來發音，按第二次發音會把語速調慢一點。
