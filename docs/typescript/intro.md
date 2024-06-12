@@ -1,7 +1,7 @@
 ---
 title: 【TypeScript】介紹、建立步驟
 sidebar_label: 介紹、建立步驟
-tags: ["TypeScript"]
+tags: [typescript]
 ---
 
 # TypeScript 介紹

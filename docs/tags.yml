@@ -1,0 +1,111 @@
+react:
+  label: React
+  permalink: /react
+javascript:
+  label: JavaScript
+  permalink: /javascript
+typescript:
+  label: TypeScript
+  permalink: /typescript
+node:
+  label: Node.js
+  permalink: /node
+css:
+  label: CSS
+  permalink: /css
+git:
+  label: Git
+  permalink: /git
+vue:
+  label: Vue
+  permalink: /vue
+vue2:
+  label: Vue 2
+  permalink: /vue2
+vue3:
+  label: Vue 3
+  permalink: /vue3
+router:
+  label: Router
+  permalink: /router
+vuex:
+  label: Vuex
+  permalink: /vuex
+zustand:
+  label: Zustand
+  permalink: /zustand
+husky:
+  label: Husky
+  permalink: /husky
+lint-staged:
+  label: Lint Staged
+  permalink: /lint-staged
+prettier:
+  label: Prettier
+  permalink: /prettier
+eslint:
+  label: ESLint
+  permalink: /eslint
+stylelint:
+  label: Stylelint
+  permalink: /stylelint
+test:
+  label: Test
+  permalink: /test
+cicd:
+  label: CI/CD
+  permalink: /cicd
+vite:
+  label: Vite
+  permalink: /vite
+vitest:
+  label: Vitest
+  permalink: /vitest
+docusaurus:
+  label: Docusaurus
+  permalink: /docusaurus
+line:
+  label: Line
+  description: Line bot / Line Notify 串接相關文章
+  permalink: /line
+github:
+  label: GitHub
+  permalink: /github
+netlify:
+  label: Netlify
+  permalink: /netlify
+npm:
+  label: NPM
+  permalink: /npm
+nvm:
+  label: NVM
+  permalink: /nvm
+bun:
+  label: BUN
+  permalink: /bun
+package.json:
+  label: package.json
+  permalink: /package-json
+mac:
+  label: Mac
+  description: 跟 Mac 有關的疑難雜症
+  permalink: /mac
+vscode:
+  label: VS Code
+  permalink: /vscode
+vim:
+  label: Vim
+  permalink: /vim
+localhost:
+  label: Localhost
+  permalink: /localhost
+ngrok:
+  label: Ngrok
+  permalink: /ngrok
+source-code:
+  label: Source Code
+  permalink: /source-code
+ithome2023:
+  label: IT Home 2023
+  description: IT Home 鐵人賽 2023 年系列文章
+  permalink: /ithome-2023
