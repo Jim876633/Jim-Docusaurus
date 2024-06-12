@@ -30,17 +30,21 @@ jobs:
       - name: Install dependencies
         run: npm install --frozen-lockfile
       - name: generate changelog.json
-        if: contains(github.event.head_commit.message, 'CHANGELOG.md')
         run: |
-          node scripts/generateChangelog.js
+          COMMIT_FILES=$(git diff --name-only --diff-filter=M ${{ github.event.before }}..${{ github.sha }})
+          if echo "$COMMIT_FILES" | grep -iq "CHANGELOG.md"; then
+            node scripts/generateChangelog.js
             if [[ -n $(git status -s) ]]; then
-            git config user.name github-actions
-            git config user.email github-actions@github.com
-            git add .
-            git commit -m "generate changelog.json"
-            git push
+              git config user.name github-actions
+              git config user.email github-actions@github.com
+              git add .
+              git commit -m "generate changelog.json"
+              git push
+            else
+              echo "No changes to commit."
+            fi
           else
-            echo "No changes to commit."
+            echo "No CHANGELOG.md file changes detected."
           fi
       - name: Build website
         run: npm run build
@@ -59,7 +63,7 @@ jobs:
           # The GH actions bot is used by default if you didn't specify the two fields.
           # You can swap them out with your own user credentials.
           user_name: Jim876633
-          user_email: jim30223@gmail.com
+          user_email: jim.huang112@gmail.com
           cname: jimhuang.dev
       - name: Run the Docker container
         if: contains(github.event.head_commit.message, 'feature_blog') || contains(github.event.head_commit.message, 'feature_docs')

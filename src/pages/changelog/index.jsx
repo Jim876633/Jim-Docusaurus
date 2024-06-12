@@ -5,6 +5,7 @@ import React from "react";
 import useMedia from "../../hooks/useMedia";
 import styled from "./index.module.scss";
 import changelogJSON from "/data/changelog.json";
+import TextPronounce from "@site/src/components/TextPronounce";
 
 const Changelog = () => {
   const [changelogData, setChangelogData] = React.useState(changelogJSON);
@@ -46,6 +47,11 @@ const Changelog = () => {
               </button>
               <div className={styled.description}>
                 {event.isShowDesc && parse(event.description)}
+                {event.isShowDesc && event.title.includes("TextPronounce") ? (
+                  <>
+                    {"Say it"} <TextPronounce text="Jim's note is the best" />
+                  </>
+                ) : null}
               </div>
             </div>
           </div>
