@@ -194,7 +194,7 @@ npm install eslint-config-prettier --save-dev
 }
 ```
 
-## husky + lint-staged
+## husky (v8) + lint-staged
 
 講了這麼多規範套件，但是每次都要手動執行指令，或是在 vscode 設定自動修正才能進行格式化。在多人協作時，總是有可能會漏掉，這時候就可以使用 husky + lint-staged 來幫助我們。
 
@@ -273,6 +273,35 @@ npx lint-staged
 這邊簡單做一個範例，可以看到原本很糟的程式碼在 commit 時就會自動修正成設定好的規範。是不是很方便呢！
 
 <Img src={image_3} width='500px' />
+
+## migrate to v9
+
+husky 在 2024/01/25 發布了 [v9](https://github.com/typicode/husky/releases/tag/v9.0.1) 版本，設定有變動記錄一下。
+
+原本 prepare script 是 `husky install`，現在改成只要 `husky` 就可以了。
+
+```json {3-4}
+{
+  "scripts": {
+-   "prepare": "husky install"
++   "prepare": "husky"
+  }
+}
+```
+
+而在 git hook 的檔案裡會有預設的指定環境跟執行檔的路徑，v9 版本就不需要了。因為他把執行指令放到 `.husky/_` 裡面，然後把 git config core.hookPath 指向為 `.husky/_` (原本是指向 `.husky`)。
+
+```json {1-2}
+- #!/usr/bin/env sh
+- . "$(dirname -- "$0")/_/husky.sh"
+npm test
+```
+
+如果是新專案要安裝的話，可以直接下指令：
+
+```bash
+npm install -D husky && npx husky init
+```
 
 ## 踩雷經驗
 
