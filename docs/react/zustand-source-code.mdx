@@ -1,0 +1,403 @@
+---
+title: 【React】從 zustand 原始碼了解狀態管理
+sidebar_label: Zustand 原始碼解析
+sidebar_position: 3
+tags: [react, zustand, source-code]
+---
+
+import { Img } from "@site/src/components/Width";
+import Highlight from "@site/src/components/Highlight";
+import codeFile from "/img/react/zustand-source/code-file.jpg";
+import codeStructure from "/img/react/zustand-source/code-structure.jpg";
+import useSyncExternalStore from "/img/react/zustand-source/use-sync-external-store.jpg";
+import updateFlow from "/img/react/zustand-source/update-flow.gif";
+import mutiComponentFlow from "/img/react/zustand-source/muti-component-flow.gif";
+import counterTwoComponent from "/img/react/zustand-source/counter-two-component.gif";
+import mvcProblem from "/img/react/zustand-source/mvc-problem.jpg";
+import fluxFlow from "/img/react/zustand-source/flux-flow.png";
+import fbMsgBlock from "/img/react/zustand-source/fb-message-block.png";
+import reduxFlow from "/img/react/zustand-source/redux-flow.gif";
+
+Zustand 的介紹可以先看[這篇](/react/zustand)，這一篇主要是透過閱讀 zustand 的原始碼來了解它的運作原理。會想要寫這篇是因為使用套件大家都已經習以為常，但套件到底幫我們做了什麼事相信大部分的人（包括我）平常是不會特別去了解的，想要看套件的原始碼，很多又太艱澀難以咀嚼。
+
+而 zustnad 就是一個很好入門的套件，它的原始碼不多，大部分都蠻容易看懂（撇除 Typescript 的部分），看完也會讓你對狀態管理有更深的了解，可以說是初次閱讀原始碼的好選擇，就讓我們來好好了解 zustand 是如何做到 React 狀態管理吧！
+
+## 原始碼解析
+
+zustand 的核心原始碼主要是在 `src` 底下的 `react.ts` 以及 `vanilla.ts` 這兩支檔案，這邊以 [v4.5.1](https://github.com/pmndrs/zustand/tree/v4.5.1/src) 的版本為例。
+
+<Img src={codeFile} width='300px' center />
+
+而這兩支檔案總共有三個主要的 function:
+
+1. `create` (react.ts)：zustand 的核心 function，用來建立 store。
+2. `useStore` (react.ts)：處理同步 React 內部及外部的 state 狀態。
+3. `createState` (vanilla.ts)：建立全域的 state 及建立訂閱模式。
+
+他們之間的關聯性會像這樣：
+
+<Img src={codeStructure} />
+
+### create (react.ts)
+
+首先來看一下 [create](https://github.com/pmndrs/zustand/blob/6109bc3bd0f3850c2d9546956de971f27834ac7a/src/react.ts#L124) 的部分：
+
+```ts
+export const create = (<T>(createState: StateCreator<T, [], []> | undefined) =>
+  createState ? createImpl(createState) : createImpl) as Create;
+```
+
+他回傳了一個 `createImpl` 的 function，這個 function 定義了一個叫 api 的物件，是呼叫 `createStore` 的回傳值。
+
+然後建立一個 `useBoundStore` 的 function，這個 function 會回傳 `useStore` ，並且把 api 物件傳入 `useStore`。
+
+```ts {10-11,13-14}
+const createImpl = <T>(createState: StateCreator<T, [], []>) => {
+  if (
+    import.meta.env?.MODE !== "production" &&
+    typeof createState !== "function"
+  ) {
+    console.warn(
+      "[DEPRECATED] Passing a vanilla store will be unsupported in a future version. Instead use `import { useStore } from 'zustand'`."
+    );
+  }
+  const api =
+    typeof createState === "function" ? createStore(createState) : createState;
+
+  const useBoundStore: any = (selector?: any, equalityFn?: any) =>
+    useStore(api, selector, equalityFn);
+
+  Object.assign(useBoundStore, api);
+
+  return useBoundStore;
+};
+```
+
+### createStore (vanilla.ts)
+
+接著來看一下 [createStore](https://github.com/pmndrs/zustand/blob/6109bc3bd0f3850c2d9546956de971f27834ac7a/src/vanilla.ts#L109)：
+
+```ts
+export const createStore = ((createState) =>
+  createState ? createStoreImpl(createState) : createStoreImpl) as CreateStore;
+```
+
+一樣回傳了一個 `createStoreImpl` 的 fucntion：
+
+```ts
+const createStoreImpl: CreateStoreImpl = (createState) => {
+  type TState = ReturnType<typeof createState>;
+  type Listener = (state: TState, prevState: TState) => void;
+  let state: TState;
+  const listeners: Set<Listener> = new Set();
+
+  const setState: StoreApi<TState>["setState"] = (partial, replace) => {
+    // TODO: Remove type assertion once https://github.com/microsoft/TypeScript/issues/37663 is resolved
+    // https://github.com/microsoft/TypeScript/issues/37663#issuecomment-759728342
+    const nextState =
+      typeof partial === "function"
+        ? (partial as (state: TState) => TState)(state)
+        : partial;
+    if (!Object.is(nextState, state)) {
+      const previousState = state;
+      state =
+        replace ?? (typeof nextState !== "object" || nextState === null)
+          ? (nextState as TState)
+          : Object.assign({}, state, nextState);
+      listeners.forEach((listener) => listener(state, previousState));
+    }
+  };
+
+  const getState: StoreApi<TState>["getState"] = () => state;
+
+  const getInitialState: StoreApi<TState>["getInitialState"] = () =>
+    initialState;
+
+  const subscribe: StoreApi<TState>["subscribe"] = (listener) => {
+    listeners.add(listener);
+    // Unsubscribe
+    return () => listeners.delete(listener);
+  };
+
+  const destroy: StoreApi<TState>["destroy"] = () => {
+    if (import.meta.env?.MODE !== "production") {
+      console.warn(
+        "[DEPRECATED] The `destroy` method will be unsupported in a future version. Instead use unsubscribe function returned by subscribe. Everything will be garbage-collected if store is garbage-collected."
+      );
+    }
+    listeners.clear();
+  };
+
+  const api = { setState, getState, getInitialState, subscribe, destroy };
+  const initialState = (state = createState(setState, getState, api));
+  return api as any;
+};
+```
+
+首先可以看到他宣告了一個 `state` 變數，這個變數是用來存放全域的 state 值，然後建立了一個 `listeners` 的 Set 物件，用來存放訂閱的 function。
+
+createStore 的重點在於他建立了與訂閱模式相關的 function：
+
+- `setState`：用來更新 state 的 function。
+- `getState`：取得目前的 state。
+- `getInitialState`：取得初始的 state。
+- `subscribe`：訂閱 state 的變化。
+- `destroy`：銷毀訂閱。
+
+`getState` 跟 `getInitialState` 都蠻好理解的，就是取得目前的 state 跟初始的 state。
+`setState` 有做一層判斷，如果新的值跟舊的值不同（使用 Object.is 判斷），就會去 forEach listeners 裡面儲存的所有 function，這些 function 我稱之為<Highlight>更新函式</Highlight>，後面會再說明更新函式是什麼。
+`subscribe` 就是把更新函式加入 listeners 裡面，並且回傳一個 function 用來取消訂閱。
+
+### useStore (react.ts)
+
+最後一個 function 是 [useStore](https://github.com/pmndrs/zustand/blob/6109bc3bd0f3850c2d9546956de971f27834ac7a/src/react.ts#L53) 可以說是 zustand 的核心 function：
+
+```ts
+export function useStore<TState, StateSlice>(
+  api: WithReact<StoreApi<TState>>,
+  selector: (state: TState) => StateSlice = identity as any,
+  equalityFn?: (a: StateSlice, b: StateSlice) => boolean
+) {
+  if (
+    import.meta.env?.MODE !== "production" &&
+    equalityFn &&
+    !didWarnAboutEqualityFn
+  ) {
+    console.warn(
+      "[DEPRECATED] Use `createWithEqualityFn` instead of `create` or use `useStoreWithEqualityFn` instead of `useStore`. They can be imported from 'zustand/traditional'. https://github.com/pmndrs/zustand/discussions/1937"
+    );
+    didWarnAboutEqualityFn = true;
+  }
+  const slice = useSyncExternalStoreWithSelector(
+    api.subscribe,
+    api.getState,
+    api.getServerState || api.getInitialState,
+    selector,
+    equalityFn
+  );
+  useDebugValue(slice);
+  return slice;
+}
+```
+
+他把剛剛建立的 `getState` 跟 `subscribe` 傳入 `useSyncExternalStoreWithSelector`，並回傳了它的結果。
+
+那這個 `useSyncExternalStoreWithSelector` 又是怎麼辦到的呢？這就要提到 react 18 新增的 hook [useSyncExternalStore](https://ru.react.dev/reference/react/useSyncExternalStore)。
+
+### useSyncExternalStore
+
+`useSyncExternalStore` 是 react 18 新增的 hook，用來同步 React 內部及外部的 state 狀態。那到底是什麼意思呢？我們都知道 React 在更新 UI 畫面時，會透過 useState 來更新 state，並進行 re-render，但如果我今天不想用 useState 想要隨便建立一個物件儲存 state，那我要怎麼告訴 React 這個物件底下的值改變時，幫我重新進行畫面更新呢？這就是 `useSyncExternalStore` 的作用拉！
+
+```ts
+const snapshot = useSyncExternalStore(
+  subscribe,
+  getSnapshot,
+  getServerSnapshot
+);
+```
+
+會傳入三個參數：
+
+- `subscribe`：訂閱 state 的變化。
+- `getSnapshot`：取得當前最新的值。
+- `getServerSnapshot`：取得 SSR 的初始狀態（可選）。
+
+而因為這個 hook 是 React 18 新增的，所以為了讓之前的版本也可以做使用，所以有另外把這個 hook 拉出一個獨立的 package [use-sync-external-store](https://www.npmjs.com/package/use-sync-external-store)，透過這個 package 的原始碼，我們可以一窺究竟這個 hook 大概是怎麼實作的。
+
+<Img src={useSyncExternalStore} />
+
+原始碼位置是在 react package 底下的 [useSyncExternalStoreShimClient.js](https://github.com/facebook/react/blob/main/packages/use-sync-external-store/src/useSyncExternalStoreShimClient.js) 裡面，這邊只列出重點程式碼：
+
+```ts {7,13-17}
+export function useSyncExternalStore<T>(
+  subscribe: (() => void) => () => void,
+  getSnapshot: () => T,
+  getServerSnapshot?: () => T,
+): T {
+  const value = getSnapshot();
+  const [{inst}, forceUpdate] = useState({inst: {value, getSnapshot}});
+
+  useEffect(() => {
+    if (checkIfSnapshotChanged(inst)) {
+      forceUpdate({inst});
+    }
+    const handleStoreChange = () => {
+      if (checkIfSnapshotChanged(inst)) {
+        forceUpdate({inst});
+      }
+    };
+    return subscribe(handleStoreChange);
+  }, [subscribe]);
+
+  useDebugValue(value);
+  return value;
+}
+```
+
+可以看到其實是透過 useState 及 useEffect 來達成的，useState 的部分是為了讓 React 重新 render，他實作了一個強制更新的方法，因為他每次 setState 的時候都是傳入一個新的物件，而 React 內部在判斷是否要 re-render 時，兩個物件會判定為不同，所以就會重新 render。
+
+而在 useEffect 的部分，它建立了一個 `handleStoreChange` 的 function，裡面會先判斷目前的值是否有改變，如果有改變就會呼叫 `forceUpdate` 來進行強制更新，而這個 `handleStoreChange` 也就是我們前面說的 <Highlight>更新函式</Highlight>，最後透過 `subscribe` 把這個 function 加入 listeners 裡面。
+
+### zustand 內部訂閱流程圖
+
+下面是<Highlight>更新函式</Highlight>被加進 listeners 的流程：
+
+<Img src={updateFlow} width='700px' center />
+
+### zustand 更新 state 流程圖
+
+接下來讓我們來看一下如果今天有多個元件使用了同一個 zustand 的 state 時，是如何進行更新的。現在有兩個元件
+
+<Img src={counterTwoComponent} width='350px' center />
+
+```jsx {3} title="Counter.js"
+import { useCountStore } from "./store";
+export default function Counter() {
+  const { count, increment, decrement } = useCountStore();
+  return (
+    <div className='counter'>
+      <button onClick={decrement}>-</button>
+      <h1>{count}</h1>
+      <button onClick={increment}>+</button>
+    </div>
+  );
+}
+```
+
+```jsx {3} title="Total.js"
+import { useCountStore } from "./store";
+export default function Total() {
+  const { count } = useCountStore();
+  return (
+    <div>
+      <h1>Total Count: {count}</h1>
+    </div>
+  );
+}
+```
+
+這兩個元件都呼叫了 `useCountStore` 來取得 count 的值，前面提到 `useCountStore`
+會呼叫 `useSyncExternalStore` 來把 <Highlight>更新函式</Highlight> 加入到 listeners
+裡面，所以當畫面渲染時，listeners 會有兩個 updator 函式，而當 Counter 呼叫了 `increment` 或 `decrement` 時，會觸發 zustand
+內部的 `setState`，這時候會先更新 state 的值，然後執行 listeners 裡面的所有 updator
+函式，這樣就會讓所有使用了這個 state 的元件都重新 render。
+
+<Img src={mutiComponentFlow} center />
+
+## zustand 濃縮版
+
+如果把 zustand 的原始碼只保留核心功能，會變成這樣：
+
+1. create
+
+```ts
+export const create = (createState) => {
+  const api = createStore(createState);
+  return () => useStore(api);
+};
+```
+
+2. createStore
+
+```ts
+const createStore = (createState) => {
+  let state = {};
+  const listeners = new Set();
+
+  const setState = (partial) => {
+    const nextState = partial(state);
+    state = { ...state, ...nextState };
+    listeners.forEach((listener) => listener());
+  };
+
+  const getState = () => state;
+
+  const subscribe = (listener) => {
+    listeners.add(listener);
+    return () => listeners.delete(listener);
+  };
+
+  state = createState(setState);
+
+  const api = { setState, getState, subscribe };
+  return api;
+};
+```
+
+3. useStore
+
+```ts
+import { useSyncExternalStore } from "react";
+
+export function useStore(api) {
+  const entireState = useSyncExternalStore(api.subscribe, api.getState);
+
+  return entireState;
+}
+```
+
+## zustand 架構模式
+
+Zustand 的在 [Flux inspired practice](https://docs.pmnd.rs/zustand/guides/flux-inspired-practice) 有提到：
+
+> Although Zustand is an unopinionated library, we do recommend a few patterns. These are inspired by practices originally found in Flux, and more recently Redux, so if you are coming from another library, you should feel right at home.
+
+意思是 Zustand 本身並沒有強制要求使用者遵循任何特定的架構模式，但是建議使用者可以參考 Flux 或 Redux 的一些實踐方式，Redux 在學 React 的時候應該都有聽過，那這個 **Flux** 是什麼呢？
+
+### Flux
+
+Flux 是一種架構模式，那什麼是架構模式呢？比較常聽到的例子就是 MVC，架構模式的目的是用來幫助我們可以更好的組織程式碼，讓程式碼更加容易維護、擴充。而 Flux 則是從 MVC 所啟發出來的一種架構模式。
+
+:::info MVC
+
+MVC 模式最早由 Trygve Reenskaug 在 1978 年提出，並且在 University of Oslo 有留下[研究報告](https://www.duo.uio.no/bitstream/handle/10852/9621/Reenskaug-MVC.pdf?sequence=1&isAllowed=y)，他把應用程式分為三個部分：
+
+1. Model: 負責處理資料
+2. View: 負責顯示畫面
+3. Controller: 負責處理 View 的事件，也會說是 View 及 Model 之間的橋樑
+
+MVC 的好處是可以讓程式碼更加模組化，每個部分都有自己的責任，不會互相干擾，也讓程式碼更容易維護。
+:::
+
+雖然 MVC 的架構定義了三個部分的職責，不過對於三個部分之間的溝通方式並沒有明確的定義，所以在實際應用時，可能會有不同的實作方式，這也是為什麼有很多不同的 MVC 變體，像是 MVP、MVVM 等等，而 Flux 的出現就是為了解決 MVC 在資料流上不好追蹤的問題。
+
+Flux 是 React 在 2014 年的 [Hacker Way conference](https://www.youtube.com/watch?v=nYkdrAPrdcw&ab_channel=MetaDevelopers) 上提出的概念，為的就是解決 Facebook 在使用 MVC 架構所遇到的問題。Facebook 最初是使用雙向綁定的方式進行資料傳遞，但隨著專案越來越大，資料流變得越來越複雜。
+
+<Img src={mvcProblem} />
+
+:::info 小爭議
+這張圖在當時引起不少的[討論](https://www.reddit.com/r/programming/comments/25nrb5/facebook_mvc_does_not_scale_use_flux_instead/)，有人認為 facebook 的 MVC 圖是錯的，真正的 MVC 才不會只有一個 controller，也有人認為 Flux 根本只是 MVC 換個名詞。
+
+而當時的演講者 Jing Chen 也有出來[說明](https://www.reddit.com/r/programming/comments/25nrb5/comment/chjbo05/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)，這張圖的確是有點投機取巧，不過重點還是在於雙向資料流所造成的問題，而 Flux 中的 dispatcher 並不等同於 controller，他只是一個分發 action 的 callback 來達成單向資料流的目的。
+:::
+
+meta 工程師舉的實際例子是當初做 message chat 的時候，一開始只有一個區塊跟訊息有關，但後來越來越多功能會對訊息的數量造成影響。
+
+而遇到的 bug 就是**未讀訊息**的數字不準確，因為很多的區塊都有可能會影響到未讀訊息的數字，所以要追蹤到底是哪個區塊造成的 bug 就變得非常困難，而 meta 每次遇到這個 bug 都是去解決那些 edge case (邊界案例)，沒有真的解決核心問題，所以導致每次新增功能都會有新的 bug 產生。
+
+<Img src={fbMsgBlock} />
+
+他們認為這是因為 MVC 的雙向綁定造成的，當資料流變得越來越複雜時，就會變得非常難以追蹤，所以提出了 Flux 的**單向資料流**的架構。
+
+Flux 將資料流的傳遞分為四個部分：
+
+1. Action：物件結構包含行為定義及傳遞的資訊
+2. Dispatcher：負責分發 Action 的函式
+3. Store：儲存資料及回應 Action 的行為
+4. 顯示 Store 提供的資料畫面
+
+<Img src={fluxFlow} />
+
+### Redux
+
+在提出 Flux 架構的同時，meta 也提出了一個叫 [Flux](https://facebookarchive.github.io/flux/) 的 library，不過並沒有受到太多的關注，直到隔一年 Dan Abramov 提出了基於 Flux 概念實作的 library [Redux](https://redux.js.org/)，這個 library 後來成為了 React 最受歡迎的狀態管理 library 之一。
+
+在 Redux 的[官網](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow#redux-application-data-flow)可以明確的看到整個 redux 的資料流：
+
+<Img src={reduxFlow} />
+
+## 參考資料
+
+- [React 狀態管理套件比較與原理實現 feat. Redux, Zustand, Jotai, Recoil, MobX, Valtio](https://medium.com/%E6%89%8B%E5%AF%AB%E7%AD%86%E8%A8%98/a-comparison-of-react-state-management-libraries-ba61db07332b)
+- [是时候放弃 redux 了，zustand 是完美替代者（主要是源码分析）](https://juejin.cn/post/7178318352174022717)
+- [The Rise of Flux: How Facebook’s Shift Away from MVC Led to a New Era of UI Architecture](https://medium.com/wix-engineering/the-rise-of-flux-how-facebooks-shift-away-from-mvc-led-to-a-new-era-of-ui-architecture-61d78b4377b0)
