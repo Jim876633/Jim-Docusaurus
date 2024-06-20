@@ -103,6 +103,7 @@ blockquote {
   margin: 0 0 1rem;
   padding: 1rem;
   box-shadow: none;
+  font-style: italic;
 }
 
 html[data-theme="dark"] blockquote {

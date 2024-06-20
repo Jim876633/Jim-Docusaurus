@@ -1,7 +1,7 @@
 ---
 title: 【Mac】入坑 Mac 了 ！！
 sidebar_label: 入坑 Mac 了 ！！
-tags: ["Mac"]
+tags: [mac]
 ---
 
 ## 契機
