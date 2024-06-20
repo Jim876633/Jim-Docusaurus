@@ -114,7 +114,9 @@ async function fetchDocs(docsList) {
     const res = await fetch("./docsCreateDate.json");
     const data = await res.json();
     const docsItem = data.map((doc) => {
-      const matchDocList = docsList.find((d) => doc.path.includes(d.id));
+      const matchDocList = docsList.find((d) =>
+        doc.path.includes(`${d.id}.md`)
+      );
       return {
         ...doc,
         ...matchDocList,
