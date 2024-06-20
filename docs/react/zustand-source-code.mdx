@@ -84,7 +84,7 @@ export const createStore = ((createState) =>
 
 一樣回傳了一個 `createStoreImpl` 的 fucntion：
 
-```ts
+```ts {4-5,20,29-33}
 const createStoreImpl: CreateStoreImpl = (createState) => {
   type TState = ReturnType<typeof createState>;
   type Listener = (state: TState, prevState: TState) => void;
@@ -152,7 +152,7 @@ createStore 的重點在於他建立了與訂閱模式相關的 function：
 
 最後一個 function 是 [useStore](https://github.com/pmndrs/zustand/blob/6109bc3bd0f3850c2d9546956de971f27834ac7a/src/react.ts#L53) 可以說是 zustand 的核心 function：
 
-```ts
+```ts {16-22}
 export function useStore<TState, StateSlice>(
   api: WithReact<StoreApi<TState>>,
   selector: (state: TState) => StateSlice = identity as any,
@@ -186,7 +186,7 @@ export function useStore<TState, StateSlice>(
 
 ### useSyncExternalStore
 
-`useSyncExternalStore` 是 react 18 新增的 hook，用來同步 React 內部及外部的 state 狀態。那到底是什麼意思呢？我們都知道 React 在更新 UI 畫面時，會透過 useState 來更新 state，並進行 re-render，但如果我今天不想用 useState 想要隨便建立一個物件儲存 state，那我要怎麼告訴 React 這個物件底下的值改變時，幫我重新進行畫面更新呢？這就是 `useSyncExternalStore` 的作用拉！
+`useSyncExternalStore` 是 react 18 新增的 hook，用來同步 React 內部及外部的 state 狀態。這是什麼意思呢？我們都知道 React 在更新 UI 畫面時，會透過 useState 來更新 state，並進行 re-render，但如果我今天不想用 useState 想要隨便建立一個物件儲存 state，那我要怎麼告訴 React 這個物件底下的值改變時，幫我重新進行畫面更新呢？這就是 `useSyncExternalStore` 的作用拉！
 
 ```ts
 const snapshot = useSyncExternalStore(
@@ -342,7 +342,7 @@ Zustand 的在 [Flux inspired practice](https://docs.pmnd.rs/zustand/guides/flux
 
 > Although Zustand is an unopinionated library, we do recommend a few patterns. These are inspired by practices originally found in Flux, and more recently Redux, so if you are coming from another library, you should feel right at home.
 
-意思是 Zustand 本身並沒有強制要求使用者遵循任何特定的架構模式，但是建議使用者可以參考 Flux 或 Redux 的一些實踐方式，Redux 在學 React 的時候應該都有聽過，那這個 **Flux** 是什麼呢？
+意思是 Zustand 本身並沒有強制要求使用者遵循任何特定的架構模式，但是建議使用者可以參考 Flux 或 Redux 的一些實踐方式。Redux 在學 React 的時候應該都有聽過，那這個 **Flux** 是什麼呢？
 
 ### Flux
 
@@ -395,6 +395,16 @@ Flux 將資料流的傳遞分為四個部分：
 在 Redux 的[官網](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow#redux-application-data-flow)可以明確的看到整個 redux 的資料流：
 
 <Img src={reduxFlow} />
+
+## 總結
+
+其實光看 Flux 及 Redux 的圖，會覺得好像跟 MVC 沒有什麼差別，也是定義個別的職責，View 跟 Model 分開，也有類似 controller 的東西。不過重點在於它更加嚴謹的定義了資料流的方向，讓資料更好的統一，雖然 MVC 架構也辦得到這件事，但並不是每個人都會這麼做，所以我認爲 Flux 還是跟 MVC 有所區別。
+
+回到 zustand，之所以能夠寫的那麼簡潔方邊使用，是因為他並不是完全的實作了 Flux，他捨棄了 Flux 中的 Action 及 Dispatcher，只保留了 Store 的部分，在 DX (Developer Experience) 上的體驗就比較好，而雖然不是嚴謹的 Flux 架構，但還是遵循著最基本的單向資料流的原則，讓我們可以更好的進行管理狀態。
+
+總而言之，如果不想使用 React 原生的 useContext，而學習 Redux 的入門又有點太高，zustand 是一個很好的選擇，在做 side project 或是小型專案絕對是非常夠用的，而且也可以讓你對狀態管理有更深的了解！
+
+有任何問題或是內容有誤的地方，歡迎在底下留言 ~
 
 ## 參考資料
 
