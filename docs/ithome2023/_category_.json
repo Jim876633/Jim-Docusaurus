@@ -2,6 +2,7 @@
   "label": "2023 鐵人賽",
   "position": 15,
   "link": {
+    "slug": "2023-ithome",
     "type": "generated-index",
     "description": "2023 鐵人賽系列文「React 測試 x AI：探索測試新境界，測試不再枯燥乏味！」整理"
   }
