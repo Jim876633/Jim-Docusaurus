@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkmy_website=self.webpackChunkmy_website||[]).push([[5738],{5069:e=>{e.exports=JSON.parse('{"title":"Git","slug":"/category/git","permalink":"/category/git","navigation":{"previous":{"title":"Router \u4ecb\u7d39","permalink":"/vue/vue2/router"},"next":{"title":"git fetch","permalink":"/git/fetch"}}}')}}]);
