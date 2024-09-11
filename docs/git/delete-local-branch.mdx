@@ -1,0 +1,68 @@
+---
+title: 【Git】如何刪除所有未在遠端存在的本地端分支
+sidebar_label: 刪除未在遠端的本地端分支
+sidebar_position: 5
+tags: [git]
+---
+
+在發 MR 或 PR 時，如果沒有要保留分支，會勾選 `Delete branch after merge`，遠端分支就會刪除了，但本地端分支還是會存在。當越開越多分支時，本地端分支就會越來越多，整個 git graph 就會變的很難看。紀錄一下如何刪除所有未在遠端存在的本地端分支。
+
+
+## 手動刪除本地端分支
+
+想要刪除本地端分支，可以使用以下指令：
+
+```bash
+git branch -d <branch name>
+```
+
+不過要是有很多分支要刪除就會很麻煩，接著來看怎麼樣一次刪除。
+
+## 刪除所有未在遠端的本地端分支
+
+
+### 1. 找出所有未在遠端的分支
+
+首先，我們要找出所有未在遠端的分支，使用以下指令：
+
+```bash
+git branch -vv | grep ': gone]' | awk '{print $1}'
+```
+
+
+1. `git branch -vv`：列出所有本地端分支
+2. `grep ': gone]'`：過濾掉遠端已存在的分支
+3. `awk '{print $1}'`：取出過濾後的分支名稱
+
+### 2. 刪除所有未在遠端的分支
+
+確認完要未在遠端的分支可以刪除後，使用以下指令：
+
+```bash
+  git branch -vv | grep ': gone]'|  grep -v "\*" | awk '{ print $1; }' | xargs -r git branch -D ;
+```
+
+1. `grep -v "\*"`：過濾掉目前所在的分支
+2. `xargs -r git branch -D`：刪除所有未在遠端存在的本地端分支
+
+就大公告成了！
+
+## 自制快捷鍵
+
+因為指令太長了，每次都還要再重新查一次，可以在 `~/.bashrc` 或 `~/.zshrc` 裡面自製快捷鍵：
+
+```bash
+alias gspb="git fetch --prune && git branch -vv | grep ': gone]' | awk '{print $1}'"
+alias gdlb="git branch -vv | grep ': gone]' | grep -v '\*' | awk '{ print \$1; }' | xargs -r git branch -D ; echo 'Deleted gone branches in local !'"
+```
+
+用 `function` 或 `alias` 都可以，還可以把所有指令整理起來方便使用。
+
+```bash
+function fl() {
+  echo "gspb - git show local banch name that the remote branch is deleted"
+  echo "gdlb - git delete local branch that the remote branch is deleted"
+}
+```
+
+
