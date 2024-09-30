@@ -170,8 +170,17 @@ const config = {
         indexName: "Jim-Docusaurus",
         appId: process.env.APPLICATION_ID,
       },
+      imageZoom: {
+        options: {
+          margin: 24,
+        },
+      },
     }),
-  plugins: ["docusaurus-plugin-sass", "docusaurus-plugin-get-docs-create-date"],
+  plugins: [
+    "docusaurus-plugin-sass",
+    "plugin-image-zoom",
+    "docusaurus-plugin-get-docs-create-date",
+  ],
 };
 
 module.exports = config;
