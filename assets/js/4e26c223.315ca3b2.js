@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkmy_website=self.webpackChunkmy_website||[]).push([[269],{4915:e=>{e.exports=JSON.parse('{"categoryGeneratedIndex":{"title":"React","slug":"/category/react","permalink":"/category/react","sidebar":"tutorialSidebar","navigation":{"previous":{"title":"Intro","permalink":"/"},"next":{"title":"React router (v6)","permalink":"/react/router"}}}}')}}]);
