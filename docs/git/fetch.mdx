@@ -1,15 +1,17 @@
 ---
 title: 【Git】Git fetch 是做什麼的？
-sidebar_label: Git fetch 是做什麼的？
-tags: ["Git", "Fetch"]
+sidebar_label: git fetch
+tags: [git]
+sidebar_position: 0
 ---
 
 import { Img } from "@site/src/components/Width";
-import image_1 from "/img/git/fetch-1.png";
-import image_2 from "/img/git/fetch-2.png";
-import image_4 from "/img/git/fetch-4.png";
-import image_5 from "/img/git/fetch-5.png";
-import image_3 from "/img/git/fetch-3.png";
+import image_1 from "/img/git/fetch/fetch-1.png";
+import image_2 from "/img/git/fetch/fetch-2.png";
+import image_3 from "/img/git/fetch/fetch-3.png";
+import image_4 from "/img/git/fetch/fetch-4.png";
+import image_5 from "/img/git/fetch/fetch-5.png";
+import image_6 from "/img/git/fetch/fetch-6.jpg";
 
 在剛開始學 git 的時候，只知道 `git fetch` 是把檔案抓下來，`git merge` 是合併到本地端，當學到 `git pull` 時，得知
 
@@ -51,11 +53,23 @@ git pull = git fetch + git merge
 如果想比對兩個離很遠的 commit，只要在 git graph 點擊一個 commit，按住 `command` 再點擊另一個 commit，就可以顯示兩個分支的不同了喔！
 :::
 
+## 刪除 tracking branch
+
+假設你的遠端分支已經被刪除，但是本地端的 tracking branch 還在，這時候可以使用 `git fetch --prune` 來同步遠端分支跟本地端的 tracking branch，如果遠端已經不存在，就會刪除本地端的 tracking branch。
+
+```bash
+git fetch --prune # or git fetch -p
+```
+
 ## 設定自動 fetch
 
 在 Vscode 裡面可以設定自動 fetch 跟間隔秒數，預設是 false。
 
 <Img src={image_2} />
+
+而如果想要在 fetch 的時候，自動刪除遠端分支已經不存在的 tracking branch，可以在 vscode 尋找 **fetch and prune**，可以設定 git 或是 git graph 預設的 fetch 行為。
+
+<Img src={image_6} />
 
 ## 只 fetch 有什麼優點
 

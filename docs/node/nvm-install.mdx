@@ -1,0 +1,87 @@
+---
+title: 【Node】在 Mac 安裝 nvm
+sidebar_label: 在 Mac 安裝 nvm
+tags: [nvm, node]
+---
+
+Nvm 是一個 Node.js 的版本管理工具，可以讓你在不同的 Node.js 版本之間切換。
+
+## 安裝 nvm
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+```
+
+最新版號可以看 [Install & Update Script](https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script)
+
+安裝完後下指令確認是否安裝成功
+
+```bash
+nvm --version
+```
+
+如果預設的 shell 不是 bash，或是預設路徑沒設好，可能會出現 `zsh: command not found: nvm` 的錯誤。
+
+這時可以手動在 `~/.bashrc` 或 `~/.zshrc` (看你設定的 shell 是哪一個)，加入以下設定：
+
+```bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+```
+
+然後重新開啟，就可以使用 nvm 了！
+
+:::info
+
+從 [macOS Catalina (10.15)](https://support.apple.com/en-ca/102360) 開始，預設的 shell 從 bash 改成 zsh。
+
+要更改預設的 shell 路徑，可以在終端機輸入以下指令：
+
+```bash
+chsh -s <path>
+```
+
+path 通常是 `/bin/bash` 或 `/bin/zsh`，可以用 `which bash` 或 `which zsh` 查看。
+
+:::
+
+## 使用 nvm
+
+nvm 強大的地方在於可以切換不同版本的 Node.js，如果要安裝特定版本的 Node.js，可以用以下指令：
+
+```bash
+nvm install <version>
+```
+
+查看目前安裝的 Node.js 版本：
+
+```bash
+nvm ls
+```
+
+切換 Node.js 版本：
+
+```bash
+nvm use <version>
+```
+
+刪除特定版本的 Node.js：
+
+```bash
+nvm uninstall <version>
+```
+
+通常安裝的第一個 Node.js 版本會成為**預設版本**，如果要更改預設版本，可以用以下指令：
+
+```bash
+nvm alias default <version>
+```
+
+## 自動切換 Node.js 版本
+
+要依據專案的需求切換 Node.js 版本，可以參考[【Node】在不同專案自動切換 Node 版本](/node/auto-switch-node-version)。
+
+## 參考資料
+
+[安裝 nvm 環境，Node.js 開發者必學（Windows、Mac 均適用）](https://www.casper.tw/development/2022/01/10/install-nvm/)

@@ -1,0 +1,112 @@
+---
+title: 【Other】Vim 基本指令
+sidebar_label: Vim 基本指令
+tags: [vim]
+---
+
+Vim 總共有四種模式，分別是 Normal Mode、Insert Mode、Visual Mode 及 Command Mode。
+
+如果在 VS Code 中要使用 Vim 的話，可以安裝 [Vim](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) 擴充套件。
+
+## Normal Mode（普通/一般模式）
+
+在 Vim 中，當你打開一個檔案時，你會進入 **Normal Mode**，這個 Normal Mode 跟平常打字的模式不太一樣，你無法直接輸入文字，而是可以透過一些指令來操作檔案，可以把 Normal Mode 當作是一個中繼站，你可以透過 Normal Mode 來切換到其他模式，像是切換到 Insert Mode 來輸入文字，切換到 Visual Mode 來選取文字，或是切換到 Command Mode 來執行一些指令。
+
+以下列出我常用的一些指令：
+
+### 進入 Insert Mode
+
+- `i` : 在游標前插入
+- `I` : 在游標行首插入
+- `a` : 在游標後插入
+- `A` : 在游標行尾插入
+- `o` : 在游標下插入新行
+- `O` : 在游標上插入新行
+- `cc`: 剪下當前行並進入插入模式
+- `cw` : 剪下當前單字(不包含游標前面)並進入插入模式
+- `ciw` : 剪下當前單字(包含游標前面)並進入插入模式
+
+### 取代文字
+
+- `r` : 取代當前游標所在的字元
+- `R` : 取代當前游標所在的字元及其後的字元(直到退出 normal mode)
+
+### 移動游標
+
+- `h` : 左移
+- `j` : 下移
+- `k` : 上移
+- `l` : 右移
+- `w` : 移動到下一個單字的開頭
+- `b` : 移動到上一個單字的開頭
+- `e` : 移動到當前單字的結尾
+- `0` : 移動到當前行的行首
+- `$` : 移動到當前行的行尾
+- `gg` : 移動到檔案的第一行
+- `G` : 移動到檔案的最後一行
+- n + `G` / `:` + n : 移動到檔案的第 n 行
+- n + `Enter` : 向下移動 n 行
+- n + `Space` : 向右移動 n 個字元
+- `Crtl` + `f` : 向下移動一頁
+- `Crtl` + `b` : 向上移動一頁
+- `Crtl` + `d` : 向下移動半頁
+- `Crtl` + `u` : 向上移動半頁
+
+### 複製、剪下、貼上
+
+- `y` : 複製選取的文字
+- `yy` : 複製當前行
+- `p` : 貼上
+- `d` : 剪下選取的文字
+- `dd` : 剪下當前行
+- n + `dd` : 剪下 n 行
+- `dw` : 剪下當前單字(不包含游標前面)
+- `diw` : 剪下當前單字(包含游標前面)
+- `x` : 剪下當前游標所在的字元
+- `u` : 復原上一步操作
+
+### 搜尋、取代
+
+- `/` + keyword + `Enter` : 向下搜尋關鍵字
+- `n` : 跳到下一個關鍵字
+- `N` : 跳到上一個關鍵字
+
+### 回到 Normal Mode
+
+- `Esc` / `Crtl` + `[` : 回到 Normal Mode
+
+如果覺得這兩個指令都不太好按，在 VS Code 的 Vim 擴充套件中，可以透過設定 `vim.insertModeKeyBindings` 來自定義快捷鍵，例如：
+
+```json
+{
+  "vim.insertModeKeyBindings": [
+    {
+      "before": ["j", "j"],
+      "after": ["<Esc>"]
+    }
+  ]
+}
+```
+
+就可以透過連續按兩次 `j` 來回到 Normal Mode。
+
+## 其他
+
+- `zz` : 將當前行置中
+- `zt` : 將當前行置頂
+- `zb` : 將當前行置底
+- `.` : 重複上一步操作
+
+## Visual Mode(視覺模式)
+
+在 Normal Mode 中，按下 `v` 可以進入 Visual Mode，這個模式可以用來選取文字，選取文字後可以使用 Normal Mode 的複製、剪下、貼上等指令。
+
+### 選取文字
+
+- `v` : 進入 Visual Mode 選取文字
+- `V` : 進入 Visual Line Mode 選取整行文字
+- `Ctrl` + `v` : 進入 Visual Block Mode 選取區塊文字
+
+## 參考
+
+- [Vim Cheat Sheet](https://vim.rtorr.com/lang/zh_tw/)

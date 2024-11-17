@@ -1,0 +1,193 @@
+---
+title: 【Git】Git tag 介紹
+sidebar_label: git tag
+sidebar_position: 0
+tags: [git]
+---
+
+import { Img } from "@site/src/components/Width";
+import Highlight from "@site/src/components/Highlight";
+import image_1 from "/img/git/tag/tag-1.jpg";
+import image_2 from "/img/git/tag/tag-2.jpg";
+import image_3 from "/img/git/tag/tag-3.jpg";
+import image_4 from "/img/git/tag/tag-4.jpg";
+import image_5 from "/img/git/tag/tag-5.jpg";
+import image_6 from "/img/git/tag/tag-6.jpg";
+import image_7 from "/img/git/tag/tag-7.jpg";
+import image_8 from "/img/git/tag/tag-8.jpg";
+
+Git tag 是一個平常不太會用到的功能，基本上每次要使用時都要再看一次指令介紹，所以這邊就來整理一下。
+
+## 什麼是 Tag
+
+Tag (標籤) 是一個指向特定 commit 的指標，可以用來標記重要的 commit 或是版本號，通常會用在 release 版本上來標示版本號。
+
+<Img src={image_2} width='600px' />
+
+## 基本使用
+
+### 新增 tag
+
+tag 又分兩種類型，一種是輕量型的 tag，只是一個指向 commit 的指標，另一種是附註型的 tag，可以附註一些資訊。
+
+<Highlight block>輕量型標籤 (lightweight tag)</Highlight>
+
+```bash
+git tag <tag_name> <commit_id>
+```
+
+新增 tag 時可以不用指定 commit_id，預設會指向目前的 HEAD。
+
+<Highlight block>附註型標籤 (annotated tag)</Highlight>
+
+```bash
+git tag -a <tag_name> -m "<tag_message>"
+```
+
+`-a` 代表附註型標籤，`-m` 代表 tag 的訊息。
+
+:::info
+如果有 `-m`，則預設會帶入 `-a`，所以可以省略 `-a`。
+
+如果只有 `-a`，會開啟 vim 讓你輸入 tag 的訊息。
+:::
+
+如果要判斷 tag 是哪一種，可以用 `git show <tag_name>` 來查看。
+
+<Img src={image_1} />
+
+匡起來的部分就是 **附註型標籤(annotated tag)** 多出來的部分，可以看到多出了 Tagger、Date 以及訊息的文字。
+
+共同有的部分會顯示 commit 的 hash 值、作者、日期、訊息以及更動的內容。
+
+### 刪除 tag
+
+```bash
+git tag -d <tag_name>
+```
+
+### 查看 tag 名稱
+
+```bash
+git tag
+```
+
+如果要找出特定 prefix 的 tag，可以用 `git tag -l "<prefix>*"`。
+
+```bash
+git tag -l "v1.0.*"
+```
+
+### 查看 tag 詳細資訊
+
+```bash
+git show <tag_name>
+```
+
+### 用 tag 切換到特定的 commit
+
+```bash
+git checkout <tag_name>
+```
+
+可能會看到一段提示訊息，因為 tag 是指向特定的 commit，所以會進入到分離 HEAD 的狀態。
+
+> You are in 'detached HEAD' state. You can look around, make experimental
+>
+> changes and commit them, and you can discard any commits you make in this
+> state without impacting any branches by switching back to a branch.
+>
+> If you want to create a new branch to retain commits you create, you may
+> do so (now or later) by using -c with the switch command. Example:
+>
+> git switch -c \<new-branch-name\>
+>
+> Or undo this operation with:
+>
+> git switch -
+>
+> Turn off this advice by setting config variable advice.detachedHead to false
+
+可以加上 `--detach` 來隱藏這段提示訊息。
+
+```bash
+git checkout --detach <tag_name>
+```
+
+### 推送 tag 到遠端
+
+```bash
+git push origin <tag_name>
+```
+
+## 補充
+
+### Tag 的儲存位置
+
+Git Tag 的儲存位置是在 `.git/refs/tags`，打開檔案就會看到 tag 指向的 commit id。
+
+那麼在同一個 commit 進行 light tag 和 annotated tag 有什麼差別呢？
+
+為求實驗的精神，我們來試試看。
+
+先在一個 commit 上打上 light tag 跟 annotated tag。
+
+<Img src={image_3} width='700px' />
+
+先記著這個 commit id 的值是 _2b3bc114_。
+
+再來打開 `.git/refs/tags` 裡各別的 tag 檔案。
+
+<Img src={image_4} width='500px' />
+
+<Img src={image_5} width='500px' />
+
+可以看到 light-tag 的 commit id 是 _2b3bc114_，跟預期的一樣。
+
+不過 annotated-tag 的 commit id 怎麼是另外一個值呢？
+
+把這個 id 內容印出來
+
+```bash
+git cat-file -p 07099036
+```
+
+<Img src={image_6} />
+
+原來 annotated tag 指向的 commit id 是一個新的物件，這個物件裡面包含了 annotated tag 多出來資訊，以及 **Object** 欄位指向原本的 commit id _2b3bc114_。
+
+### 一般 commit id
+
+順便看一下一般的 commit id 內容。
+
+```bash
+git cat-file -p 2b3bc114
+```
+
+內容就跟 annotated tag 不一樣，這邊記錄主要就是 tree(當前 commit 的檔案快照 id) 跟 parent (上一個 commit id) 。
+
+<Img src={image_7} />
+
+再更近一步看 tree 裡面的內容
+
+```bash
+git cat-file -p ee6a0657
+```
+
+<Img src={image_8} width='700px' />
+
+就會看到當前 commit 的檔案快照內容，有分成四個區塊來儲存檔案的資訊。
+
+1. 100644/040000：表示檔案的權限及類型
+2. blob：表示檔案的儲存類型
+3. 59d9a3a3：表示檔案的 hash 值
+4. .editorconfig：表示檔案的名稱
+
+:::info
+一般 commit id 內容會存在 `.git/objects` 裡，以 commit id 的前兩個字元當作資料夾名稱，後面的字元當作檔案名稱。
+:::
+
+## 參考資料
+
+- [Git-標籤](https://gitbook.tw/chapters/tag/using-tag)
+- [2.6 Git 基礎-標籤](https://git-scm.com/book/zh-tw/v2/Git-%E5%9F%BA%E7%A4%8E-%E6%A8%99%E7%B1%A4)

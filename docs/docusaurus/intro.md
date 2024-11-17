@@ -1,7 +1,8 @@
 ---
 title: 【Docusaurus】介紹、建立步驟
 sidebar_label: 介紹、建立步驟
-tags: ["Docusaurus"]
+description: Docusaurus 是由 Facebook 推出的，用 React 建構，所以可以使用 JSX 語法，或是使用 Components 去製作網站，原始樣板就有切換深色主題模式，文章的清單設定也非常的好理解，還可以使用 Algolia 實作搜索功能。
+tags: [docusaurus]
 ---
 
 # Docusaurus 介紹、開始建構網站
