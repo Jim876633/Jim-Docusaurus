@@ -28,6 +28,10 @@ import image_17 from "/img/git/rebase/rebase-17.jpg";
 import image_18 from "/img/git/rebase/rebase-18.gif";
 import image_19 from "/img/git/rebase/rebase-19.jpg";
 import image_20 from "/img/git/rebase/rebase-20.jpg";
+import image_21 from "/img/git/rebase/rebase-21.jpg";
+import image_22 from "/img/git/rebase/rebase-22.jpg";
+import image_23 from "/img/git/rebase/rebase-23.gif";
+import image_24 from "/img/git/rebase/rebase-24.gif";
 
 一般在合併分支時，比較常見的方式是使用 `git merge`，在看 git graph 的時候也比較容易看出分支的合併情況。不過當分支越來越多時，git graph 會變得越來越複雜，有些人反而喜歡分支乾淨一點，因此有另外一種合併分支的方式，那就是使用 `git rebase`。
 
@@ -220,6 +224,66 @@ squash 和 fixup 都是合併 commit 的動作，不過 **fixup** 會直接使�
   <ImgBlock src={image_9} />
   <ImgBlock src={image_13} />
 </Block>
+
+## 包含 merge commit 的 rebase
+
+在 rebase 的過程中，如果遇到 merge commit，預設是會被忽略掉，所以歷史紀錄就會包含 merge 的所有 commit，有時候會容易造成混淆。
+
+例如下面是 `merge-branch` rebase 到 `master`：
+
+<Img src={image_23} width='700px' center />
+
+原本的 `merge-branch` 有包含 `test-branch` 的 commit 跟 merge，但是 rebase 後，merge 的 commit 就消失了，取而代之的是 `test-branch` 的 commit。
+
+在 git 2.22 版本之後，新增了一個參數 `--rebase-merges`，可以讓你在 rebase 時，保留 merge commit。
+
+```bash
+git rebase -r <commit hash>
+```
+
+這樣就可以保留 merge commit，讓你的歷史記錄更加完整。
+
+<Img src={image_24} width='700px' center />
+
+這個參數也可以搭配 interactive 模式使用，讓你可以更加自由的修改 commit。
+
+```bash
+git rebase -i -r <commit hash>
+```
+
+加上 `-r` 的輸出比起一般的 `-i` 更加複雜，以下面這張圖為例
+
+<Img src={image_21} width='700px' center />
+
+當我們執行 `git rebase -i -r 8104fda2` 時會像這樣：
+
+<Img src={image_22} width='700px' center />
+
+- <Text bold>\# Branch :</Text> 通常每一個 merge 會是一個區塊，# Branch 是用來辨識每一個區塊的標籤，預設會抓取該分支的名稱並用
+  `-` 連接 (Ex: `feature/branch` -> `feature-branch`，如果同樣名稱會在後面 -數字來做辨別)。
+- <Text bold>label :</Text> 用來標記 commit，供後續 reset 或是 merge 使用（有需要的才會做標記），命名模式同
+  \# Branch。
+- <Text bold>reset : </Text> 這是用來重新定位基礎的 commit，後面會接著 label 或是
+  commit hash。
+- <Text bold>merge : </Text> 也就是 merge 的動作，`-C` 代表使用原本的 commit message，如果改成
+  `-c` 則會進入 vim 讓你修改 commit message。
+
+我們一步一步的來看：
+
+1. **label onto :** rebase 的初始定位點，預設會叫 `onto`
+2. **\# Branch merge-branch :** 這是一個區塊的開始，名稱為該分支名稱
+3. **reset onto :** 定位在基礎的 commit
+4. **pick c888119 add test :** pick 這個 commit
+5. **label branch-point :** 因後續需要用到這個 commit 的定位點，所以進行標記，而屬於自己分支的 commit 會用 `branch-point` 來做區分
+6. **pick 7b13f14 add merge branch :** pick 這個 commit
+7. **label merge-branch :** 標記這個 commit，因屬於 merge-branch 的分支，所以用 `merge-branch` 來做區分
+8. **reset branch-point :** 重新定位到 `branch-point` 的 commit
+9. **pick 89eb363 add master test :** pick 這個 commit
+10. **merge -C b9ddbd0 merge-branch :** 進行 merge 的動作，並使用原本的 commit message
+
+:::tip
+如果今天要刪除 merge commit，要直接把整行刪除，用 `drop` 會無法執行。
+:::
 
 ## 參考資料
 
