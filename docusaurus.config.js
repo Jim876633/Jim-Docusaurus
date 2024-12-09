@@ -96,7 +96,7 @@ const config = {
       navbar: {
         title: "Jim's note",
         logo: {
-          alt: "My Site Logo",
+          alt: "Jim's logo",
           src: "img/logo-small.png",
           srcDark: "img/logo-darkmode-small.png",
         },
@@ -171,7 +171,7 @@ const config = {
         appId: process.env.APPLICATION_ID,
       },
       zoom: {
-        selector: "img",
+        selector: `img:not([alt="Jim's logo"])`,
         config: {
           margin: 60,
         },
