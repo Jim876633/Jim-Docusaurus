@@ -1,5 +1,5 @@
 import Link from "@docusaurus/Link";
-import { useDocsSidebar } from "@docusaurus/theme-common/internal";
+import { useDocsSidebar } from "@docusaurus/plugin-content-docs/client";
 import useMedia from "@site/src/hooks/useMedia.jsx";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton, Tag } from "antd";
