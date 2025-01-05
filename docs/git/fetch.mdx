@@ -83,3 +83,7 @@ git fetch --prune # or git fetch -p
 好像其實也沒什麼特別的優點ＸＤ就只是可以提早檢查有沒有什麼不同。
 
 我有同事會先 fetch 之後看有什麼不同，再進行 merge，不過如果你有設定 vscode 的 auto fetch 的話，基本上 `git merge` 就可以了！最主要還是看個人喜好拉～
+
+:::info 補充
+`git fetch` 會把遠端的**所有分支**最新的 _commit ID_ 給紀錄下來，而 `git pull` 中的 `git fetch` 只會抓取**當前分支**的 _commit ID_。就這點來看，純下 `git fetch` 還是有它的用處的！
+:::
