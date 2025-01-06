@@ -12,6 +12,7 @@ import image_version from "/img/other/gpg/gpg-version.jpg";
 import image_password from "/img/other/gpg/gpg-password.jpg";
 import image_email from "/img/other/gpg/gpg-opengpg-gmail.jpg";
 import image_verify from "/img/other/gpg/gpg-opengpg-verify.jpg";
+import image_lock from "/img/other/gpg/gpg-lock.jpg";
 
 GPG (GnuPG 的簡稱）是一種加密通訊的工具，可以用來加密、解密、簽名等等，而在 git 中可以用來為 commit 加上簽名，讓其他人知道這個 commit 是你做的。
 
@@ -329,7 +330,24 @@ cat YOUR_PATH_TO_YOUR_GPG_KEY.rev
 gpg --send-keys <YOUR_GPG_KEY>
 ```
 
-:::
+## GPG 被鎖住
+
+如果你在使用 GPG 時，突然發現無法使用，一直跑出 `gpg: Note: database_open xxxxx waiting for lock (held by xxxxx)`，可能是因為 GPG 被鎖住了。
+
+<Img src={image_lock} />
+
+可以先看這個 process 在不在，如果存在就 kill 掉：
+
+```bash
+ps aux | grep gpg
+kill -9 <PID>
+```
+
+如果不存在可以刪掉所有 .lock 的檔案：
+
+```bash
+rm ~/.gnupg/**/*.lock
+```
 
 ## 參考資料
 
