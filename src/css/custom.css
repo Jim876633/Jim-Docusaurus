@@ -140,6 +140,10 @@ code {
     no-repeat;
 }
 
+[data-theme="dark"] .medium-zoom-overlay {
+  background-color: var(--ifm-background-color) !important;
+}
+
 /* -------------------------------------------------------------------------- */
 /*                               Index page css                               */
 /* -------------------------------------------------------------------------- */

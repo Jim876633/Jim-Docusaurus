@@ -17,10 +17,11 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.4.0",
-    "@docusaurus/plugin-client-redirects": "^3.4.0",
-    "@docusaurus/plugin-google-gtag": "^3.4.0",
-    "@docusaurus/preset-classic": "^3.4.0",
+    "@docusaurus/core": "^3.6.3",
+    "@docusaurus/faster": "^3.6.3",
+    "@docusaurus/plugin-client-redirects": "^3.6.3",
+    "@docusaurus/plugin-google-gtag": "^3.6.3",
+    "@docusaurus/preset-classic": "^3.6.3",
     "@giscus/react": "^2.2.8",
     "@mdx-js/react": "^3.0.0",
     "@tanstack/react-query": "^4.29.5",
@@ -28,6 +29,7 @@
     "antd": "^5.5.1",
     "clsx": "^1.2.1",
     "docusaurus-plugin-get-docs-create-date": "^1.0.4",
+    "docusaurus-plugin-image-zoom": "^2.0.0",
     "docusaurus-plugin-sass": "^0.2.5",
     "dotenv": "^16.0.3",
     "fs": "^0.0.1-security",
@@ -41,7 +43,7 @@
     "sass": "^1.69.5"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "^3.4.0",
+    "@docusaurus/module-type-aliases": "^3.6.3",
     "husky": "^8.0.0"
   },
   "browserslist": {

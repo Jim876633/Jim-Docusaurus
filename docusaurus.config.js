@@ -25,6 +25,10 @@ const config = {
     env: process.env,
   },
 
+  future: {
+    experimental_faster: true
+  },
+
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
   // to replace "en" with "zh-Hans".
@@ -96,7 +100,7 @@ const config = {
       navbar: {
         title: "Jim's note",
         logo: {
-          alt: "My Site Logo",
+          alt: "Jim's logo",
           src: "img/logo-small.png",
           srcDark: "img/logo-darkmode-small.png",
         },
@@ -170,8 +174,18 @@ const config = {
         indexName: "Jim-Docusaurus",
         appId: process.env.APPLICATION_ID,
       },
+      zoom: {
+        selector: `img:not([alt="Jim's logo"])`,
+        config: {
+          margin: 60,
+        },
+      },
     }),
-  plugins: ["docusaurus-plugin-sass", "docusaurus-plugin-get-docs-create-date"],
+  plugins: [
+    "docusaurus-plugin-sass",
+    "image-zoom",
+    "docusaurus-plugin-get-docs-create-date",
+  ],
 };
 
 module.exports = config;
