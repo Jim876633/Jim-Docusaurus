@@ -1,0 +1,95 @@
+import { Img } from "@site/src/components/Width";
+import image_1 from "/img/other/cors-1.jpg";
+import image_2 from "/img/other/cors-2.jpg";
+
+# 研究 CORS 的疑難雜症
+
+CORS 不論前端或後端都是新手很容易遇到的問題，先說個結論：
+
+> CORS 的問題與前端無關，主要設定是在後端。
+
+如果想知道更多關於 CORS 的問題，Huli 在 2021 寫的這篇 [CORS 完全手冊](https://blog.huli.tw/2021/02/19/cors-guide-1/) 就完全夠用了！
+
+本來是想寫自己寫一篇關於 CORS 的文章，但是大神寫的太仔細...自己寫還不如直接連結過去。
+
+那這一篇存在的目的在哪呢？主要是紀錄在看這系列文章時，產生的疑問以及自己實際實作時的一些小紀錄。
+
+## no-cors 目的
+
+在[文章](https://blog.huli.tw/2021/02/19/cors-guide-2/#%E8%A7%A3%E6%B3%95%E4%BA%8C%E6%8A%8A-fetch-mode-%E8%A8%AD%E6%88%90-no-cors)中提到，當設定 `fetch` 的 `mode` 為 `no-cors` 時，基本上等於沒作用，不只無法解決 CORS 的問題，連原本同源的 request 也會收不到 response。
+
+那這樣這個 `mode: no-cors` 有什麼用呢？
+
+爬了一下文發現[這篇](https://stackoverflow.com/questions/52569895/fetch-api-why-use-the-no-cors-mode-if-the-response-is-opaque)，看起來可以用在一些不需要 response 的 request，例如像是發送 log 或是像是 Google Analytics 這種不需要 response 的 request。
+
+另外靜態資源像是圖片、樣式、JS 等等預設在發請求的時候，就是帶上 `no-cors`，所以這些請求的 response 只有瀏覽器才能看到，不會被 JavaScript 存取。
+
+<Img src={image_1} />
+
+除此之外，因為 no-cors 就代表我不想要看到 response 所以也不會發送**預檢請求**，算是其中一個好處？
+
+所以看起來 mode 的這個 options 本來就只是給靜態資源載入用的，而一般 js 發的請求我相信就算不需要 response 也不會特別有人把他設定為 `no-cors`，所以這個 options 實際上用途不大。
+
+## 簡單請求與非簡單請求
+
+簡單請求是指在**跨域**的 request 中只有以下幾種條件：
+
+- 使用 GET、HEAD、POST 方法
+- Content-Type 為以下幾種：`application/x-www-form-urlencoded`、`multipart/form-data`、`text/plain`
+
+這些條件都符合的話，就是簡單請求，不會觸發**預檢請求**。
+
+:::info
+一般同源請求沒有分簡單請求與非簡單請求的問題。
+:::
+
+現在 chrome 的預檢請求不顯示在 Fetch/XHR 的欄位，會在同一個請求中的 Method 欄位後面加上 `+ Preflight`，如果想看 Preflight 的內容，現在放在 **Other** 的欄位。
+
+<Img src={image_2} />
+
+:::info
+要開啟 Method 欄位，可以在 Network 的欄位中點右鍵，選擇 Header Options > Method。
+:::
+
+## proxy 不會有問題嗎
+
+在 [文章](https://blog.huli.tw/2021/02/19/cors-guide-2/#%E4%BD%BF%E7%94%A8-proxy-server) 有提到，用 proxy server 來解決 CORS 的問題，但是這樣會不會有安全性的問題呢？Huli 以 local host 為例，就算用 proxy 取得的 localhost 資料還是在 proxy 上，到這邊我可以理解，但還是有疑問是，那如果是用 proxy server 來取得其他網站的資料呢？
+
+可能有人看到這邊會覺得，這是什麼笨問題？一定是沒辦法才會存在 proxy server 啊！從結果來看的確是這樣沒錯，不過秉持著有疑問就要了解透徹的精神，我還是花了點時間去查了一下。
+
+從 proxy server 查到 cookie 再到 CSRF，後來才發現如果理解 [CSRF](https://blog.techbridge.cc/2017/02/25/csrf-introduction/) 就會知道，proxy server 並不會有安全性的問題。
+
+我一開始先從要怎麼儲存使用者資料開始查，很多網站都會利用 cookie 儲存使用者的登入資料，這樣下次再進入時，就可以帶上 cookie 來識別使用者，所以如果駭客可以取得這個 cookie，就可以假冒使用者的身份取得機敏資料，這就是所謂的 **CSRF(Cross-Site Request Forgery)**。
+
+而從 [Sending Credentials with the Fetch API](https://reqbin.com/code/javascript/lcpj87js/javascript-fetch-with-credentials) 可以得知，fetch 預設是不會帶上 cookie 的，除非加上
+
+```js
+fetch(url, {
+  credentials: "include",
+});
+```
+
+而如果加上 `credentials: 'include'`，伺服器就必須要有 `Access-Control-Allow-Credentials: true`，這樣才能帶上 cookie，而如果伺服器加上 true 則會有一些限制，例如不能使用 `*` 來設定 `Access-Control-Allow-Origin`，只能設定為特定的網域，而大部分的網站應該都會設定特定網域。
+
+所以通常在利用 cookie 時，都會使用像是 form、iframe、img 等等的方式來傳送，就可以繞過 CORS 的問題。
+
+```html
+<body>
+  <form
+    id="hackForm"
+    action="http://localhost:3000/getUser"
+    method="GET"
+    target="hiddenFrame"
+  >
+    <input type="hidden" name="amount" value="1000" />
+  </form>
+
+  <iframe name="hiddenFrame" style="display: none"></iframe>
+
+  <script>
+    window.onload = function () {
+      document.getElementById("hackForm").submit();
+    };
+  </script>
+</body>
+```
