@@ -330,6 +330,8 @@ cat YOUR_PATH_TO_YOUR_GPG_KEY.rev
 gpg --send-keys <YOUR_GPG_KEY>
 ```
 
+:::
+
 ## GPG 被鎖住
 
 如果你在使用 GPG 時，突然發現無法使用，一直跑出 `gpg: Note: database_open xxxxx waiting for lock (held by xxxxx)`，可能是因為 GPG 被鎖住了。
@@ -348,6 +350,13 @@ kill -9 <PID>
 ```bash
 rm ~/.gnupg/**/*.lock
 ```
+
+## GPG 快捷鍵
+
+因應不同專案會需要不同的 GPG 金鑰，我寫了 .zshrc 的 function [**script**](https://gist.github.com/2238093b2142de713ab1cb432a1e135a.git) 來設定 GPG sign key
+
+- gpgf : 設定全域 commit gpgsign flag 要不要開啟
+- gpgs : 設定該專案要使用哪一個 GPG key （需先設定 GPG key）
 
 ## 參考資料
 
