@@ -123,6 +123,12 @@ git rebase -i <commit hash>
 git rebase -i HEAD~n
 ```
 
+:::tip
+
+`git rebase -i <commit hash>` 會顯示該 commit hash 之後的 commit，如果是第一個 commit，可以使用 `git rebase -i --root` 來顯示所有的 commit。
+
+:::
+
 當你進入互動模式後，預設會使用 vim 來進行編輯，假設我輸入 `git rebase -i HEAD~2`，會看到以下畫面：
 
 <Img src={image_7} width='700px' center />
