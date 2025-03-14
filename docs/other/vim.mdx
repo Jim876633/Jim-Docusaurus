@@ -46,16 +46,23 @@ Vim 總共有四種模式，分別是 Normal Mode、Insert Mode、Visual Mode �
 - `G` : 移動到檔案的最後一行
 - n + `G` / `:` + n : 移動到檔案的第 n 行
 - n + `Enter` : 向下移動 n 行
+- n + `-` : 向上移動 n 行
 - n + `Space` : 向右移動 n 個字元
+- n + `BlackSpace` : 向左移動 n 個字元
+- `Crtl` + `d` : 向下移動半頁(較常用）
 - `Crtl` + `f` : 向下移動一頁
+- `Crtl` + `u` : 向上移動半頁(較常用）
 - `Crtl` + `b` : 向上移動一頁
-- `Crtl` + `d` : 向下移動半頁
-- `Crtl` + `u` : 向上移動半頁
+- `Crtl` + `o` : 回到上一個游標位置
+- `Crtl` + `i` : 回到下一個游標位置
+- `f` + char : 向右移動到第一個出現 char 的字元
+- `F` + char : 向左移動到第一個出現 char 的字元
 
 ### 複製、剪下、貼上
 
 - `y` : 複製選取的文字
 - `yy` : 複製當前行
+- `yiw` : 複製當前單字(包含游標前面)
 - `p` : 貼上
 - `d` : 剪下選取的文字
 - `dd` : 剪下當前行
@@ -68,6 +75,9 @@ Vim 總共有四種模式，分別是 Normal Mode、Insert Mode、Visual Mode �
 ### 搜尋、取代
 
 - `/` + keyword + `Enter` : 向下搜尋關鍵字
+- `#` : 預設尋找當前游標所在的字元(向上搜尋)
+- `*` : 預設尋找當前游標所在的字元(向下搜尋)
+- `選取文字` + `#` : 尋找選取的文字
 - `n` : 跳到下一個關鍵字
 - `N` : 跳到上一個關鍵字
 
@@ -107,7 +117,19 @@ Vim 總共有四種模式，分別是 Normal Mode、Insert Mode、Visual Mode �
 - `V` : 進入 Visual Line Mode 選取整行文字
 - `Ctrl` + `v` : 進入 Visual Block Mode 選取區塊文字
 
-### Mac OS 長按問題
+## 指令組合
+
+你可能會發現有些指令好像是有規律的，像是：`yiw`、`diw`、`ciw`，這些指令都是由一個動詞加上一個名詞組成，VIM 官方把它拆成兩個部分，動作(Operator)＋對象(Text Objects)。
+
+| 類別           | 代表字母    | 說明           | 例子                            |
+| -------------- | ----------- | -------------- | ------------------------------- |
+| 動作           | `d` `y` `c` | 影響文字的動作 | d（刪除），y（複製），c（變更） |
+| 對象（內外類） | `i` `a`     | 選擇範圍的內外 | i（內部），a（包含外部）        |
+| 對象（目標類） | `w` `s` `p` | 目標文字區塊   | w（單字），s（句子），p（段落） |
+
+如果要查所有的動作對象，可以輸入 `:help text-objects`、`:help operator` 來查詢。
+
+## Mac OS 長按問題
 
 [參考文章](https://www.macworld.com/article/351347/how-to-activate-key-repetition-through-the-macos-terminal.html)
 
