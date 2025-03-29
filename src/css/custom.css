@@ -5,6 +5,7 @@
  */
 
 /* You can override the default Infima variables here. */
+@import "tailwindcss";
 
 :root {
   --ifm-color-primary: #34678d;
@@ -181,8 +182,13 @@ code {
   list-style: none;
 }
 
-.flash {
+.tag {
+  background-color: var(--tag-color);
   animation: flash 1s infinite ease-in-out;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
+  display: inline-block;
+  border-radius: 0.5rem;
 }
 
 .intro_sm {
