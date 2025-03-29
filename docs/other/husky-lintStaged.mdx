@@ -311,7 +311,7 @@ npm install -D husky && npx husky init
 
 <Img src={image_4} width='700px' />
 
-然後因為 Vscode 是使用 default 的 node version 去跑 lint-staged，我在使用的時候就遇到 lint-staged 最新版本只能使用 node 14 以上的版本，不然會[報錯](https://github.com/okonet/lint-staged/issues/1315)。但我明明下 `node -v` 是超過 14 的版本，後來才發現我的 nvm default node version 是使用 14，記得下指令修改 default node version 才不會找不到報錯原因。
+然後因為 Vscode 是使用 default 的 node version 去跑 lint-staged，我在使用的時候就遇到 lint-staged 最新版本只能使用 node 14 以上的版本，不然會[報錯](https://github.com/lint-staged/lint-staged/issues/1315)。但我明明下 `node -v` 是超過 14 的版本，後來才發現我的 nvm default node version 是使用 14，記得下指令修改 default node version 才不會找不到報錯原因。
 
 ```bash
 nvm alias default {{ > 14 的版本號 }}
