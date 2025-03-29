@@ -62,8 +62,16 @@ git tag -a <tag_name> -m "<tag_message>"
 
 ### 刪除 tag
 
+刪除本地端的 tag：
+
 ```bash
 git tag -d <tag_name>
+```
+
+刪除遠端的 tag：
+
+```bash
+git push origin --delete <tag_name>
 ```
 
 ### 查看 tag 名稱
