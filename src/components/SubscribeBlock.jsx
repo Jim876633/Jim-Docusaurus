@@ -1,7 +1,8 @@
 import siteConfig from "@generated/docusaurus.config";
 import { useMutation } from "@tanstack/react-query";
-import { Button, Card, Input, Space, message } from "antd";
+import { Button, Input, Space, message } from "antd";
 import React, { useEffect } from "react";
+import Card from "./Card";
 
 const apiUrl = siteConfig.customFields.env.MAIL_CHIMP_API_URL;
 const SUCCESS_CODE = "0000";
@@ -48,19 +49,7 @@ const SubscribeBlock = () => {
   }, [data]);
 
   return (
-    <Card
-      title={
-        <h2 style={{ margin: 0, fontSize: "min(var(--ifm-h2-font-size),5vw)" }}>
-          訂閱以獲得最新的文章通知！
-        </h2>
-      }
-      style={{
-        width: "100%",
-        backgroundColor: "var(--subscribe-block)",
-        border: "1px solid var(--subscribe-block-border)",
-      }}
-      bodyStyle={{ paddingBottom: "36px", paddingTop: "16px" }}
-    >
+    <>
       {contextHolder}
       <Space.Compact style={{ width: "100%" }}>
         <Input
@@ -90,11 +79,35 @@ const SubscribeBlock = () => {
           {errorMsg}
         </span>
       </Space.Compact>
-    </Card>
+    </>
   );
 };
 
-export default SubscribeBlock;
+const SubscribeWrapper = ({ children }) => {
+  return (
+    <Card
+      title={
+        <h2 style={{ margin: 0, fontSize: "min(var(--ifm-h2-font-size),5vw)" }}>
+          訂閱以獲得最新的文章通知！
+        </h2>
+      }
+      style={{
+        width: "100%",
+        backgroundColor: "var(--subscribe-block)",
+        border: "1px solid var(--subscribe-block-border)",
+      }}
+      bodyStyle={{ paddingBottom: "36px", paddingTop: "16px" }}
+    >
+      {children}
+    </Card>
+  );
+};
+const Subscribe = {
+  Wrap: SubscribeWrapper,
+  Content: SubscribeBlock,
+};
+
+export default Subscribe;
 
 /**
  * subscribe email

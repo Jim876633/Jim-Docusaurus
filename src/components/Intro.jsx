@@ -4,7 +4,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConfigProvider, theme } from "antd";
 import React from "react";
 import DocList from "./DocList";
-import SubscribeBlock from "./SubscribeBlock";
+import Skeleton from "./Skeleton";
+import Subscribe from "./SubscribeBlock";
 const queryClient = new QueryClient();
 
 const Intro = () => {
@@ -24,9 +25,21 @@ const Intro = () => {
         <a href='mailto:jim.huang112@gmail.com'>jim.huang112@gmail.com</a>
         <br />
         <br />
-        <BrowserOnly>{() => <DocList />}</BrowserOnly>
+        <div id='jim-doc-list'>
+          <span className='tag'>Latest Article</span>
+          <br />
+          <div className='doc-list'>
+            <BrowserOnly fallback={<Skeleton />}>
+              {() => <DocList />}
+            </BrowserOnly>
+          </div>
+        </div>
         <br />
-        <BrowserOnly>{() => <SubscribeBlock />}</BrowserOnly>
+        <Subscribe.Wrap>
+          <BrowserOnly fallback={<Skeleton paragraph={["100%"]} />}>
+            {() => <Subscribe.Content />}
+          </BrowserOnly>
+        </Subscribe.Wrap>
         {/* <ReactQueryDevtools /> */}
       </ConfigProvider>
     </QueryClientProvider>
