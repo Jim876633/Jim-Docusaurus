@@ -28,8 +28,8 @@ const Intro = () => {
         <div id='jim-doc-list'>
           <span className='tag'>Latest Article</span>
           <br />
-          <div className='doc-list'>
-            <BrowserOnly fallback={<Skeleton />}>
+          <div>
+            <BrowserOnly fallback={<Skeleton className='doc-list' />}>
               {() => <DocList />}
             </BrowserOnly>
           </div>
