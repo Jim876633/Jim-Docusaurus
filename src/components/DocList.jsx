@@ -29,7 +29,7 @@ const DocList = () => {
   };
 
   return (
-    <div id='scrollableDiv'>
+    <div id='scrollableDiv' className='doc-list'>
       {isLoading ? (
         <Skeleton />
       ) : (
