@@ -182,7 +182,7 @@ code {
   list-style: none;
 }
 
-.tag {
+.jim-doc-list .tag {
   background-color: var(--tag-color);
   animation: flash 1s infinite ease-in-out;
   padding: 0.2rem 0.5rem;
