@@ -25,7 +25,7 @@ const Intro = () => {
         <a href='mailto:jim.huang112@gmail.com'>jim.huang112@gmail.com</a>
         <br />
         <br />
-        <div id='jim-doc-list'>
+        <div className='jim-doc-list'>
           <span className='tag'>Latest Article</span>
           <br />
           <div>
