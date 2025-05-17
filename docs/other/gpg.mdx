@@ -194,6 +194,12 @@ git log --show-signature
 git config --global commit.gpgSign true
 ```
 
+:::info
+如果你習慣用 Vscode 內建的 commit 功能，可以在 Vscode 的設定中搜尋 `git commit`，然後把 `Git: Enable Commit Signing` 打勾，這樣就會自動幫你加上簽名了。
+
+![vscode enable commit signing](/img/other/gpg/gpg-vscode-enable-signing.png)
+:::
+
 ## 在 github 上顯示 GPG 簽名
 
 要在 github 上顯示 GPG 簽名，需要先把公鑰加到 github 上，需要先把 key 轉成 ASCII 格式：
