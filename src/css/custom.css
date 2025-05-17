@@ -5,7 +5,9 @@
  */
 
 /* You can override the default Infima variables here. */
-@import "tailwindcss";
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
 
 :root {
   --ifm-color-primary: #34678d;
