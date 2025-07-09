@@ -133,9 +133,76 @@ Vim 總共有四種模式，分別是 Normal Mode、Insert Mode、Visual Mode �
 
 [參考文章](https://www.macworld.com/article/351347/how-to-activate-key-repetition-through-the-macos-terminal.html)
 
-## Vscode Vim 擴充套件卡頓解法
+## Vscode Vim 擴充套件解法
 
-[參考解法](https://github.com/microsoft/vscode/issues/75627#issuecomment-1078827311)
+卡頓問題：[參考解法](https://github.com/microsoft/vscode/issues/75627#issuecomment-1078827311)
+
+折疊區塊後上下移動無法隔行問題：[參考解法](https://github.com/VSCodeVim/Vim/issues/1004#issuecomment-2878694689)
+
+```json
+{
+  "vim.normalModeKeyBindings": [
+    {
+      "before": ["j"],
+      "after": ["g", "j"]
+    },
+    {
+      "before": ["k"],
+      "after": ["g", "k"]
+    },
+    {
+      "before": ["<C-u>"],
+      "commands": [
+        {
+          "args": {
+            "by": "halfPage",
+            "to": "up"
+          },
+          "command": "editorScroll"
+        },
+        {
+          "args": {
+            "to": "viewPortCenter"
+          },
+          "command": "cursorMove"
+        },
+        {
+          "args": {
+            "to": "wrappedLineFirstNonWhitespaceCharacter"
+          },
+          "command": "cursorMove"
+        }
+      ],
+      "silent": true
+    },
+    {
+      "before": ["<C-d>"],
+      "commands": [
+        {
+          "args": {
+            "by": "halfPage",
+            "to": "down"
+          },
+          "command": "editorScroll"
+        },
+        {
+          "args": {
+            "to": "viewPortCenter"
+          },
+          "command": "cursorMove"
+        },
+        {
+          "args": {
+            "to": "wrappedLineFirstNonWhitespaceCharacter"
+          },
+          "command": "cursorMove"
+        }
+      ],
+      "silent": true
+    }
+  ]
+}
+```
 
 ## 參考
 
