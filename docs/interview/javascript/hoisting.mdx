@@ -1,0 +1,163 @@
+---
+title: 【JavaScript】Hoisting 是什麼？
+sidebar_label: Hoisting
+---
+
+import Highlight from "@site/src/components/Highlight";
+
+> Hoisting is not a term normatively defined in the ECMAScript specification.
+>
+> -- MDN
+
+## 甚麼是 hoisting？
+
+MDN 裡面提到 hoisting 並不是被定義的專有名詞，而是用來理解 JavaScript 在執行時如何運行的思路。
+
+我們知道 JavaScript 是單執行緒，也就是程式碼是一行一行讀取，但是用 `var` 宣告變數跟宣告 `function` 會有被提早讀取，提升（Hoisting）的感覺。
+
+來看看一些例子：
+
+```js
+console.log(a);
+//ReferenceError: a is not defined
+```
+
+```js
+console.log(a);
+var a = 10;
+// undefined
+```
+
+可以看到當使用 `var` 作宣告，提早讀取時會回傳 `undefined`，你可以把他當作這樣：
+
+```js
+var a;
+console.log(a); //undefined
+a = 10;
+```
+
+也就是說 **`var` 宣告會被提升，而賦值不會被提升**。
+
+再來看看 `function`：
+
+```js
+test();
+function test() {
+  console.log("hello world");
+}
+//'hello world'
+```
+
+可以看到 `function` 被提早讀取了，連函式內容都被提升了。
+
+## Hoisting 的順序
+
+知道了 `var` `function` 有 `hoisting` 的效果，來看一下複雜的題目。
+
+```js
+function test(a) {
+  console.log(a);
+  var a = 10;
+  function a() {
+    return "hello world";
+  }
+}
+test(100);
+```
+
+這裡面有總共有三個一樣的名字，參數、function、var 宣告，都是 a ，誰的優先權最大呢？
+
+---
+
+直接公布答案：
+
+```js
+//output：　[Function: a]
+```
+
+是不是有點出乎意料，答案是 function a 本身，所以說 `function` 的提升會優先於 `var` 的宣告以及參數。
+
+那我們繼續比下去，把 function 拿掉：
+
+```js
+function test(a) {
+  console.log(a);
+  var a = 10;
+}
+test(100);
+```
+
+這邊就直接公布答案，答案就是 100 ，所以總結來說：
+
+<Highlight bold>function > parameter(參數) > var 宣告</Highlight>
+
+## 那 let 跟 const 咧？
+
+在 ES6 新增了 `let` 跟 `const` 兩個新的宣告變數方式，直接來看範例：
+
+```js
+console.log(a);
+let a = 10;
+//ReferenceError: Cannot access 'a' before initialization
+```
+
+可以看到 `let` 跟 `const` 在宣告前讀取會報錯，那是不是代表他們沒有 hoisting ？
+
+那來看一個例子：
+
+```js
+var a = 10;
+function test() {
+  console.log(a);
+  let a = 100;
+}
+test();
+//ReferenceError: Cannot access 'a' before initialization
+```
+
+如果 let 沒有 hoisting ，應該會印出外層宣告的 `a = 10`，但是！卻跟上一個一樣報錯了。
+
+所以由此可知，`let` 跟 `const` 也有 hoisting 只是 hoisting 後會報錯，跟 `var` hoisting 後會被初始化為 undefined 不同而已。
+
+## Temporal Dead Zone
+
+而 `let` 跟 `const` 會報錯則有一個概念叫做 TDZ（暫時性死區），也就是說在 `let` 跟 `const` 被 hoisting 之後到宣告之前，都是 TDZ ，只要在 TDZ 期間試著存取變數值，就會報錯。
+
+來看剛剛的例子：
+
+```js
+var a = 10;
+function test() {
+  // a 的 TDZ 開始
+  console.log(a); //試圖存取，報錯
+  let a = 100; // a 的 TDZ 結束
+}
+test();
+```
+
+## 為甚麼可以 hoisting？
+
+當瞭解了 hoisting 之後，又跑出一個問題，JavaScript 不是單執行緒嗎？為甚麼可以 hoisting？
+
+這其實跟 JS 內部引擎有關係，這邊就不細講了，有興趣的可以去看 [Huli 的文章](https://blog.techbridge.cc/2018/11/10/javascript-hoisting/)，這邊就講結論：
+JS 內部引擎會在**執行前編譯程式碼**，也就是在這個階段 hoisting 的。
+
+## 所以 hoisting 到底可以幹嘛？
+
+回到標題，hoisting 到底可以做甚麼，現在宣告變數也大多用 let、const ，感覺沒什麼太大的用處。其實在實作上明顯的用處就是：
+
+- function 被提升，可以不用管函式呼叫的先後順序。
+- function 之間可以互相呼叫，可以達成遞迴的效果。
+
+## 結論
+
+總結以上，列出幾個要點：
+
+1. var 跟 function 會有 hoisting 的效果，var 只會提升宣告，賦值不會。
+2. 提升順序：function 宣告 > function 參數 > 變數宣告。
+3. let 跟 const 有 hoisting 但在 TDZ 間存取會報錯。
+
+## 參考
+
+[MDN](https://developer.mozilla.org/zh-TW/docs/Glossary/Hoisting)
+[我知道你懂 hoisting，可是你了解到多深？](https://blog.techbridge.cc/2018/11/10/javascript-hoisting/)
