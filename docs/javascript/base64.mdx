@@ -1,0 +1,69 @@
+---
+title: 【JavaScript】在瀏覽器中的 btoa 是什麼？一起來看 base64 編碼
+sidebar_label: 瀏覽器中的 btoa 是什麼？
+tags: [javascript]
+---
+
+
+import { Img } from "@site/src/components/Width.jsx";
+import image_1 from "/img/javascript/base64/base64-1.jpg";
+
+本文為根據 Huli 的文章 [為什麼打開檔案時會看到亂碼？跟著小明一起從傳紙條學習編碼](https://life.huli.tw/2022/05/20/what-is-encoding-ascii-unicode-utf8-5fe55a98bee0/) 所延伸的一些問題及研究，可以先去看這篇～大推！可以很快的理解編碼的觀念。
+
+## 瀏覽器中的 btoa 為什麼出來的還是字串？
+
+在 [Why were Javascript atob() and btoa() named like that?](https://stackoverflow.com/questions/33854103/why-were-javascript-atob-and-btoa-named-like-that)  這則討論我們可以知道，btoa 的 b 跟 a 分別代表 **binary(b)** 及 **ASCII(a)** ，那依照這個邏輯，btoa 出來的結果應該要是 ASCII 編碼的字串才對。
+
+```js
+// A 的 ASCII 編碼是 65
+const encodeText = new TextEncoder().encode("A");
+console.log(encodeText); // Uint8Array(1) [65]
+
+
+// 將字串 A btoa 的結果
+btoa("A") // "QQ==" 
+```
+
+但實際上結果卻是 `"QQ=="`，那這個 ASCII 在哪呢？
+
+從 [MDN](https://developer.mozilla.org/en-US/docs/Glossary/Base64) 我們可以知道
+
+>Base64 is a group of similar binary-to-text encoding schemes that represent binary data in an ASCII string format by transforming it into a radix-64 representation. The term Base64 originates from a specific MIME content transfer encoding.
+
+也就是說 Base64 是將二進位資料轉換成使用 **64 個**字元集的 ASCII 編碼字串，聽起來有點不知所云，來看一下實際例子：
+
+以字串 A 為例，在 [ASCII](https://zh.wikipedia.org/zh-tw/ASCII) 的編碼會是 `65` (十進位)，轉成二進位會是 `01000001`，到這邊就是所謂的 binary 轉成 ASCII 了。
+
+接著我們要將這個二進位轉成 Base64 編碼，也就是 6 bits 為一組，因為這樣就會是 2^6 = 64 個字元，也就是 Base64 的來源。
+
+:::info
+64 個字元指的是 A-Z、a-z、0-9、+、/ 總共會是 26 + 26 + 10 + 1 + 1 = 64 個字元。
+:::
+
+<Img src={image_1} />
+
+對應到 Base64 的[索引表](https://zh.wikipedia.org/zh-tw/Base64) 就會是 `QQ==`，那這個 `=` 是指如果原始的字元數量不足 3 的倍數時，就會在最後補上 `=`，以確保 Base64 編碼的長度是 4 的倍數。所以最多只會有兩個 `=`。
+
+
+## 為什麼一定要以 24 bits 為一組？
+
+前面說到 Base64 會先把 Binary 轉成 8 bits 的 ASCII code，然後以 3 個 ASCII code 為一組，這樣就會是 24 bits，然後再將這 24 bits 分成 4 組，每組 6 bits，這樣就可以對應到 Base64 的 64 個字元。
+而這個 24 其實就 6 跟 8 的**最小公倍數**，之所以要以公倍數的方式讓他可以對齊，是因為這樣在轉換的過程才能準確的進行轉換，而 `=` 則可以判斷哪些 bits 是補上的，這樣在解碼的時候就可以知道要怎麼處理。
+
+:::info 如果不是 24 bits 一組會有什麼問題？（待解決）
+我研究到這裡時，想說為什麼一定要 24 bits？我不能就讓他 6 個一組剩下的就補零就好啦，然後要還原時，只要 8 bits 為一組，剩餘的一定是填充把它去掉，這樣 'A' 就會變成 'QQ'，不就更短了嗎？
+然後我問了很多不同的 AI 模型，都無法說明這個方法有什麼問題，大多數都是說缺乏明確的長度指示，但明明除以 8 就知道正確的長度了啊？所以這個問題我還沒獲得解答＠＠歡迎留言告訴我！
+:::
+
+
+## Base64 原始碼
+
+我在研究上面那個待解決問題時，想說來找一下 chromium 怎麼實作的，但都找不到，只有在 [Chromium Issues](https://issues.chromium.org/issues/40339718) 找到 2013 有修過 atob，但是當初實作的路徑現在已經找不到了，後來我只有找到 [WebKit](https://github.com/WebKit/WebKit/blob/152b90c32f5dec65fa0a6d30bfb7e9f934fd7b5d/Source/WebCore/page/WindowOrWorkerGlobalScope.cpp#L41) 的實作，有興趣的人可以看看～
+
+## Unit8Array toBase64/ fromBase64
+
+在看實作 Base64 的過程，想說是不是應該要有個 Unit8Array 直接轉 Base64 的方法，因為 btoa 只能傳字串，所以如果是 Unit8Array 的話還需要先用 `TextDecoder` 轉成字串，後來就找到這個熱騰騰還在 Stage3 的 [proposal](https://github.com/tc39/proposal-arraybuffer-base64)，會找到主要是看到 [Chromium Issues](https://issues.chromium.org/issues/42204568) 有在討論要實作這個他，所以應該過不久就可以使用了！
+
+
+
+
