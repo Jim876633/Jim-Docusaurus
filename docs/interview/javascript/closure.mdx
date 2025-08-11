@@ -1,0 +1,298 @@
+---
+title: 【JavaScript】閉包是什麼？
+sidebar_label: Closure
+---
+
+閉包常常在面試題中出現，也是 JavaScript 中一個很重要的概念，雖然在實際寫程式時不會特別去使用它，但了解閉包的概念對於理解 JavaScript 的運作方式是很有幫助的。
+
+不過我認為在面試中考閉包題目真的很強人所難，畢竟不是三言兩語就能解釋清楚的觀念。在解釋閉包（Closure）之前，要先知道「作用域」及「範圍鍊」 是甚麼，才能更好的了解閉包。
+
+## Scope（作用域）
+
+在 ES6 以前，作用域只有 global 全域以及 function 裡的作用域，定義變數則都是使用 `var` 來宣告。在 ES6 時出現了 `const` 與 `let`，同時也增加了新的作用域 **block**，`var` 漸漸的被取代不再被使用，下面先來了解一下作用域是甚麼。
+
+> 在作用域範圍內生成的變數，無法被外面的區域做使用，但外面的區域變數，是可以在作用域裡面讀取到變數。
+
+而作用域的範圍可以分為三種：
+
+1. 全域 （global scope）
+2. 函式作用域 （function scope）
+3. 區塊作用域 （block scope）
+
+### 全域（global scope）
+
+顧名思義，就是一個最外層的區域，沒有比全域再更外層的了，而在全域宣告的變數或是函式，就稱**全域變數**，而全域變數可以在任何地方被讀取。
+
+```js
+const global = "global variable";
+function str() {
+  console.log(global);
+}
+str(); //output: 'global variable'
+```
+
+特別注意的是如果沒有宣告變數而直接賦值，不管在哪個作用域，則該變數都會變成**全域變數**，這樣就很容易出問題，所以盡量一定要宣告變數。
+
+```js
+//Ex1: function
+function test() {
+  //函式內未宣告直接賦值
+  a = 3;
+}
+test();
+console.log(a); //output: 3
+
+//Ex2: block
+for (let i = 0; i < 5; i++) {
+  //區塊內未宣告直接賦值
+  b = 5;
+}
+console.log(b); //output: 5
+```
+
+### 函式作用域（function scope）
+
+一樣顧名思義，可以馬上理解就是在**函式（Function）** 內的區域，也就是執行區域 `{}` 內就是函式的作用域，對應函式作用域的宣告就是 `var`。
+
+<details>
+    <summary>函式的參數區域不用宣告變數嗎？</summary>
+
+剛剛提到如果沒有宣告變數，則該變數會變**全域變數**，那在 Function 的參數區域 `()` 裡面的變數也不用宣告，那裡面的參數會變全域變數嗎？
+
+這邊就要提一下函式的生成流程，不過因為有點複雜，所以只先大概提一下以供解釋上面的問題。
+
+可以先想像在函式生成時，會產生該函式的**執行環境（Execution Context）**，以下簡稱 EC，EC 裡面儲存了跟函式有關的資訊，順帶一提除了函式，全域執行時也有一個**全域執行環境（global EC）**，每個 EC 生成時都會有相對應的**變數物件（Variable Object）**，以下簡稱 VO ，宣告的變數及函式都會被儲存在 VO 裡面。
+
+而函式的 VO 另外稱作**執行物件（Activation Object）**，以下簡稱 AO ，AO 跟 VO 一樣，差別在於 AO 除了儲存 `{}` 內的變數還儲存了 `()` 內的參數，因為 AO 是對應函式的 EC 而存在，所以不用宣告參數也會在函式的作用域裡面。
+
+```js
+function age(number) {
+  var str = "My age is:";
+  console.log(str, number);
+}
+age(5); //output: My age is: 5
+console.log(number); //ReferenceError: number is not defined
+console.log(str); //ReferenceError: str is not defined
+```
+
+</details>
+
+### 區塊作用域（block scope）
+
+在 ES6 新增的作用域，區塊指的是 `{}` 大括號範圍內的區域都稱之<b>區塊</b>，像是 if 及 switch 判斷式、while 及 for 迴圈，包括 function 的大括號範圍都是區塊。不過不是指 `var` 宣告變數變成區塊變數，他還是只能在 function 裡才有作用域的效果（可憐的 var）。
+
+而對應的區塊變數宣告就是新增的 `const` 跟 `let` ，在大括號內宣告（當然包含 function）都會有作用域的效果。
+
+<details>
+  <summary>那在迴圈的小括號 `()` 裡宣告的變數呢？</summary>
+
+```js
+//Ex1:
+for (var j = 0; j < 5; j++) {
+  console.log(j); //output: 0 1 2 3 4
+}
+console.log(j); // output: 5
+
+//Ex2:
+for (let i = 0; i < 5; i++) {
+  console.log(i); //output: 0 1 2 3 4
+}
+console.log(i); // ReferenceError: i is not defined
+```
+
+可以看到有兩個 for 迴圈，分別在小括號裡面用 `var` 及 `let` 分別做宣告，可以發現在小括號裡宣告 `var` 可以在 global 抓到變數，而用 `let` 做宣告，無法在 global 抓到變數。所以可以證實在迴圈的小括號 `()` 內宣告變數，是一個**區塊變數**。
+
+所以說不管是在迴圈的 `()` 裡面還是在 `{}` 裡面宣告變數（使用區塊宣告），都會有作用域的效果，都只能在 `{}` 內才能被使用，到了外層則無法抓到該變數。
+
+至於常看到的解釋，**只有在 `{}` 宣告區塊變數，就是區塊作用域**，我想會這麼說是因為比較好解釋？畢竟變數只能在 `{}` 裡調用， `()` 也只是宣告變數而已。所以說在 `{}` 內就是**區塊作用域**其實沒錯，只是要記得在迴圈的 `()` 內宣告區塊變數也會在 `{}` 有區塊作用域的效果喔！
+
+_以上這只是我的猜測，如果有人知道為甚麼會這樣解釋可以留言給我喔！_
+
+</details>
+
+## var、const、let 快速比較
+
+了解了作用域後 var、const、let 就很容易理解！
+
+- `var` 就是在函式內的宣告，會產生 **function scope** 。
+- `let`、`const` 則是在區塊內宣告，會產生 **block scope**。
+
+`var` 大家都很熟了，那 `let` 跟 `const` 同樣都是 **block scope**，有甚麼差別呢？
+
+### let
+
+1. 可以宣告變數不賦值，這點跟 `var` 一樣。
+2. 可以更改變數內容。
+3. 相同變數在同一層無法重新宣告。
+
+```js
+let a;
+console.log(a); // output: undefined
+
+a = 2;
+console.log(a); // output: 2
+
+let a = 3; // SyntaxError: Identifier 'a' has already been declared
+```
+
+### const
+
+1. **不可以**宣告變數不賦值。
+2. **不可以**更改變數內容。
+3. 相同變數在同一層無法重新宣告。
+
+```js
+const a;       //SyntaxError: Missing initializer in const declaration
+
+const b = 2;
+console.log(b); //output: 2
+b = 3;
+console.log(b); //TypeError: Assignment to constant variable.
+
+const c = 2;
+const c = 3;   //SyntaxError: Identifier 'c' has already been declared
+```
+
+來做一個表格整理：
+
+| 特性                   |   var    |  let  | const |
+| :--------------------- | :------: | :---: | :---: |
+| 作用域                 | function | block | block |
+| 宣告變數是否需要賦值   |    否    |  否   |  是   |
+| 宣告後是否可以更改內容 |    是    |  是   |  否   |
+| 宣告後是否可以重新宣告 |    是    |  否   |  否   |
+| 是否有 hoisting 效果   |    是    |  否   |  否   |
+
+_這邊偷偷加了一個 Hoisting，可以看這篇 [ Hoisting 是什麼？](/interview/javascript/hoisting)_
+
+## Scope chain（範圍鍊）
+
+在進入到閉包之前，還需要了解的一個概念，就是 **範圍鍊（Scope Chain）**，先來看一道經典題目：
+
+```js
+var number = 1;
+function b() {
+  console.log(number);
+}
+
+function a() {
+  var number = 100;
+  b();
+}
+a();
+```
+
+宣告一個全域變數 `number = 1` ，建立 funA 裡面重新宣告 `number = 100` ，並包了一個 funB ，則 funB 裡面 `console.log(number)` 會跑出甚麼答案呢？
+
+---
+
+答案是：1
+
+有沒有答對呢～如果沒答對是正常的，我一開始也沒答對 XD，大部分的人一開始一定都會覺得，欸～～ funB 不是在 funA 裡面呼叫，那 funB 抓外面的變數 `number` 不就是 100 嗎？
+
+而這個就要牽扯到前面提到的執行環境 EC 了，當函式建立執行環境時，同時也建立了**外部環境參考 （Reference to Outer Environment）**，也就是誰才是 function 外的環境，而 **JavaScript** 的外部環境參考，是依照**靜態作用域（Static Scope）**又稱**詞彙作用域（lexical Scope）** 為準則。
+
+:::info 動靜態作用域
+甚麼是**靜態作用域**呢？簡單講就是物理上的程式碼範圍，雖然 funB 是在 funA 裡面被呼叫，但是 funB 在建立執行環境時（也就是 funB 被建立的位置），外層的環境就是 global，所以 `number` 才會是抓到 global 的 `number = 1` 。
+
+而既然有靜態作用域，當然也有<b>動態作用域（Dynamic Scope）</b>啦，在某些語言的情況下剛剛那個問題，答案就會是 100 沒錯喔，是不是很酷！
+
+**動態**的意思就是，外部參考環境是根據被**呼叫的當下**，所在的環境就是外部執行環境，恰好跟靜態作用域相反。
+:::
+
+那看回原本的那個範例，funB 要 `console.log(number)` ，可是 funB 裡面沒有 `number` 那怎麼辦呢？這時候他就會往外找看有沒有人定義 `number` 是甚麼？直到找到最外層的 `global`。
+
+而這個往外找的機制就稱作 `Scope Chain`。
+
+## Closure（閉包）
+
+終於可以進入到閉包了，有了上面的觀念，就可以比較好解釋閉包了。
+先來看一個範例：
+
+```js
+function count() {
+  var number = 5;
+  function addTen() {
+    console.log(number + 10);
+  }
+  addTen();
+}
+count(); //output: 15
+```
+
+這是一個普通的例子，呼叫一個 `count` 的 function ，裡面定義一個變數 `number` 的值為 5 ，然後建立一個 `addTen` 的 function，印出 `number + 10` ，然後執行 `addTen`。
+
+執行後就會印出 15 。
+
+這時候問題來了，那如果是在 `count` function 裡面回傳 `addTen` 的 function 呢？
+
+```js
+function count() {
+  var number = 5;
+  function addTen() {
+    console.log(number + 10);
+  }
+  return addTen;
+}
+var answer = count();
+answer(); //output: 15
+```
+
+跟剛剛不同的是，這次不執行 `addTen` ，而是回傳它，並且把它傳入一個新的變數 `answer` ，然後執行 `answer`，神奇的事情發生了，按照之前講的**外部參考環境**的規則，應該會跑出 `ReferenceError: number is not defined` 才對。
+
+```js
+var answer = count();
+// count() 回傳 addTen，而 addTen = function(){console.log(number)}
+
+//等同於:
+var answer = function () {
+  console.log(number);
+};
+answer();
+```
+
+怎麼還是跑出 15 呢？就好像 **變數被存在 function 裡面一樣**，沒錯！這就是閉包常見的解釋，明明已經執行完 `count` 了，但裡面的變數卻能被 `answer` 存取到！而造成這樣的原因有兩個。
+
+1. 範圍鍊（Scope Chain）
+
+已經知道 **Scope Chain** 就是當抓不到變數時，就會往外層找，直到 global 層，而前面也提到 funciton 的執行環境 EC 會產生對應的執行物件 AO。但其實 EC 還會產生對應的 **Scope Chain**，裡面裝了 AO 以及 function 的 `[[Scope]]` 屬性，可以簡化成以下的式子：
+
+```
+scope chain = activation object + [[Scope]]
+```
+
+AO 我們已經知道是 function 裡的參數以及變數，那 `[[Scope]]` 應該可以大致猜到是甚麼了吧？沒錯！！就是往外找的所有 AO + VO 的物件。
+
+所以看回剛剛的例子：
+
+```js
+function count() {
+  var number = 5;
+  function addTen() {
+    console.log(number + 10);
+  }
+  return addTen;
+}
+```
+
+當建立了 `addTen` 的 function 時，也建立了一個 `[[Scope]]` 的屬性，裡面裝了外層的所有 AO + VO，就把 `{ number: 5 }` 裝進了 `[[Scope]]` 裡面，所以只要 `addTen` 這個 function 存在，永遠可以透過它去抓到 `{ number: 5 }`。
+
+2. 在 function 裡面回傳一個 function
+
+如果只是單純的在 `count` 裡面放一個 `addTen`，怎麼在 `count` 的外面抓到 `addTen` 的 `[[Scope]]` 呢？所以第二個條件就是需要回傳一個 function，才能在執行時得到可以取得 `[[Scope]]` 值的 function。
+
+## 結論
+
+所以說**閉包（Closure）** 並不是一個像作用域阿，範圍鍊等有明確定義的東西，它比較像一個**現象**，因為 **Scope Chain** 以及**回傳 function** 所產生的效果。
+
+那閉包有甚麼**好處**呢？我們可以把一些不想被更動的變數藏在 function 裡面，這樣就無法因為外面的程式碼而改變數值。
+
+在實際寫程式時，並不會特別的想說要怎麼把 Closure 應用在程式碼，它比較像一個 JavaSctipt 自動產生的一個現象。不過也有些套件透過 Closure 自訂內部方法安全地取得或更新這些值，像是 React 的 useState 就是利用 Closure 來進行 state 的儲存。
+
+下次在看到 Closure 時，就要馬上想到是因為 function 有 `[[Scope]]` 的屬性且回傳 function 所造成的現象！
+
+## 參考資料
+
+- [所有的函式都是閉包：談 JS 中的作用域與 Closure](https://blog.techbridge.cc/2018/12/08/javascript-closure/)
+- [[JS] Scope 作用域](https://medium.com/take-a-day-off/js-scope-%E4%BD%9C%E7%94%A8%E5%9F%9F-ee536640963b)
+- [JavaScript 深入淺出 Variable Object & Activation Object](https://shawnlin0201.github.io/JavaScript/JavaScript-Variable-Object-and-Activation-Object/)
