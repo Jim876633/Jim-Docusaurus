@@ -58,7 +58,7 @@ btoa("A") // "QQ=="
 
 ## Base64 原始碼
 
-我在研究上面那個待解決問題時，想說來找一下 chromium 怎麼實作的，但都找不到，只有在 [Chromium Issues](https://issues.chromium.org/issues/40339718) 找到 2013 有修過 atob，但是當初實作的路徑現在已經找不到了，後來我只有找到 [WebKit](https://github.com/WebKit/WebKit/blob/152b90c32f5dec65fa0a6d30bfb7e9f934fd7b5d/Source/WebCore/page/WindowOrWorkerGlobalScope.cpp#L41) 的實作，有興趣的人可以看看～
+我在研究上面那個待解決問題時，想說來找一下 chromium 怎麼實作的，但都找不到，只有在 [Chromium Issues](https://issues.chromium.org/issues/40339718) 找到 2013 有修過 atob，但是當初實作的路徑現在已經找不到了，後來我只有找到 [WebKit](https://github.com/WebKit/WebKit/blob/152b90c32f5dec65fa0a6d30bfb7e9f934fd7b5d/Source/WebCore/page/WindowOrWorkerGlobalScope.cpp#L41) 的實作，另外也有人實作 [base64-js](https://github.com/beatgammit/base64-js/blob/master/index.js)，有興趣的人可以看看～
 
 ## Unit8Array toBase64/ fromBase64
 
