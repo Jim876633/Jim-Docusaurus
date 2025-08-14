@@ -1,0 +1,85 @@
+---
+title: 【Git】Git Worktree 讓你切換分支更方便
+sidebar_label: git worktree
+tags: [git]
+sidebar_position: 0
+---
+
+在開發的時候，如果臨時要切換到其他分支去修復 Bug，不知道大家都會怎麼做？
+
+如果 changes 是新檔案或是跟要切換的分支沒有衝突的話，通常可以直接切過去，不過多數情況下，
+需要先 commit 或是 stash 才能切換分支，這樣就會造成切換分支的時候需要多一個步驟，而且切回來後還需要 reset 或 stash pop 才能恢復原本的狀態。
+
+我自己是比較常用 `git stash -u` 來暫存目前的更動，加上 `u` 是為了也把未追蹤的檔案也一起暫存起來，這樣切換過去時會比較乾淨。
+
+不過這樣還是有點麻煩～而且有聽說 stash 有可能會有資料遺失的情況（雖然我至今都沒有發生過），所以在尋找怎麼樣更方便切換分支時，發現了 `git worktree` 這個指令。
+
+## Git Worktree 是什麼？
+
+`git worktree` 顧名思義就是可以在同一個 Git 當中，建立多個 worktree（工作樹），每個工作樹都可以有自己的分支，而各個工作樹之間是互相獨立的。
+
+要建立一個新的 worktree，需要指定一個位置當作 worktree 的目錄，並指定要使用的分支或 commit。
+
+```bash
+git worktree add <path> <branch | commit hash>
+```
+
+他就會在 `<path>` 位置把 `<branch>` 分支的內容複製過去，並且**共用同一個 Git 紀錄**。
+
+如果 `<branch>` 不存在，會無法建立而顯示
+
+```bash
+fatal: invalid reference: <branch>
+```
+
+要加上`-b` 參數來建立新的分支：
+
+```bash
+git worktree add <path> -b <branch>
+```
+
+建立完後可以用
+
+```bash
+git worktree list
+```
+
+來查看目前所有的工作樹。
+
+如果想要刪除的話，可以使用以下指令：
+
+```bash
+git worktree remove <path>
+```
+
+他也會順便刪除工作樹目錄~
+
+要切換工作區的話，只需要進入到工作樹目錄下，就是進到不同的工作區了。
+
+## Git Worktree 的原理
+
+看完了的基本用法，接著我們來看一下他是怎麼做到的。
+
+當你使用 `git worktree add` 時，Git 會在 `.git` 目錄下建立一個 `worktrees` 的資料夾，在這個資料夾底下就會根據你指定的 `<path>` 最後一層資料夾名稱，當作它的目錄名稱，如果有重複的就會在後面加上 1 來區別。
+
+![](/img/git/worktree/worktree-1.jpg)
+
+裡面會有一個 `gitdir` 檔案，這個檔案就是紀錄這個 worktree 的位置，會指向 worktree 底下的 .git 檔案
+
+```
+/Users/jim/Desktop/main-folder/my-worktree/.git
+```
+
+而在 worktree 的目錄下 `.git` 檔案內容則是指向 `gitdir` 的檔案路徑。
+
+```
+gitdir: /Users/jim/Desktop/main-folder/.git/worktrees/my-worktree
+```
+
+就是使用這種方式來讓多個 worktree 與主要的 Git 紀錄進行連結。
+
+## VScode 支援 🎉
+
+在最近 [1.103](https://code.visualstudio.com/updates/v1_103#_source-control) 版本中，VSCode 新增了 `git worktree` 的功能了！可以直接在側邊欄的 Source Control 中看到所有的工作樹。
+
+也可以很輕鬆的操控 UI 來建立新的工作樹或是進行切換，真是太方便啦～
