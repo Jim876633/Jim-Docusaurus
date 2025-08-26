@@ -1,0 +1,251 @@
+---
+title: 【JavaScript】ECMAScript 2024 新功能介紹
+sidebar_label: ECMAScript 2024
+tags: [javascript]
+---
+
+import { Img } from "@site/src/components/Width.jsx";
+
+從 ES6 ( 2015 ) 之後，每年都會推出一版新的 ECMAScript，今年推出了 ECMAScript 2024 ( ES15 )，讓我們來看看今年有什麼新功能！
+
+## 要怎麼看？
+
+**ECMAScript** 是由 Ecma International 定義的語言規範，編號是 ECMA-262，除了 ECMAScript 以外，還有像是 ECMA-404(JSON)、ECMA-334(C#)等規範。
+
+而制定 ECMA 標準的技術委員，又稱 TC(Technical Committee)，其中 [TC39](https://github.com/tc39) 就是負責管理及制定 ECMAScript(ECMA-262)。
+
+每年的新功能都會有四個階段的[提案](https://github.com/tc39/proposals)，正式加入 ECMAScript 規範的會是在 [finished-proposals](https://github.com/tc39/proposals/blob/main/finished-proposals.md)裡，可以看到每年新增的功能有什麼，以及提案人跟審核的 meeting 文檔。
+
+## ECMAScript 2024
+
+今年總共有七個新功能：
+
+- [ArrayBuffer transfer](https://github.com/tc39/proposal-arraybuffer-transfer)
+- [Promise.withResolvers](https://github.com/tc39/proposal-promise-with-resolvers)
+- [Array Grouping](https://github.com/tc39/proposal-array-grouping)
+- [Resizable and growable ArrayBuffers](https://github.com/tc39/proposal-resizable-arraybuffer)
+- [RegExp v flag with set notation + properties of strings](https://github.com/tc39/proposal-regexp-v-flag)
+- [Atomics.waitAsync](https://github.com/tc39/proposal-atomics-wait-async)
+- [Well-Formed Unicode Strings](https://github.com/tc39/proposal-is-usv-string)
+
+### ArrayBuffer transfer [支援度](https://caniuse.com/mdn-javascript_builtins_arraybuffer_transfer)
+
+新增了 `ArrayBuffer.prototype.transfer()` 和 `ArrayBuffer.prototype.transferToFixedLength()` 方法，可以將一個 ArrayBuffer 的內容轉移到新的 ArrayBuffer，同時讓原來的 ArrayBuffer 變成不可用狀態。
+
+```javascript
+// 創建一個 ArrayBuffer
+const buffer = new ArrayBuffer(8);
+const view = new Uint8Array(buffer);
+view[0] = 42;
+
+console.log(buffer.byteLength); // 8
+console.log(view[0]); // 42
+
+// 轉移到新的 ArrayBuffer，可以指定新的大小
+const newBuffer = buffer.transfer(16);
+const newView = new Uint8Array(newBuffer);
+
+console.log(newBuffer.byteLength); // 16
+console.log(newView[0]); // 42
+
+// 原來的 buffer 已經被 detached
+console.log(buffer.byteLength); // 0
+```
+
+### Promise.withResolvers [支援度](https://caniuse.com/mdn-javascript_builtins_promise_withresolvers)
+
+新增了 `Promise.withResolvers()`，回傳一個包含 promise、resolve、reject 的物件，讓我們可以在 Promise 外部控制它的狀態。
+
+```javascript
+// 以前需要這樣寫
+let resolve, reject;
+const promise = new Promise((res, rej) => {
+  resolve = res;
+  reject = rej;
+});
+
+// 現在可以這樣寫
+const { promise, resolve, reject } = Promise.withResolvers();
+
+// 在某個地方 resolve
+setTimeout(() => {
+  resolve("Hello World!");
+}, 1000);
+
+promise.then(console.log); // Hello World!
+```
+
+這個方法在外部控制 Promise 狀態時很有用～
+
+### Array Grouping [支援度](https://caniuse.com/mdn-javascript_builtins_object_groupby)
+
+新增了 `Object.groupBy()` 和 `Map.groupBy()` 兩個方法，可以根據回傳的函式結果來分組陣列元素。
+
+```javascript
+const inventory = [
+  { name: "asparagus", type: "vegetables" },
+  { name: "bananas", type: "fruit" },
+  { name: "goat", type: "meat" },
+  { name: "cherries", type: "fruit" },
+  { name: "fish", type: "meat" },
+];
+
+// Object.groupBy - 回傳一般物件
+const result = Object.groupBy(inventory, ({ type }) => type);
+console.log(result);
+// {
+//   vegetables: [{ name: 'asparagus', type: 'vegetables' }],
+//   fruit: [
+//     { name: 'bananas', type: 'fruit' },
+//     { name: 'cherries', type: 'fruit' }
+//   ],
+//   meat: [
+//     { name: 'goat', type: 'meat' },
+//     { name: 'fish', type: 'meat' }
+//   ]
+// }
+
+// Map.groupBy - 回傳 Map
+const mapResult = Map.groupBy(inventory, ({ type }) => type);
+console.log(mapResult.get("fruit"));
+// [{ name: 'bananas', type: 'fruit' }, { name: 'cherries', type: 'fruit' }]
+```
+
+### Resizable and growable ArrayBuffers [支援度](https://caniuse.com/mdn-javascript_builtins_arraybuffer_resize)
+
+ArrayBuffer 和 SharedArrayBuffer 現在支援動態調整大小。
+
+```javascript
+// 建立可調整大小的 ArrayBuffer，最大大小為 1024 bytes
+const buffer = new ArrayBuffer(8, { maxByteLength: 1024 });
+console.log(buffer.byteLength); // 8
+console.log(buffer.maxByteLength); // 1024
+
+// 調整大小
+buffer.resize(16);
+console.log(buffer.byteLength); // 16
+
+// SharedArrayBuffer 也支援 grow 方法
+const sharedBuffer = new SharedArrayBuffer(8, { maxByteLength: 1024 });
+sharedBuffer.grow(16);
+console.log(sharedBuffer.byteLength); // 16
+```
+
+### RegExp v flag [支援度](https://caniuse.com/mdn-javascript_builtins_regexp_unicodesets)
+
+新增了 RegExp 的 `v` flag，讓正規表達式支援更強大的字元集合運算，可以做交集（&&）、差集（--）等操作。
+
+```javascript
+// 1. 交集運算（&&）- 同時符合兩個條件
+// 找出「既是數字又是 0-5 範圍內」的字元
+const numberAndRange = /[\d&&[0-5]]/v;
+console.log(numberAndRange.test("3")); // true (既是數字又在0-5範圍內)
+console.log(numberAndRange.test("7")); // false (是數字但不在0-5範圍內)
+console.log(numberAndRange.test("a")); // false (不是數字)
+
+// 2. 差集運算（--）- 排除特定字元
+// 找出「英文字母但排除元音」的字元
+const consonants = /[[a-z]--[aeiou]]/v;
+console.log(consonants.test("b")); // true (子音)
+console.log(consonants.test("a")); // false (母音被排除)
+
+// 3. 實際應用：驗證特殊格式
+// 只允許數字和部分符號，但排除括號
+const specialFormat = /[[\d\-_.]--[()]]/v;
+console.log(specialFormat.test("1")); // true
+console.log(specialFormat.test("-")); // true
+console.log(specialFormat.test("(")); // false (括號被排除)
+```
+
+### Atomics.waitAsync [支援度](https://caniuse.com/mdn-javascript_builtins_atomics_waitasync)
+
+新增了 `Atomics.waitAsync()` 方法，提供非同步的方式等待 SharedArrayBuffer 中的值改變。
+
+在前端的實際應用場景：
+
+```javascript
+// 主執行緒建立共享記憶體來追蹤處理狀態
+const sharedBuffer = new SharedArrayBuffer(4);
+const statusArray = new Int32Array(sharedBuffer);
+Atomics.store(statusArray, 0, 0); // 0 = 未開始, 1 = 處理中, 2 = 完成
+
+// 主執行緒：等待 Worker 完成圖片處理
+const { async, value } = Atomics.waitAsync(statusArray, 0, 0);
+
+if (async) {
+  value.then(() => {
+    const status = Atomics.load(statusArray, 0);
+    if (status === 2) {
+      console.log("所有圖片處理完成！可以下載了");
+      document.getElementById("download-btn").disabled = false;
+    }
+  });
+}
+
+// 建立 Worker 來處理圖片
+const worker = new Worker("image-processor.js");
+worker.postMessage({ sharedBuffer, imageFiles });
+```
+
+```javascript
+// image-processor.js (Web Worker)
+self.onmessage = function (e) {
+  const { sharedBuffer, imageFiles } = e.data;
+  const statusArray = new Int32Array(sharedBuffer);
+
+  // 設定狀態為處理中
+  Atomics.store(statusArray, 0, 1);
+
+  // 處理圖片...
+  processImages(imageFiles).then(() => {
+    // 處理完成，通知主執行緒
+    Atomics.store(statusArray, 0, 2);
+    Atomics.notify(statusArray, 0, 1);
+  });
+};
+```
+
+不過這個功能在一般前端開發中用到的機會不多，比較適用於需要高效能計算的情況，例如圖片處理、音訊處理、大數據運算等等。
+
+### Well-Formed Unicode Strings [支援度](https://caniuse.com/mdn-javascript_builtins_string_iswellformed)
+
+新增了 `String.prototype.isWellFormed()` 和 `String.prototype.toWellFormed()` 方法，用於檢查和確保字串包含有效的 Unicode 序列。
+
+```javascript
+const strings = [
+  // 正常的字串
+  "Hello",
+  // 包含孤立的 high surrogate
+  "ab\uD800",
+  // 包含孤立的 low surrogate
+  "\uDFFFab",
+  // 正確的 surrogate pair
+  "ab\uD83D\uDE04c",
+];
+
+for (const str of strings) {
+  console.log(str, str.isWellFormed());
+}
+// Hello true
+// ab� false
+// �ab false
+// ab😄c true
+
+// 修正格式不正確的字串
+const malformed = "ab\uD800";
+console.log(malformed.isWellFormed()); // false
+console.log(malformed.toWellFormed()); // "ab�"
+console.log(malformed.toWellFormed().isWellFormed()); // true
+```
+
+## 重點整理
+
+我覺得本次新功能比較會用到的是以下兩個：
+
+- `Promise.withResolvers()`：可以在 Promise 外部控制 resolve/reject。
+- `Object.groupBy()` / `Map.groupBy()`：內建陣列分組功能，可以很方便將陣列依條件分組。
+
+## 參考資料
+
+- [ECMAScript 2024 Language Specification](https://262.ecma-international.org/15.0/)
+- [TC39 finished proposals](https://github.com/tc39/proposals/blob/main/finished-proposals.md)
