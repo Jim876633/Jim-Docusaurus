@@ -121,17 +121,38 @@ Vim 總共有四種模式，分別是 Normal Mode、Insert Mode、Visual Mode �
 
 你可能會發現有些指令好像是有規律的，像是：`yiw`、`diw`、`ciw`，這些指令都是由一個動詞加上一個名詞組成，VIM 官方把它拆成兩個部分，動作(Operator)＋對象(Text Objects)。
 
-| 類別           | 代表字母    | 說明           | 例子                            |
-| -------------- | ----------- | -------------- | ------------------------------- |
-| 動作           | `d` `y` `c` | 影響文字的動作 | d（刪除），y（複製），c（變更） |
-| 對象（內外類） | `i` `a`     | 選擇範圍的內外 | i（內部），a（包含外部）        |
-| 對象（目標類） | `w` `s` `p` | 目標文字區塊   | w（單字），s（句子），p（段落） |
+| 類別           | 代表字母            | 說明           | 例子                                                          |
+| -------------- | ------------------- | -------------- | ------------------------------------------------------------- |
+| 動作           | `d` `y` `c`         | 影響文字的動作 | d（刪除），y（複製），c（變更）                               |
+| 對象（內外類） | `i` `a`             | 選擇範圍的內外 | i（內部），a（包含外部）                                      |
+| 對象（目標類） | `w` `s` `p` `t` `b` | 目標文字區塊   | w（單字），s（句子），p（段落），t（HTML 標籤），b（bracket） |
+
+對象也可以是 `'`、`"`、`(`、`[` 等符號。
 
 如果要查所有的動作對象，可以輸入 `:help text-objects`、`:help operator` 來查詢。
 
+:::info
+
+有些 vim plugin 也會提供更多的對象，例如：
+
+- [vim-indent-object](https://github.com/michaeljsmith/vim-indent-object) 可以讓你選取縮排區塊。
+- [vim-textobj-entire](https://github.com/kana/vim-textobj-entire) 可以讓你選取整個檔案。
+
+:::
+
 ## Mac OS 長按問題
 
-[參考文章](https://www.macworld.com/article/351347/how-to-activate-key-repetition-through-the-macos-terminal.html)
+在 Mac OS 中，預設是長按鍵盤會出現特殊符號選單，而不是重複輸入該字元，這對於使用 Vim 來說非常的不方便，可以透過以下指令針對 Vscode 關閉這個功能：
+
+```bash
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
+```
+
+:::info
+
+有些 [參考文章](https://www.macworld.com/article/351347/how-to-activate-key-repetition-through-the-macos-terminal.html) 會直接設定全域關閉長按功能，但不知道為什麼會造成切換中英文輸入法時，無法正常切換，所以建議只針對 Vscode 關閉長按功能～
+
+:::
 
 ## Vscode Vim 擴充套件解法
 
