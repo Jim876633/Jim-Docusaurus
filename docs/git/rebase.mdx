@@ -66,7 +66,7 @@ rebase 的意思是重新定位基礎，也就是說，當你使用 `git rebase`
   <ImgBlock src={image_6} />
 </Block>
 
-所以在使用 `git rebase` 時，要特別注意，<Text color='red' bold>不要</Text>在已經 push 到遠端的分支上使用 `git rebase`，因為這樣會改變遠端分之的 commit 歷史記錄，盡量都是在本地端分支上使用 `git rebase`。
+所以在使用 `git rebase` 時，要特別注意，<Text color='red' bold>盡量不要</Text>在已經 push 到遠端的分支上使用 `git rebase`（除非確定那個分支只有你在用），因為這樣會改變遠端分支的 commit 歷史記錄，大部分的情況都是在本地端分支上使用 `git rebase`。
 
 ## git rebase 誰接誰？
 
@@ -100,7 +100,7 @@ git rebase master
 
 ## git rebase 錯了怎麼辦？
 
-在使用 `git rebase` 的時候，如果想要取消 rebase，<Text color='red' bold>不要使用</Text> `git reset`，因為 `git reset` 是把 HEAD 從現在的 commit hash 退回到上一個 commit hash，而 `git rebase` 會修改歷史記錄，所以用 `git reset` 沒辦法回復到 rebase 之前的狀態。
+在使用 `git rebase` 的時候，如果想要取消 rebase，<Text color='red' bold>絕對不要使用</Text> `git reset`，因為 `git reset` 是把 HEAD 從現在的 commit hash 退回到上一個 commit hash，而 `git rebase` 會修改歷史記錄，所以用 `git reset` 沒辦法回復到 rebase 之前的狀態。
 
 這時候可以使用 `git reset ORIG_HEAD --hard` 來退回 rebase，**ORIG_HEAD** 是當你操作 git 時，如果是比較重要的改變 (Ex: git merge/git rebase)，git 會幫你記錄你的 HEAD，這樣就可以用來回復到改變之前的狀態。
 
@@ -112,7 +112,7 @@ git rebase master
 
 ## git rebase interactive 互動模式
 
-`git rebase` 有提供一個 **Interactive (互動) 模式**，讓你能夠修改 commit 的順序及內容，這個模式可以幫你修改及合併多個 commit，讓你的歷史記錄更加乾淨。
+`git rebase` 有提供一個 **Interactive (互動) 模式**，也是我最常用的功能，讓你能夠修改 commit 的順序及內容，這個模式可以幫你修改及合併多個 commit，讓你的歷史記錄更加乾淨，是個超級好用一定要學起來的功能！
 
 使用方式如下：
 
@@ -131,7 +131,7 @@ git rebase -i HEAD~n
 
 當你進入互動模式後，預設會使用 vim 來進行編輯，假設我輸入 `git rebase -i HEAD~2`，會看到以下畫面：
 
-<Img src={image_7} width='700px' center />
+<Img src={image_7} width="700px" center />
 
 由上往下是<Text  bold>從舊到新</Text>的 commit，而在每一行的開頭會有一個動作，這邊列出常見的動作分別是：
 
@@ -158,9 +158,9 @@ git rebase -i HEAD~n
 
 - 使用 <Highlight bold>drop</Highlight> 及刪除整行：
 
-<Img src={image_8} width='700px' center />
+<Img src={image_8} width="700px" center />
 
-<Block block width='700px' center>
+<Block block width="700px" center>
   <ImgBlock src={image_9} />
   <ImgBlock src={image_10} />
 </Block>
@@ -178,9 +178,9 @@ git rebase -i HEAD~n
 
 - 使用 <Highlight bold>reword</Highlight> 修改 commit message：
 
-<Img src={image_16} width='700px' center />
+<Img src={image_16} width="700px" center />
 
-<Block block width='700px' center>
+<Block block width="700px" center>
   <ImgBlock src={image_9} />
   <ImgBlock src={image_15} />
 </Block>
@@ -189,14 +189,14 @@ git rebase -i HEAD~n
 
 - 使用 <Highlight bold>edit</Highlight> 暫停 rebase 來新增檔案：
 
-<Img src={image_18} width='700px' center />
+<Img src={image_18} width="700px" center />
 
-<Block block width='700px' center>
+<Block block width="700px" center>
   <ImgBlock src={image_9} />
   <ImgBlock src={image_17} />
 </Block>
 
-<Block block width='700px' center>
+<Block block width="700px" center>
   <ImgBlock src={image_19} />
   <ImgBlock src={image_20} />
 </Block>
@@ -213,9 +213,9 @@ squash 和 fixup 都是合併 commit 的動作，不過 **fixup** 會直接使�
 
 - 使用 <Highlight bold>fixup</Highlight> 合併 commit：
 
-<Img src={image_12} width='700px' center />
+<Img src={image_12} width="700px" center />
 
-<Block block width='700px' center>
+<Block block width="700px" center>
   <ImgBlock src={image_9} />
   <ImgBlock src={image_11} />
 </Block>
@@ -224,9 +224,9 @@ squash 和 fixup 都是合併 commit 的動作，不過 **fixup** 會直接使�
 
 - 使用 <Highlight bold>squash</Highlight> 合併 commit：
 
-<Img src={image_14} width='700px' center />
+<Img src={image_14} width="700px" center />
 
-<Block block width='700px' center>
+<Block block width="700px" center>
   <ImgBlock src={image_9} />
   <ImgBlock src={image_13} />
 </Block>
@@ -237,7 +237,7 @@ squash 和 fixup 都是合併 commit 的動作，不過 **fixup** 會直接使�
 
 例如下面是 `merge-branch` rebase 到 `master`：
 
-<Img src={image_23} width='700px' center />
+<Img src={image_23} width="700px" center />
 
 原本的 `merge-branch` 有包含 `test-branch` 的 commit 跟 merge，但是 rebase 後，merge 的 commit 就消失了，取而代之的是 `test-branch` 的 commit。
 
@@ -249,7 +249,7 @@ git rebase -r <commit hash>
 
 這樣就可以保留 merge commit，讓你的歷史記錄更加完整。
 
-<Img src={image_24} width='700px' center />
+<Img src={image_24} width="700px" center />
 
 這個參數也可以搭配 interactive 模式使用，讓你可以更加自由的修改 commit。
 
@@ -259,20 +259,21 @@ git rebase -i -r <commit hash>
 
 加上 `-r` 的輸出比起一般的 `-i` 更加複雜，以下面這張圖為例
 
-<Img src={image_21} width='700px' center />
+<Img src={image_21} width="700px" center />
 
 當我們執行 `git rebase -i -r 8104fda2` 時會像這樣：
 
-<Img src={image_22} width='700px' center />
+<Img src={image_22} width="700px" center />
 
-- <Text bold>\# Branch :</Text> 通常每一個 merge 會是一個區塊，# Branch 是用來辨識每一個區塊的標籤，預設會抓取該分支的名稱並用
-  `-` 連接 (Ex: `feature/branch` -> `feature-branch`，如果同樣名稱會在後面 -數字來做辨別)。
-- <Text bold>label :</Text> 用來標記 commit，供後續 reset 或是 merge 使用（有需要的才會做標記），命名模式同
-  \# Branch。
-- <Text bold>reset : </Text> 這是用來重新定位基礎的 commit，後面會接著 label 或是
-  commit hash。
-- <Text bold>merge : </Text> 也就是 merge 的動作，`-C` 代表使用原本的 commit message，如果改成
-  `-c` 則會進入 vim 讓你修改 commit message。
+- <Text bold>\# Branch :</Text> 通常每一個 merge 會是一個區塊，# Branch
+  是用來辨識每一個區塊的標籤，預設會抓取該分支的名稱並用 `-` 連接 (Ex:
+  `feature/branch` -> `feature-branch`，如果同樣名稱會在後面 -數字來做辨別)。
+- <Text bold>label :</Text> 用來標記 commit，供後續 reset 或是 merge
+  使用（有需要的才會做標記），命名模式同 \# Branch。
+- <Text bold>reset : </Text> 這是用來重新定位基礎的 commit，後面會接著 label
+  或是 commit hash。
+- <Text bold>merge : </Text> 也就是 merge 的動作，`-C` 代表使用原本的 commit
+  message，如果改成 `-c` 則會進入 vim 讓你修改 commit message。
 
 我們一步一步的來看：
 
