@@ -1,0 +1,144 @@
+---
+title: 【JavaScript】超好用的 Web API - Intersection Observer
+sidebar_label: Intersection Observer
+tags: [javascript, coderbridge]
+---
+
+import CodePen from "@site/src/components/CodePen.jsx";
+
+先來看一下效果：
+
+<CodePen slugHash="JjLOBVE" title="Intersection Observer" />
+
+是不是很酷！！
+
+之前要在滾動頁面做效果時，都是監聽 `scroll` 事件，搭配取得元素的 `Element.getBoundingClientRect()` 或是 `offsetTop` 、 `offsetLest` 去實現，不僅要計算元素到最視窗的距離，而且每滑動一次就監聽一次，很容易降低處理效能，所以取而代之的就是今天的主題 **Intersection Observer API** 。
+
+## Intersection Observer
+
+> MDN：The IntersectionObserver interface of the Intersection Observer API provides a way to asynchronously observe changes in the intersection of a target element with an ancestor element or with a top-level document's viewport. The ancestor element or viewport is referred to as the root.
+
+簡單來說，`Intersection Observer` 就是觀察（observe）當**指定元素**接觸到**父層以上**或者是**視窗**的方法。
+
+## 語法：
+
+```js
+const observer = new IntersectionObserver(callback, option);
+observer.observe(element);
+```
+
+`IntersectionObserver` 是一個建構函式，所以需要 `new` 關鍵字來建立實體，函式內傳入兩個參數，**callback function** 以及 **option** ，觀測的元素則用 `observer.observe(element)` ，來觀測指定元素。
+
+### 📌 option
+
+先來介紹 **option** ，它是 `IntersectionObserver` 的**屬性（property）**，可以判斷指定元素與窗口的交接條件。
+
+```js
+const option = {
+  root: null,
+  rootMargin: "0px 0px 0px 0px",
+  threshold: 0.0,
+};
+```
+
+**option** 有三個屬性：
+
+- **root：**指定與元素交接的窗口，預設為 `Null`，是以 **Viewpoint**當作窗口。
+
+- **rootMargin：**可以調整指定窗口縮放，順序與 CSS 的 `margin` 一樣，而正數為外擴，負數為內縮。
+
+- **threshold：**前兩個都是控制外層屬性，唯獨這一個是控制指定元素的**交接範圍百分比**，數值介於 0 ~ 1，計算方式為 **交接面積 / 元素面積** 。
+
+  - 預設值為 0 ，指的是當元素與窗口交接範圍**大於 0%**，或**小於 0%** 的瞬間觸發。
+  - 當設定為 1 ，指的是當元素與窗口交接範圍**大於 100%** ，或是小於 **100%** 的瞬間觸發。
+  - 如果要在不同範圍都觸發時，則要用 `[0, 0.5, 1]` 的方式把數值包在陣列裡。可以利用此方法做出下面的效果：
+
+<CodePen slugHash="yLKPxdM" title="Intersection Observer Threshold" />
+
+### 📌 Callback Function
+
+```js
+const callback = (entries, owner) => {
+  console.log(owner);
+  console.log(entry);
+};
+```
+
+傳入兩個參數（entries, owner）：
+
+- **entries：**指的是一個包著 `IntersectionObserverEntry` 物件的陣列，如果觀察多個元素則會有多個 `IntersectionObserverEntry` 物件，它有很多好用的屬性，可以用來設定執行效果的條件，下面會進一步細講。
+
+![](https://static.coderbridge.com/img/Jim876633/f08e257f715041a39dd58398ef312627.jpg)
+
+- **owner：**指的是 `IntersectionObserver` 的實體，也就是 callback function 的 `this`。
+
+### 📌 IntersectionObserverEntry property
+
+![](https://static.coderbridge.com/img/Jim876633/43ab7968b5264b288d826501ac71c442.jpg)
+
+- boundingClientRect：與 `Element.getBoundingClientRect()` 回傳的資訊一樣，回傳元素的長寬及相對於**視窗**的座標資訊。
+
+- intersectionRatio：與 `threshold` 的功能一樣，回傳 0 ~ 1 的數，為交接面積 / 元素面積。
+
+- isIntersecting（boolean）：常用屬性，判斷元素是否進入窗口範圍。
+
+- rootBounds：與前面的 `boundingClientRect` 一樣是元素資訊，差別在於回傳的是**窗口**，的元素資訊。
+
+- target：交接的指定目標元素。
+
+- time：回傳開始觀測後的時間。
+
+### 📌 IntersectionObserver method
+
+除了一開始提到的 `IntersectionObserver.observe(element)` 來指定元素，還有幾個可用的 method。
+
+- **IntersectionObserver.observe(element)：** 告訴觀測者指定目標元素是誰。
+
+- **IntersectionObserver.unobserve(element)：** 告訴觀測者不再觀測指定目標元素。
+
+- **IntersectionObserver.disconnect：** 告訴觀測者不再觀測任何指定目標元素。
+
+## 應用
+
+最常的使用時機有兩個，一個是延遲載入（Lazy Loading），另一個是無限滾動（Infinite Scroll），皆是為了優化**讀取速度**，能在滑動到指定位置時，才載入資源。
+
+### 📌 延遲載入（lazy Loading）
+
+<CodePen slugHash="zYWPMXr" title="Intersection Observer Lazy Loading" />
+
+_方法：_
+
+當元素的一半進入視窗時，才載入圖片，離開到元素的一半時，則移除圖片。也可以做出 **Fade in 、 Fade out** 的效果！
+
+### 📌 無限滾動（Infinite Scroll）
+
+<CodePen slugHash="WNzXLOe" title="Intersection Observer Infinite Scroll" />
+
+_方法：_
+
+```js
+function addList() {
+  const li = document.querySelector("li:nth-child(1)");
+  const html = Array(10).fill(`<li>${li.textContent}<hr></li>`).join("");
+  document.querySelector("ul").innerHTML += html;
+}
+const callback = (entries) => {
+  if (entries[0].isIntersecting) {
+    addList();
+    //移除觀測舊的元素，觀測新的元素
+    observer.unobserve(entries[0].target);
+    observer.observe(document.querySelector("li:nth-last-child(2)"));
+  }
+};
+const observer = new IntersectionObserver(callback);
+observer.observe(document.querySelector("li:nth-last-child(2)"));
+```
+
+當清單的倒數第二項進入視窗時，就執行 `addItem()` 新增十項清單，新增的方式是建立一個 10 個項目的陣列 `Array(10).fill(html)` 把清單的 HTML 丟進去，並加入到舊有的清單裡。
+
+執行完後要記得把原本觀察的項目移除，再重新觀察新的 list 的倒數第二項，就可以無限滾動新增清單！
+
+## 參考
+
+[認識 Intersection Observer API：實作 Lazy Loading 和 Infinite Scroll](https://medium.com/%E9%BA%A5%E5%85%8B%E7%9A%84%E5%8D%8A%E8%B7%AF%E5%87%BA%E5%AE%B6%E7%AD%86%E8%A8%98/%E8%AA%8D%E8%AD%98-intersection-observer-api-%E5%AF%A6%E4%BD%9C-lazy-loading-%E5%92%8C-infinite-scroll-c8d434ad218c)
+[那些被忽略但很好用的 Web API / IntersectionObserver](https://ithelp.ithome.com.tw/articles/10279046)

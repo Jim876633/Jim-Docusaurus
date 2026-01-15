@@ -1,0 +1,164 @@
+---
+title: 【React】Styled-components 介紹
+sidebar_label: Styled-components 介紹
+tags: [react, css, coderbridge]
+---
+
+## 📌前言
+
+`Styled-components` 主要是為了讓在 Styling React 時，可以也用 component 的方式，讓 CSS 更好維護。
+
+他有幾個優點：
+
+- 他寫在 JSX 檔裡面，也就是說他可以跟 React components 寫在同一個檔案裡。
+- 他跟 `module css` 一樣有獨立的 className，不怕 className 命名重複的問題。
+- 他可以傳入 `props` 來動態的生成 CSS style。
+- 自動 `Prefixing` ，幫你在不同瀏覽器加入前綴詞。
+
+## 📌使用
+
+### 下載
+
+```bash
+npm install styled-components
+```
+
+or
+
+```bash
+yarn add styled-components
+```
+
+### 基本寫法
+
+```js
+import styled from "styled-components";
+
+const Title = styled.h1`
+  font-size: 1.5em;
+  text-align: center;
+  color: red;
+`;
+
+function App() {
+  return <Title>Hello World!</Title>;
+}
+```
+
+看起來是不是很怪 XD ，從它的名字就可以知道，它把每一個 style 都變成 component ，接下來我們來一一拆解。
+
+```js
+import styled from "styled-components";
+```
+
+首先先匯入 styled ，再來定義 component 名稱，因為是 component 所以第一個字也要大寫喔。
+
+```js
+const Title = styled.h1``;
+```
+
+`styled.` 後面接的就是 **HTML Tag**，而 \`\` 裡面放的就是一般的 CSS 。
+
+---
+
+**不過因為如果結構很複雜的話，一個檔案會變得很冗長，所以也可以把 `styled component` 另外寫一個 JS 檔，然後再匯入**
+
+---
+
+可以玩玩看～
+
+<iframe
+  src="https://codesandbox.io/embed/styled-component-test1-n313il?fontsize=14&hidenavigation=1&module=%2Fsrc%2FApp.style.js&theme=dark"
+  style={{
+    width: "100%",
+    height: "300px",
+    border: "0",
+    borderRadius: "4px",
+    overflow: "hidden",
+  }}
+  title="styled-component-test1"
+  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+></iframe>
+### 傳入參數
+
+可以將 React 的變數傳入 Styled component ，動態生成不同情況的樣式。
+
+```js
+import styled from "styled-components";
+
+const Title = styled.h1`
+  font-size: 1.5em;
+  text-align: center;
+  color: ${(props) => (props.primary ? "red" : "blue")};
+`;
+
+function App() {
+  return (
+    <>
+      <Title primary={true}>I am primary</Title>
+      <Title primary={false}>I am secondary</Title>
+    </>
+  );
+}
+```
+
+<iframe
+  src="https://codesandbox.io/embed/divine-cloud-p26zzg?fontsize=14&hidenavigation=1&theme=dark"
+  style={{
+    width: "100%",
+    height: "300px",
+    border: "0",
+    borderRadius: "4px",
+    overflow: "hidden",
+  }}
+  title="divine-cloud-p26zzg"
+  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+></iframe>
+
+### 繼承（延伸）樣式
+
+有時候很多 component 都有共同的樣式，例如：不同顏色的 Button，這時候就可以共用同一個 component 樣式，有繼承（延伸）的效果。
+
+寫法就是將原本寫在 `styled.` 後面的 Tag 換成 `（Component Name）`，就可以繼承（延伸） component 的 Tag 跟 style。
+
+```js
+const Button = styled.button`
+  border-radius: 10rem;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+`;
+
+const LoginButton = styled(Button)`
+  background: green;
+  color: white;
+`;
+
+const LogoutButton = styled(Button)`
+  background: red;
+  color: black;
+`;
+```
+
+<iframe
+  src="https://codesandbox.io/embed/awesome-bogdan-slppgf?fontsize=14&hidenavigation=1&theme=dark"
+  style={{
+    width: "100%",
+    height: "300px",
+    border: "0",
+    borderRadius: "4px",
+    overflow: "hidden",
+  }}
+  title="awesome-bogdan-slppgf"
+  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+></iframe>
+
+**今天就先介紹三個常用的用法，下一篇再來繼續挖掘其他的功能～～**
+
+## 參考
+
+[Styled-component](https://styled-components.com/docs/basics)
+[【Day 12】Styled-component](https://ithelp.ithome.com.tw/articles/10215800)
