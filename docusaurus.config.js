@@ -184,8 +184,13 @@ const config = {
   plugins: [
     "docusaurus-plugin-sass",
     "image-zoom",
-    "docusaurus-plugin-get-docs-create-date",
     "./src/plugins/tailwind-config.js",
+    [
+      "docusaurus-plugin-get-docs-create-date",
+      {
+        ignoreTagList: ["coderbridge"],
+      },
+    ],
   ],
 };
 
