@@ -17,11 +17,11 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.7.0",
+    "@docusaurus/core": "^3.9.1",
     "@docusaurus/faster": "^3.7.0",
-    "@docusaurus/plugin-client-redirects": "^3.7.0",
-    "@docusaurus/plugin-google-gtag": "^3.7.0",
-    "@docusaurus/preset-classic": "^3.7.0",
+    "@docusaurus/plugin-client-redirects": "^3.9.1",
+    "@docusaurus/plugin-google-gtag": "^3.9.1",
+    "@docusaurus/preset-classic": "^3.9.1",
     "@giscus/react": "^2.2.8",
     "@mdx-js/react": "^3.0.0",
     "@tanstack/react-query": "^4.29.5",
