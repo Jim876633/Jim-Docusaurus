@@ -1,0 +1,81 @@
+---
+title: 【CSS】純 CSS 呈現反轉卡片效果
+sidebar_label: Rotate Card
+tags: [css, coderbridge]
+---
+
+import CodePen from "@site/src/components/CodePen.jsx";
+
+## 效果
+
+話不多說，直接看成果：
+
+<CodePen slugHash="GRdKRGY" title="CSS-翻轉卡片" />
+
+是不是很酷！！！看它翻轉真的很療癒欸（甚麼怪癖 XD）
+
+## 製作方法
+
+### 1. 架構
+
+架構是一個外層的 `card` 裡面包 `font` 、 `back` 的物件。
+
+```html
+<div class="card">
+  <div class="font">Font</div>
+  <div class="back">Back</div>
+</div>
+```
+
+### 2. rotateY
+
+當 hover 到 `card` 時，各自旋轉 Y 方向 180 deg，不過因為要設定一開始 `back` 在背面，所以先讓它轉 -180 deg，hover 時再轉回 0 deg。
+
+```css
+.back {
+  transform: rotateY(-180deg);
+}
+.card:hover .font {
+  transform: rotateY(180deg);
+}
+.card:hover .back {
+  transform: rotateY(0);
+}
+```
+
+### 3. backface-visibility
+
+在翻轉時會發現可以從背面看到前面**倒轉**的文字加背景，可以設定 `backface-visibilty: hidden`，翻到背面時就看不到前面的東西囉！
+
+```css
+.font,
+.back {
+  backface-visibility: hidden;
+}
+```
+
+### 4. position: absolute
+
+要讓兩個卡片疊在一起，只要使用絕對定位，就可以讓它疊在一起，記得在父層 `card` 設定 `position: relative` 才會定位在父層喔。
+
+```css
+.card {
+  position: relative;
+}
+.font,
+.back {
+  position: absolute;
+}
+```
+
+### 5. perspective
+
+好像可以翻轉了，但是怎麼不太立體的感覺？這時候就要使用 `perspective`，可以想像有一台攝影機看著物件，後面接的數值就是跟它的相差的距離，距離越近，物件的 Z 軸會被放的更大，而距離越大，會越接近平面的效果。
+
+可以使用下面的範例玩玩看～～
+
+<CodePen slugHash="KKRzzrw" title="[CSS]-Perspective" />
+
+## 參考
+
+[變形(transform) 3D基本使用](https://eyesofkids.gitbooks.io/css3/content/contents/transform3d.html)

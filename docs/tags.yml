@@ -109,3 +109,7 @@ ithome2023:
   label: IT Home 2023
   description: IT Home 鐵人賽 2023 年系列文章
   permalink: /ithome-2023
+coderbridge:
+  label: CoderBridge
+  description: 原 CoderBridge 文章移轉
+  permalink: /coderbridge
