@@ -27,6 +27,9 @@ const config = {
 
   future: {
     experimental_faster: true,
+    v4: {
+      removeLegacyPostBuildHeadAttribute: true,
+    },
   },
 
   // Even if you don't use internalization, you can use this field to set useful
