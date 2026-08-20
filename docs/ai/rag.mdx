@@ -1,0 +1,158 @@
+---
+title: 【AI】RAG 是什麼？搞懂檢索增強生成
+sidebar_label: RAG 介紹
+tags: [ai, rag]
+---
+
+import TextPronounce from "@site/src/components/TextPronounce.jsx";
+import Highlight from "@site/src/components/Highlight";
+
+## 為什麼需要 RAG？
+
+平常個人在用 AI 應用時（ex: ChatGPT），大部分既有知識都能夠得到答案，這取決於 LLM 在訓練時所用的資料。不過如果問到沒有訓練過的內容，例如：公司內部文件、最新消息等等，通常就得不到甚麼有用的答案了，甚至有時候還會一本正經地亂回答，講得煞有其事，實際上根本是編出來的。
+
+這是因為 **LLM 的知識在訓練完之後就固定住了**，不會再更新，而且也沒辦法即時去查詢這類私有、即時的資料。
+
+想解決這個問題，直覺會想到兩種做法：
+
+- 把新資料重新拿去訓練模型（**Fine-tuning**）
+- 每次都把整份文件塞進 Prompt 裡面一起問（**Long Context**）
+
+不過這兩種做法都有明顯的限制。重新訓練模型成本很高，而且資料一有更新就要重來一次；把整份文件塞進 Prompt，則會受限於 Token 數量上限，而且文件一多，成本跟延遲都會直接爆掉。
+
+所以就有了 RAG 這個折衷的做法。
+
+## RAG 是什麼？
+
+`RAG`（Retrieval-Augmented Generation）直翻的話是「檢索增強生成」，不過光看翻譯還是不知道是甚麼意思。
+
+簡單來說，RAG 就是在 LLM 回答問題之前，**先去外部的資料庫裡面把跟問題相關的資料找出來，再把這些資料一起塞給 LLM 當作參考，讓它根據這些資料來回答**。
+
+也就是說，RAG 並不是在改模型本身，而是在「問問題」跟「模型回答」中間，多插了一個「找資料」的步驟。
+
+:::info 補充
+名字裡的三個字剛好對應三個動作：
+
+- **Retrieval**<TextPronounce text='retrieval' />（檢索）：先去資料庫找跟問題相關的資料
+- **Augmented**<TextPronounce text='augmented' />（增強）：把找到的資料塞進 Prompt，補強 LLM 原本沒有的知識
+- **Generation（生成）**：LLM 根據補強後的內容產生答案
+  :::
+
+## RAG 的運作流程
+
+整體流程大概可以拆成兩個階段，一個是「事前準備」，一個是「問答當下」。
+
+### 階段一：建立知識庫（索引）
+
+這階段是**事先**做好的，不是每次問問題才做：
+
+1. **收集文件**：把公司內部文件、PDF、網頁等等原始資料收集起來
+2. **切割文件（Chunking）**：把長文件切成一小段一小段，方便之後檢索
+3. **向量化（Embedding）**：用 Embedding 模型把每個片段轉成一串數字（向量），這串數字可以代表這段文字的語意
+4. **存進向量資料庫**：把這些向量存進 `Vector Database`（例如 [Pinecone](https://www.pinecone.io/)、[Milvus](https://milvus.io/)、[Chroma](https://www.trychroma.com/) 這類的工具）
+
+<details>
+<summary>補充：Embedding 模型是什麼？</summary>
+
+上面第 3 步提到的 Embedding 模型，就是專門負責把文字轉成向量的模型，簡單來說，就是把一段文字丟進去，吐出一串代表這段文字語意的數字。
+
+那這個「向量化」實際上是怎麼做到的呢？現在主流的 Embedding 模型底層都是用 [Transformer](https://poloclub.github.io/transformer-explainer/) 架構，先把一段文字拆成一個一個的 Token，再透過裡面的 Self-Attention（自注意力）機制，讓每個 Token 去參考句子裡其他 Token 的資訊，最後整合成一串固定長度的向量。也因為有考慮到上下文，同一個詞在不同句子裡轉出來的向量也會不一樣，例如「蘋果」在「我吃了一顆蘋果」跟「蘋果發表新手機」這兩句裡，轉出來的向量就會差很多，這也是為什麼現在的 Embedding 比早期 [Word2Vec](https://arxiv.org/abs/1301.3781) 這種「一個詞固定一個向量」的做法準確更多。
+
+常見的 Embedding 模型有：
+
+- [OpenAI text-embedding-3](https://platform.openai.com/docs/guides/embeddings)：最多人用，直接呼叫 API 就好，不用自己架
+- [Cohere Embed](https://cohere.com/embed)：支援多語言，品質也不錯
+- [BGE-M3](https://huggingface.co/BAAI/bge-m3)：開源、可以自己部署，多語言檢索能力算是開源裡數一數二強的
+- [Voyage AI](https://www.voyageai.com/)：主打針對 RAG 場景優化過
+
+要選哪個，還是要看場景，簡單串接就用 OpenAI 或 Cohere 這類 API，想要自己掌控資料不外流，就會考慮 BGE-M3 這種開源自架的選項。
+
+</details>
+
+### 階段二：問答（檢索 + 生成）
+
+這階段才是使用者實際問問題的時候：
+
+1. 使用者輸入問題
+2. 把問題也轉成向量
+3. 拿這個向量去向量資料庫裡面，找出語意最相近的幾個文件片段
+4. 把這些片段跟原本的問題一起組成 Prompt，送給 LLM
+5. LLM 根據這些補充資料生成答案
+
+用文字可能有點抽象，來畫一下流程：
+
+```text
+使用者問題
+   │
+   ▼
+轉成向量 ──▶ 向量資料庫（比對相似度）
+   │              │
+   │        找出相關文件片段
+   │              │
+   ▼              ▼
+      組合成 Prompt（問題 + 相關資料）
+              │
+              ▼
+            LLM 生成答案
+```
+
+是不是比想像中單純很多？其實核心概念就是「先查資料，再回答」，跟我們自己寫報告的時候會先查資料再下筆的邏輯是一樣的。
+
+## Embedding 跟 Rerank 差在哪
+
+前面的流程圖裡面，檢索的部分只用了 Embedding 去比對相似度，不過實務上光靠 Embedding 常常不夠準，所以還會多加一道 Rerank（重新排序）的步驟。
+
+<Highlight color="green">Embedding</Highlight>
+是把文字轉成向量的過程，靠的是「語意相近的文字，向量的距離也會相近」這個特性。用
+Embedding
+去檢索的時候，是把使用者問題的向量，跟資料庫裡每個片段的向量一個一個算距離（例如
+Cosine Similarity），取距離最近的前 N 筆回來。
+
+不過這邊有個問題：Embedding 是**獨立**幫問題跟每個文件片段各自算一次向量，兩者在轉換的過程中完全沒有互相參考，所以距離近不代表真的相關，只是「語意上看起來像」而已。而且為了應付大量資料，Embedding 檢索通常會抓比較寬的候選範圍（例如先抓 Top 50），準確度自然就會打折扣。
+
+<Highlight color="blue">Rerank</Highlight> 就是在 Embedding
+檢索完之後，多加的一層精修。做法是把問題跟每一筆候選片段**兩兩配對**，一起丟進
+Rerank
+模型裡面重新評分，因為是兩兩一起看，模型可以真的判斷這段文字跟問題的關聯性，而不是只看向量距離，所以準確度會比單純
+Embedding 高上不少。
+
+雖然聽起來 Rerank 比較準，但這邊的準並不是沒有代價——因為要一筆一筆算，Rerank 沒辦法像 Embedding 一樣直接掃過全部資料庫，所以常見的做法是：**先用 Embedding 從全部資料裡快速篩出一批候選（例如 Top 50），再用 Rerank 從候選裡精挑出真正相關的幾筆（例如 Top 5）**，兩個搭配起來用，兼顧速度跟準確度。
+
+| 比較項目 | Embedding                      | Rerank                          |
+| -------- | ------------------------------ | ------------------------------- |
+| 運作方式 | 問題跟文件各自轉向量，比對距離 | 問題跟文件兩兩配對，一起評分    |
+| 速度     | 快，可以先建好索引直接查       | 慢，每次都要重新計算            |
+| 準確度   | 普通，只是語意上相近           | 較高，能判斷真正的關聯性        |
+| 適合場景 | 從大量資料裡快速篩出候選       | 從少量候選裡精挑最相關的結果    |
+| 使用時機 | 檢索的第一步                   | 檢索之後、送進 LLM 之前的第二步 |
+
+所以完整一點的 RAG 檢索流程，其實是「Embedding 粗篩 → Rerank 精選 → 送進 LLM」，把 Rerank 塞在原本流程圖裡「找出相關文件片段」跟「組合成 Prompt」中間。
+
+## 使用 RAG 要注意的地方
+
+RAG 雖然可以減少「幻覺（Hallucination）」，但這邊的減少並不是完全消除。如果檢索到的資料不相關，或是切割文件的方式切得不好，LLM 還是有可能根據錯誤的參考資料生出不準確的答案。所以 Chunking 的策略、Embedding 模型的選擇，其實都會直接影響最後回答的品質喔。
+
+而且檢索出來的內容也不是塞越多越好，還是會受限於 LLM 的 Context Window（上下文長度），所以怎麼挑出「最相關」而不是「全部塞進去」，也是實作 RAG 系統時要拿捏的地方。
+
+## 總結
+
+| 項目           | RAG                            | Fine-tuning                  |
+| -------------- | ------------------------------ | ---------------------------- |
+| 更新知識的方式 | 更新資料庫即可，即時生效       | 要重新訓練模型               |
+| 成本           | 較低（不用重訓模型）           | 較高（要 GPU 訓練資源）      |
+| 資料來源可追溯 | 可以，能標出參考了哪些文件     | 不行，知識已經融進模型參數裡 |
+| 適合場景       | 常變動的私有資料、需要引用來源 | 想改變模型的語氣、行為模式   |
+
+- RAG 全名是 Retrieval-Augmented Generation（檢索增強生成），核心概念是「先查資料，再讓 LLM 回答」
+- 分成兩個階段：事先建立向量資料庫（索引），以及問答當下的檢索 + 生成
+- 檢索通常會搭配 Embedding 粗篩、Rerank 精選，兼顧速度跟準確度
+- 比起 Fine-tuning，RAG 更新知識的成本低、也能追溯回答的資料來源
+- 不過檢索品質會直接影響回答品質，Chunking 跟 Embedding 的選擇都要花心思調整
+
+之後有機會再來紀錄實際串一個 RAG 系統的過程，有任何問題都歡迎在底下留言～
+
+## 參考資料
+
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401)
+- [What is RAG? - AWS](https://aws.amazon.com/what-is/retrieval-augmented-generation/)
+- [What is retrieval-augmented generation (RAG)? - IBM](https://www.ibm.com/topics/retrieval-augmented-generation)
