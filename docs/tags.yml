@@ -113,3 +113,10 @@ coderbridge:
   label: CoderBridge
   description: 原 CoderBridge 文章移轉
   permalink: /coderbridge
+ai:
+  label: AI
+  description: 跟 AI／LLM 相關的技術筆記
+  permalink: /ai
+rag:
+  label: RAG
+  permalink: /rag
