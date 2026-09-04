@@ -21,8 +21,12 @@ const config = {
   organizationName: "Jim876633", // Usually your GitHub org/user name.
   projectName: "Jim-Docusaurus", // Usually your repo name.
 
+  // 只暴露前端真正需要的變數，避免整個 process.env 被打包進 client bundle
   customFields: {
-    env: process.env,
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      MAIL_CHIMP_API_URL: process.env.MAIL_CHIMP_API_URL,
+    },
   },
 
   future: {
