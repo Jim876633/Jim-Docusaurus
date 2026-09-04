@@ -28,7 +28,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install --frozen-lockfile
+        run: npm ci
       - name: generate changelog.json
         run: |
           COMMIT_FILES=$(git diff --name-only --diff-filter=M ${{ github.event.before }}..${{ github.sha }})
