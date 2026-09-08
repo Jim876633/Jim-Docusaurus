@@ -1,0 +1,255 @@
+---
+title: 【JavaScript】ECMAScript 2025 新功能介紹
+sidebar_label: ECMAScript 2025
+tags: [javascript]
+---
+
+接續上一篇 [ECMAScript 2024](./ES2024.mdx)，這一篇來看 ECMAScript 2025 ( ES16 )，2025 年 6 月正式通過的版本。
+
+這一版我覺得是這幾年最有感的一次，尤其是 Iterator Helpers 跟 Set 的集合運算，都是以前得自己刻或裝套件才有的東西。
+
+## 要怎麼看？
+
+一樣可以到 [TC39 finished-proposals](https://github.com/tc39/proposals/blob/main/finished-proposals.md) 看每年正式進規範的提案，表格最後一欄 `Expected Publication Year` 就是它會落在哪一版。
+
+## ECMAScript 2025
+
+這次總共有十個新功能：
+
+- [Sync Iterator helpers](https://github.com/tc39/proposal-iterator-helpers)
+- [New Set methods](https://github.com/tc39/proposal-set-methods)
+- [Import Attributes](https://github.com/tc39/proposal-import-attributes)
+- [JSON Modules](https://github.com/tc39/proposal-json-modules)
+- [RegExp.escape](https://github.com/tc39/proposal-regexp-escape)
+- [RegExp Modifiers](https://github.com/tc39/proposal-regexp-modifiers)
+- [Promise.try](https://github.com/tc39/proposal-promise-try)
+- [Float16 on TypedArrays, DataView, Math.f16round](https://github.com/tc39/proposal-float16array)
+- [Duplicate named capture groups](https://github.com/tc39/proposal-duplicate-named-capturing-groups)
+- [Redeclarable global eval-introduced vars](https://github.com/tc39/proposal-redeclarable-global-eval-vars)
+
+### Iterator Helpers [支援度](https://caniuse.com/mdn-javascript_builtins_iterator_map)
+
+新增了一個 `Iterator` 全域物件，並且在 iterator 上補齊了 `map`、`filter`、`take`、`drop`、`flatMap`、`reduce`、`forEach`、`some`、`every`、`find`、`toArray` 這些方法。
+
+以前要串接一堆陣列操作，每一步都會產生一個新陣列：
+
+```javascript
+const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+// 產生了兩個中間陣列，而且十筆全部都跑過
+const result = arr
+  .filter((n) => n % 2 === 0)
+  .map((n) => n * 10)
+  .slice(0, 3);
+
+console.log(result); // [20, 40, 60]
+```
+
+現在可以直接在 iterator 上串：
+
+```javascript
+const result = arr
+  .values() // 拿到 iterator
+  .filter((n) => n % 2 === 0)
+  .map((n) => n * 10)
+  .take(3)
+  .toArray();
+
+console.log(result); // [20, 40, 60]
+```
+
+差別在於 iterator 是**惰性求值（lazy evaluation）**，也就是「要一個才算一個」。上面 `take(3)` 拿到三筆就停了，後面的 8、10 根本不會被計算，中間也不會產生暫存陣列。
+
+而且它對 generator 很好用，以前 generator 想 `map` 只能自己包一層：
+
+```javascript
+function* naturals() {
+  let i = 0;
+  while (true) yield i++;
+}
+
+// 無限序列也能安全處理，因為只取前 5 個
+const firstFive = naturals()
+  .map((n) => n ** 2)
+  .take(5)
+  .toArray();
+
+console.log(firstFive); // [0, 1, 4, 9, 16]
+```
+
+不是 iterator 的東西（例如 `arguments`、NodeList）可以用 `Iterator.from()` 轉一下：
+
+```javascript
+const items = Iterator.from(document.querySelectorAll("li"))
+  .map((el) => el.textContent)
+  .toArray();
+```
+
+### New Set methods [支援度](https://caniuse.com/mdn-javascript_builtins_set_union)
+
+Set 終於有內建的集合運算了，總共七個方法。
+
+```javascript
+const a = new Set([1, 2, 3]);
+const b = new Set([3, 4, 5]);
+
+// 回傳新的 Set
+console.log([...a.union(b)]); // [1, 2, 3, 4, 5]        聯集
+console.log([...a.intersection(b)]); // [3]              交集
+console.log([...a.difference(b)]); // [1, 2]             差集（a 有但 b 沒有）
+console.log([...a.symmetricDifference(b)]); // [1, 2, 4, 5]  對稱差集（只在其中一邊）
+
+// 回傳 boolean
+console.log(a.isSubsetOf(b)); // false   a 是不是 b 的子集
+console.log(a.isSupersetOf(new Set([1, 2]))); // true    a 是不是超集
+console.log(a.isDisjointFrom(new Set([9]))); // true     兩邊完全沒交集
+```
+
+以前這些都要自己用 `filter` + `has` 兜出來，像差集要寫成 `new Set([...a].filter((x) => !b.has(x)))`，現在一行解決，而且原本的 Set 不會被改動。
+
+### Import Attributes + JSON Modules [支援度](https://caniuse.com/mdn-javascript_statements_import_import_attributes)
+
+這兩個是一組的。Import Attributes 定義了 `with { ... }` 這個語法，讓我們可以在 import 的時候標註模組的型別；JSON Modules 則是把 `type: "json"` 這個實際用途定下來。
+
+```javascript
+// 靜態 import
+import config from "./config.json" with { type: "json" };
+
+console.log(config.version);
+
+// 動態 import 的寫法不太一樣，要包在 with 裡面
+const data = await import("./data.json", { with: { type: "json" } });
+console.log(data.default);
+```
+
+為什麼要多寫這一段？因為安全性。伺服器有可能把一個 `.json` 結尾的檔案回成 JavaScript，如果瀏覽器單看副檔名就執行，那就中招了。加上 `with { type: "json" }` 之後，只要回來的東西不是 JSON，直接報錯不執行。
+
+### RegExp.escape [支援度](https://caniuse.com/mdn-javascript_builtins_regexp_escape)
+
+把字串裡的特殊字元跳脫掉，讓它可以安全地丟進正規表達式當成一般文字比對。
+
+```javascript
+const keyword = "1+1=2";
+
+// 直接丟進去，+ 會被當成量詞，比對不到
+console.log(new RegExp(keyword).test("1+1=2")); // false
+
+// 跳脫之後就正常了
+console.log(new RegExp(RegExp.escape(keyword)).test("1+1=2")); // true
+```
+
+實際跑出來的字串長這樣：
+
+```javascript
+console.log(RegExp.escape("1+1=2")); // "\x31\+1\x3d2"
+```
+
+欸，怎麼連數字 `1` 跟等號都被跳脫了？這是規格刻意的行為 —— 開頭字元一律轉成 `\xNN`，避免這段字串被貼到別的 pattern 中間時（例如接在 `\` 後面）被解讀成別的語法。所以不用去記它到底會輸出什麼，反正結果保證安全就對了。
+
+搜尋框那種「使用者輸入什麼就拿去比對什麼」的需求，以前都得自己抄一段 escape 函式，現在可以直接用內建的。
+
+### RegExp Modifiers [支援度](https://caniuse.com/mdn-javascript_regular_expressions_modifier)
+
+可以在正規表達式**局部**開啟或關閉 flag，語法是 `(?flag:...)` 開啟、`(?-flag:...)` 關閉，目前支援 `i`、`m`、`s` 三個。
+
+以前 flag 是整條 regex 共用的，想要「只有某一段忽略大小寫」根本做不到，只能寫成 `[dD][eE][fF]` 這種鬼東西。
+
+```javascript
+// 只有 def 這段忽略大小寫
+const re1 = /abc(?i:def)/;
+console.log(re1.test("abcDEF")); // true
+console.log(re1.test("ABCdef")); // false，abc 這段還是有分大小寫
+
+// 反過來，整條開 i，但 def 這段要嚴格比對
+const re2 = /abc(?-i:def)/i;
+console.log(re2.test("ABCdef")); // true
+console.log(re2.test("ABCDEF")); // false
+```
+
+### Promise.try [支援度](https://caniuse.com/mdn-javascript_builtins_promise_try)
+
+`Promise.try()` 會執行傳進去的函式，不管它是同步還是非同步、正常回傳還是丟錯，一律包成 Promise。
+
+問題出在哪？如果一個函式是同步丟錯的，用一般寫法會直接炸掉，`.catch()` 根本接不到：
+
+```javascript
+function mayThrow(x) {
+  if (!x) throw new Error("x is required"); // 同步丟錯
+  return fetch(`/api/${x}`);
+}
+
+// 這行會直接 throw，下面的 catch 接不到
+mayThrow(0).catch(console.error); // Uncaught Error: x is required
+```
+
+以前的解法是先包一層 `Promise.resolve().then()`：
+
+```javascript
+Promise.resolve()
+  .then(() => mayThrow(0))
+  .catch(console.error); // 這樣才接得到
+```
+
+現在直接用 `Promise.try()`：
+
+```javascript
+Promise.try(() => mayThrow(0)).catch(console.error);
+
+// 也可以把參數往後接著傳
+Promise.try(mayThrow, 0).catch(console.error);
+```
+
+比起 `Promise.resolve().then()` 多繞一圈，語意上清楚很多，而且少一個 microtask。
+
+### Float16Array [支援度](https://caniuse.com/mdn-javascript_builtins_float16array)
+
+新增了 `Float16Array` 這個 TypedArray，以及 `Math.f16round()`、`DataView.prototype.getFloat16()`、`DataView.prototype.setFloat16()`。
+
+半精度浮點數（half precision）一個數字只佔 **2 bytes**，是 `Float32Array` 的一半、`Float64Array` 的四分之一。
+
+```javascript
+const f16 = new Float16Array([1.5, 2.25]);
+console.log(f16.byteLength); // 4，兩個數字才 4 bytes
+
+// 把一個數字轉成最接近的 float16 值
+console.log(Math.f16round(1.337)); // 1.3369140625
+```
+
+代價就是精度會掉，`1.337` 存進去會變成 `1.3369140625`。所以它適合的是 WebGPU、機器學習模型權重、影像處理這種「資料量很大、但不需要那麼精準」的場景，一般業務邏輯用不到。
+
+### Duplicate named capture groups [支援度](https://caniuse.com/mdn-javascript_regular_expressions_named_capturing_group)
+
+同一條 regex 裡的具名捕獲群組，只要不在同一個分支（alternative），就可以重複命名。
+
+以前寫日期比對，因為兩種格式要放在同一條 regex 裡，名字不能重複，只好取成 `year1`、`year2`，用的時候還要判斷哪個有值：
+
+```javascript
+// ES2025 之前：直接 SyntaxError: Duplicate capture group name
+const re = /(?<year>\d{4})-(?<month>\d{2})|(?<month>\d{2})\/(?<year>\d{4})/;
+```
+
+現在完全合法：
+
+```javascript
+const re = /(?<year>\d{4})-(?<month>\d{2})|(?<month>\d{2})\/(?<year>\d{4})/;
+
+console.log("2025-12".match(re).groups); // { year: '2025', month: '12' }
+console.log("12/2025".match(re).groups); // { year: '2025', month: '12' }
+```
+
+兩種格式都能用同一組名字取值，不用再多寫判斷。要注意的是，兩個同名群組必須在 `|` 的不同邊，寫在同一個分支裡還是會報錯喔。
+
+### Redeclarable global eval-introduced vars
+
+這個是修規格的小坑，日常開發碰不到。簡單來說，在全域用 `eval` 宣告出來的 `var`，以前不能再用 `let` / `const` 重新宣告同名變數，現在可以了，讓行為跟一般的 `var` 一致。
+
+## 重點整理
+
+- **Iterator Helpers**：處理大量資料或 generator 時，惰性求值可以省掉一堆中間陣列。
+- **Set 集合運算**：`union` / `intersection` / `difference` 一行搞定，不用再自己兜。
+- **`Promise.try()`**：同步錯誤也能被 `.catch()` 接住，寫 wrapper 的時候很好用。
+
+## 參考資料
+
+- [ECMAScript 2025 Language Specification](https://262.ecma-international.org/16.0/)
+- [TC39 finished proposals](https://github.com/tc39/proposals/blob/main/finished-proposals.md)

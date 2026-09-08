@@ -1,0 +1,241 @@
+---
+title: 【JavaScript】ECMAScript 2026 新功能介紹
+sidebar_label: ECMAScript 2026
+tags: [javascript]
+---
+
+接續上一篇 [ECMAScript 2025](./ES2025.mdx)，這一篇來看 2026 年 6 月正式通過的 ECMAScript 2026 ( ES17 )。
+
+跟上一版那種「一次補齊一整套 API」比起來，這一版的改動幅度沒那麼大，不過每一個都是在解決以前只能自己刻一段程式碼繞過去的問題，實用度反而蠻高的。
+
+## ECMAScript 2026
+
+這次總共有七個新功能：
+
+- [Upsert](https://github.com/tc39/proposal-upsert)
+- [Array.fromAsync](https://github.com/tc39/proposal-array-from-async)
+- [Error.isError](https://github.com/tc39/proposal-is-error)
+- [Math.sumPrecise](https://github.com/tc39/proposal-math-sum)
+- [Iterator Sequencing](https://github.com/tc39/proposal-iterator-sequencing)
+- [Uint8Array to/from Base64](https://github.com/tc39/proposal-uint8array-base64)
+- [JSON.parse source text access](https://github.com/tc39/proposal-json-parse-with-source)
+
+### Upsert [支援度](https://caniuse.com/mdn-javascript_builtins_map_getorinsert)
+
+Map 和 WeakMap 新增了 `getOrInsert()` 和 `getOrInsertComputed()`。名字直翻是「取得或插入」，就是「有這個 key 就回傳它的值，沒有就先塞一個進去再回傳」。
+
+這個模式應該不少人寫過，以前要這樣：
+
+```javascript
+const cache = new Map();
+
+// 一個 key 要查兩次
+if (!cache.has(userId)) {
+  cache.set(userId, []);
+}
+cache.get(userId).push(record);
+```
+
+現在一行：
+
+```javascript
+const cache = new Map();
+
+cache.getOrInsert(userId, []).push(record);
+```
+
+不過要注意的是，`getOrInsert()` 的第二個參數**一定會先被求值**，就算 key 已經存在也一樣。如果那個預設值很貴（例如要跑一段運算或建立大物件），就改用 `getOrInsertComputed()`，它接一個 callback，只有真的需要插入時才會執行：
+
+```javascript
+const cache = new Map();
+
+// key 已存在的話，這個 callback 完全不會跑
+const config = cache.getOrInsertComputed(env, (key) => loadHeavyConfig(key));
+```
+
+```javascript
+// 實際行為
+const m = new Map([["a", 1]]);
+
+console.log(m.getOrInsert("a", 9)); // 1，已存在就不覆蓋
+console.log(m.getOrInsert("b", 2)); // 2，不存在就插入
+console.log([...m]); // [['a', 1], ['b', 2]]
+```
+
+### Array.fromAsync [支援度](https://caniuse.com/mdn-javascript_builtins_array_fromasync)
+
+`Array.from()` 的非同步版本，可以把 async iterable 收集成一個陣列，回傳的是 Promise。
+
+以前處理 async generator 只能自己跑迴圈：
+
+```javascript
+async function* fetchPages() {
+  let page = 1;
+  while (page <= 3) {
+    const res = await fetch(`/api/items?page=${page++}`);
+    yield await res.json();
+  }
+}
+
+// 以前
+const pages = [];
+for await (const page of fetchPages()) {
+  pages.push(page);
+}
+```
+
+現在：
+
+```javascript
+const pages = await Array.fromAsync(fetchPages());
+```
+
+它也跟 `Array.from()` 一樣接第二個參數當 map 函式，而且可以是 async 的：
+
+```javascript
+const urls = ["/a.json", "/b.json", "/c.json"];
+
+const results = await Array.fromAsync(urls, async (url) => {
+  const res = await fetch(url);
+  return res.json();
+});
+```
+
+這邊跟 `Promise.all()` 的差別要分清楚：`Array.fromAsync()` 是**依序**跑的，一個做完才做下一個；`Promise.all()` 是全部同時發出去。要平行處理還是得用 `Promise.all()`。
+
+### Error.isError [支援度](https://caniuse.com/mdn-javascript_builtins_error_iserror)
+
+判斷一個值是不是真的 Error 物件。
+
+`instanceof Error` 有兩個老問題：一是跨 realm（例如 iframe、Web Worker、Node 的 vm）會失效，因為兩邊的 `Error` 建構函式根本不是同一個；二是隨便一個長得像 Error 的物件都能騙過某些檢查。
+
+```javascript
+console.log(Error.isError(new TypeError("x"))); // true
+
+// 長得很像，但不是真的 Error
+console.log(Error.isError({ name: "Error", message: "x" })); // false
+
+// 用 prototype 偽裝也騙不過
+const fake = Object.create(Error.prototype);
+console.log(fake instanceof Error); // true  ← 被騙了
+console.log(Error.isError(fake)); // false ← 正確
+```
+
+它跟 `Array.isArray()` 是同一種東西，看的是內部標記而不是原型鏈，所以跨 realm 也準。
+
+### Math.sumPrecise [支援度](https://caniuse.com/mdn-javascript_builtins_math_sumprecise)
+
+把一個 iterable 裡的數字加總，而且結果保證是**精確**的。
+
+浮點數相加會累積誤差，順序不同結果還會不一樣，這個大家應該都有踩過：
+
+```javascript
+const nums = [1e20, 0.1, -1e20];
+
+// 一般加總：0.1 被 1e20 吃掉了
+console.log(nums.reduce((a, b) => a + b, 0)); // 0
+
+// ES2026
+console.log(Math.sumPrecise(nums)); // 0.1
+```
+
+它的實作會先在內部用更高的精度算完，最後才轉回 float64，所以結果等同於「先用無限精度加總再四捨五入一次」。
+
+要注意它吃的是 iterable，不是展開的參數，所以是 `Math.sumPrecise([1, 2, 3])` 而不是 `Math.sumPrecise(1, 2, 3)`。
+
+金額計算、統計數據這種對精度敏感的場合就用得上。不過它只解決「加總」這一件事，其他四則運算的精度問題還是得靠 decimal 套件。
+
+### Iterator.concat [支援度](https://caniuse.com/mdn-javascript_builtins_iterator_concat)
+
+提案名稱叫 Iterator Sequencing，實際加的是一個 `Iterator.concat()` 靜態方法，把多個 iterable 串成一個 iterator，依序輪流輸出。
+
+```javascript
+console.log([...Iterator.concat([1, 2], [3, 4])]); // [1, 2, 3, 4]
+```
+
+看起來跟 `[...a, ...b]` 一樣，不過差別在於它是惰性的，而且可以接無限序列：
+
+```javascript
+function* naturals() {
+  let i = 100;
+  while (true) yield i++;
+}
+
+// 先給幾個固定值，後面接一個無限產生器
+const ids = Iterator.concat([1, 2, 3], naturals()).take(5).toArray();
+console.log(ids); // [1, 2, 3, 100, 101]
+```
+
+這裡串起來的東西如果用展開運算子就直接當掉了，因為它會試著把無限序列全部展開。配上 ES2025 的 Iterator Helpers 一起用，處理串流資料蠻順的。
+
+### Uint8Array to/from Base64 [支援度](https://caniuse.com/mdn-javascript_builtins_uint8array_frombase64)
+
+終於有內建的 base64 / hex 轉換了，總共六個方法：`toBase64()`、`fromBase64()`、`setFromBase64()`、`toHex()`、`fromHex()`、`setFromHex()`。
+
+```javascript
+const bytes = new Uint8Array([72, 105]);
+
+console.log(bytes.toBase64()); // "SGk="
+console.log([...Uint8Array.fromBase64("SGk=")]); // [72, 105]
+
+console.log(new Uint8Array([255, 0]).toHex()); // "ff00"
+console.log([...Uint8Array.fromHex("ff00")]); // [255, 0]
+```
+
+也支援 URL-safe 的變體：
+
+```javascript
+bytes.toBase64({ alphabet: "base64url" });
+```
+
+以前要做這件事，得先用 `btoa()` 轉，但 `btoa()` 只吃 Latin-1 字串，處理 binary data 要先把每個 byte 轉成字元再拼起來，很繞而且容易出錯。這段的來龍去脈我在 [瀏覽器中的 btoa 是什麼？](./base64.mdx) 有寫過，有興趣可以看看。
+
+### JSON.parse source text access [支援度](https://caniuse.com/mdn-javascript_builtins_json_rawjson)
+
+這個是要解決 JSON 裡的大數字精度問題。
+
+JSON 規格沒有限制數字大小，但 JavaScript 的 `number` 是 float64，超過 `Number.MAX_SAFE_INTEGER` 就會失真。所以後端傳一個 64-bit 的 ID 過來，`JSON.parse()` 一跑就壞掉了：
+
+```javascript
+console.log(JSON.parse('{"id":12345678901234567890}').id);
+// 12345678901234567000  ← 尾巴不見了
+```
+
+新的做法是 reviver 函式多收一個 `context` 參數，裡面的 `source` 是**還沒被轉成數字前的原始文字**：
+
+```javascript
+const result = JSON.parse('{"id":12345678901234567890}', function (key, value, context) {
+  if (key === "id") return BigInt(context.source); // 原封不動的字串
+  return value;
+});
+
+console.log(result.id); // 12345678901234567890n
+```
+
+反過來要輸出的時候，用 `JSON.rawJSON()` 把一段文字標記成「原始 JSON」，`JSON.stringify()` 就會照原樣寫出去，不會加引號：
+
+```javascript
+const payload = { id: JSON.rawJSON("12345678901234567890") };
+
+console.log(JSON.stringify(payload));
+// {"id":12345678901234567890}
+```
+
+另外還有一個 `JSON.isRawJSON()` 可以判斷某個值是不是 raw JSON。
+
+以前碰到這種需求，只能在 parse 前先用 regex 把大數字換成字串，超級髒，現在總算有正規做法了。
+
+## 總結
+
+| 功能 | 解決什麼 |
+| --- | --- |
+| `Map.getOrInsert()` | 不用再寫 `if (!map.has(k)) map.set(k, ...)` |
+| `Array.fromAsync()` | async generator 收集成陣列 |
+| `Error.isError()` | 跨 realm 也準的 Error 判斷 |
+| `Uint8Array.toBase64()` | 不用再繞 `btoa()` 處理 binary |
+| `JSON.rawJSON()` | JSON 大數字不再失真 |
+
+## 參考資料
+
+- [ECMAScript 2026 Language Specification](https://262.ecma-international.org/17.0/)
+- [TC39 finished proposals](https://github.com/tc39/proposals/blob/main/finished-proposals.md)
