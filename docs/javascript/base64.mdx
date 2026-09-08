@@ -50,10 +50,67 @@ btoa("A") // "QQ=="
 前面說到 Base64 會先把 Binary 轉成 8 bits 的 ASCII code，然後以 3 個 ASCII code 為一組，這樣就會是 24 bits，然後再將這 24 bits 分成 4 組，每組 6 bits，這樣就可以對應到 Base64 的 64 個字元。
 而這個 24 其實就 6 跟 8 的**最小公倍數**，之所以要以公倍數的方式讓他可以對齊，是因為這樣在轉換的過程才能準確的進行轉換，而 `=` 則可以判斷哪些 bits 是補上的，這樣在解碼的時候就可以知道要怎麼處理。
 
-:::info 如果不是 24 bits 一組會有什麼問題？（待解決）
+:::info 如果不是 24 bits 一組會有什麼問題？（已解決）
 我研究到這裡時，想說為什麼一定要 24 bits？我不能就讓他 6 個一組剩下的就補零就好啦，然後要還原時，只要 8 bits 為一組，剩餘的一定是填充把它去掉，這樣 'A' 就會變成 'QQ'，不就更短了嗎？
 然後我問了很多不同的 AI 模型，都無法說明這個方法有什麼問題，大多數都是說缺乏明確的長度指示，但明明除以 8 就知道正確的長度了啊？所以這個問題我還沒獲得解答＠＠歡迎留言告訴我！
+
+2026/09/08 更新：後來找到答案了，往下看 👇
 :::
+
+## 那 `=` 到底是不是必要的？
+
+後來去翻了 [RFC 4648](https://www.rfc-editor.org/rfc/rfc4648.html)，才發現這個問題的答案其實很簡單：**`=` 的填充本來就不是必要的**，所以上面那個想法沒有錯。
+
+規格的 [3.2 節 Padding of Encoded Data](https://www.rfc-editor.org/rfc/rfc4648.html#section-3.2) 是這樣寫的：
+
+> In some circumstances, the use of padding ("=") in base-encoded data is not required or used. In the general case, when assumptions about the size of transported data cannot be made, padding is required to yield correct decoded data.
+
+簡單來說就是，只有在「無法預先知道資料有多長」的情況下才需要 `=`。
+
+所以 `=` 的工作其實不是拿來算長度的（就像上面說的，除以 8 就知道了），而是拿來**標記邊界**。Base64 是 email（MIME）時代的產物，當時的情境是一條資料流一直流過來，收的人不知道總長度，只能邊收邊解，這時候就需要一個記號告訴他「這一包到這邊結束」。
+
+不過在現代大部分的情境下，我們一開始就拿到完整的字串了，這個記號自然就沒什麼用。而且有趣的是，`atob` 本身也不在乎有沒有 `=`：
+
+```js
+btoa("A")    // "QQ=="  ← 一定會補
+atob("QQ")   // "A"     ← 沒補也解得出來
+```
+
+也就是說，解碼的時候從頭到尾都沒有非要 `=` 不可。
+
+### 那有哪些是沒補的？
+
+實際上已經有不少地方是不補 `=` 的：
+
+**1. JWT**
+
+JWT 的 [RFC 7515](https://datatracker.ietf.org/doc/html/rfc7515#section-2) 直接規定要把結尾的 `=` 全部拿掉：
+
+```js
+// btoa 的結果
+btoa('{"sub":"123","name":"Jim"}')
+// → eyJzdWIiOiIxMjMiLCJuYW1lIjoiSmltIn0=
+
+// JWT 實際長的樣子
+// → eyJzdWIiOiIxMjMiLCJuYW1lIjoiSmltIn0
+```
+
+它敢拿掉的原因也很好理解，JWT 本身是 `header.payload.signature` 三段用 `.` 隔開，那個 `.` 就已經是邊界記號了，再補一個 `=` 反而多餘。
+
+**2. base64url**
+
+JWT 用的其實是 base64url，除了不補 `=` 之外，還會把 `+` 換成 `-`、`/` 換成 `_`，這樣才能安全地放進網址跟 header 裡。
+
+**3. Uint8Array.prototype.toBase64**
+
+ES2026 的新 API 直接開了一個選項讓你自己決定：
+
+```js
+new Uint8Array([65]).toBase64()                      // "QQ=="
+new Uint8Array([65]).toBase64({ omitPadding: true }) // "QQ"
+```
+
+至於 `btoa` 為什麼不能選，是因為它 1997 年就存在了，行為被規格寫死，改了會弄壞一大堆舊網站，所以只能一路補下去啦。
 
 
 ## Base64 原始碼
@@ -63,6 +120,22 @@ btoa("A") // "QQ=="
 ## Unit8Array toBase64/ fromBase64
 
 在看實作 Base64 的過程，想說是不是應該要有個 Unit8Array 直接轉 Base64 的方法，因為 btoa 只能傳字串，所以如果是 Unit8Array 的話還需要先用 `TextDecoder` 轉成字串，後來就找到這個熱騰騰還在 Stage3 的 [proposal](https://github.com/tc39/proposal-arraybuffer-base64)，會找到主要是看到 [Chromium Issues](https://issues.chromium.org/issues/42204568) 有在討論要實作這個他，所以應該過不久就可以使用了！
+
+### 2026/09/08 更新：已經可以用了
+
+這個 proposal 在 2025 年就進到 [Stage 4](https://github.com/tc39/proposal-arraybuffer-base64/issues/51)，正式收進 **ES2026**，Chrome、Firefox、Safari 跟 Node 22+ 現在都能直接用了，不用再等囉～
+
+```js
+const bytes = new Uint8Array([72, 101, 108, 108, 111]);
+
+bytes.toBase64();                      // "SGVsbG8="
+bytes.toBase64({ omitPadding: true }); // "SGVsbG8"
+
+Uint8Array.fromBase64("SGVsbG8=");     // Uint8Array(5) [72, 101, 108, 108, 111]
+```
+
+除了 `toBase64` / `fromBase64` 之外，它還一併加了 `toHex` / `fromHex`，而且上面提到的 `omitPadding` 選項也是這時候一起進來的。
+
 
 
 
