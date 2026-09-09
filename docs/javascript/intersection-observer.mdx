@@ -68,13 +68,13 @@ const callback = (entries, owner) => {
 
 - **entries：**指的是一個包著 `IntersectionObserverEntry` 物件的陣列，如果觀察多個元素則會有多個 `IntersectionObserverEntry` 物件，它有很多好用的屬性，可以用來設定執行效果的條件，下面會進一步細講。
 
-![](https://static.coderbridge.com/img/Jim876633/f08e257f715041a39dd58398ef312627.jpg)
+![console 印出 entries 陣列，裡面是 IntersectionObserverEntry 物件](/img/javascript/intersection-observer/entries.jpg)
 
 - **owner：**指的是 `IntersectionObserver` 的實體，也就是 callback function 的 `this`。
 
 ### 📌 IntersectionObserverEntry property
 
-![](https://static.coderbridge.com/img/Jim876633/43ab7968b5264b288d826501ac71c442.jpg)
+![IntersectionObserverEntry 展開後的屬性列表](/img/javascript/intersection-observer/entry-property.jpg)
 
 - boundingClientRect：與 `Element.getBoundingClientRect()` 回傳的資訊一樣，回傳元素的長寬及相對於**視窗**的座標資訊。
 
@@ -141,4 +141,3 @@ observer.observe(document.querySelector("li:nth-last-child(2)"));
 ## 參考
 
 [認識 Intersection Observer API：實作 Lazy Loading 和 Infinite Scroll](https://medium.com/%E9%BA%A5%E5%85%8B%E7%9A%84%E5%8D%8A%E8%B7%AF%E5%87%BA%E5%AE%B6%E7%AD%86%E8%A8%98/%E8%AA%8D%E8%AD%98-intersection-observer-api-%E5%AF%A6%E4%BD%9C-lazy-loading-%E5%92%8C-infinite-scroll-c8d434ad218c)
-[那些被忽略但很好用的 Web API / IntersectionObserver](https://ithelp.ithome.com.tw/articles/10279046)

@@ -20,9 +20,9 @@ console.log(number)
 1. 使用 new 關鍵字創造 Set 物件。
 2. 只能傳入可以被 **iterable** 的物件。
 3. 回傳一個 Set 物件（跟一般 Object 一樣都是用 {}，不過沒有 key 只有 value），裡面的值都是唯一的。
-4. **無法把裡面的值拿出來**（`Set[0]` 不存在），但可以用 seperate operator 變成Array（`[...Set]`）（實用！）。
+4. **無法把裡面的值拿出來**（`Set[0]` 不存在），但可以用 spread operator 變成 Array（`[...Set]`）（實用！）。
 
-重點就在於**唯一的**，在某些情況就會很方便，而 Set 物件本身也是 iterable ，至於 iterable 是甚麼，可以看這篇 [甚麼是 iterable？](https://jim1105.coderbridge.io/2022/10/01/what-is-iterable/)。
+重點就在於**唯一的**，在某些情況就會很方便，而 Set 物件本身也是 iterable ，至於 iterable 是甚麼，可以看這篇 [甚麼是 iterable？](./iterable.md)。
 
 那怎麼使用 Set 裡面的值呢？就要使用他的 property 跟 method 啦！
 

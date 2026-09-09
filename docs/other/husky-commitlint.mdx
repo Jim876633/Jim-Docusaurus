@@ -68,8 +68,8 @@ module.exports = {
 
 rules 項目的 value 會是一個**陣列**傳入三個設定
 
-- **level**（要不要開啟這個規則)：0 = disable, 1 = warning, 2 = error
-- **applicable**（設定規則是否遵守)：always | never
+- **level**（要不要開啟這個規則）：0 = disable, 1 = warning, 2 = error
+- **applicable**（設定規則是否遵守）：always | never
 - **value**：規則的值
 
 上面的例子就是開啟設定 header 的最小長度為 `5` 個字元。更多的條件可以參考 [commitlint rules](https://commitlint.js.org/#/reference-rules)。
@@ -206,7 +206,7 @@ module.exports = {
     subject: "請輸入 commit 內容（必填）",
     body: "請輸入 commit description，可透過 & 換行（選填）",
     breaking: "列出任何 BREAKING CHANGES（重大修改）(選填)",
-    footer: "請輸入相關的的 issue（跟 issue 有關的 commit）(選填)",
+    footer: "請輸入相關的 issue（跟 issue 有關的 commit）(選填)",
     confirmCommit: "確定提交此 commit 嗎？",
   },
 

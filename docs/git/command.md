@@ -39,7 +39,13 @@ sidebar_position: 0
 
 上傳流程圖：
 
-![](https://static.coderbridge.com/img/Jim876633/2783b6ad76b84a6e8fa1ea75426a06e4.jpg)
+```mermaid
+graph LR
+    A[工作目錄<br/>Working Directory] -->|git add| B[暫存區<br/>Staging Area]
+    B -->|git commit| C[本地儲存庫<br/>Local Repository]
+    C -->|git push| D[遠端儲存庫<br/>Remote Repository]
+    D -->|git pull| A
+```
 
 **git init**：建立 .git 資料夾進行追蹤（.git資料夾是隱藏起來的）。
 
@@ -73,15 +79,51 @@ sidebar_position: 0
 
 **git merge**：合併分支，有兩種情況。
 
-1. 快轉分支
+1. 快轉分支（fast-forward）
 
-![](https://static.coderbridge.com/img/Jim876633/6ff0ab1a62bb47c6976a68b826b00428.png)
+分岔之後 main 沒有新的 commit，合併時只要把 main 的指標往前移到 feature 的位置就好，**不會產生新的 commit**。
 
-2. 無快轉分支
+合併前：
 
-![](https://static.coderbridge.com/img/Jim876633/78d010b905f2497a92db35b499cb4ce9.png)
+```mermaid
+graph LR
+    C1((C1)) --> C2((C2)) --> C3((C3))
+    main{{main}} -.-> C1
+    feature{{feature}} -.-> C3
+```
 
-![](https://static.coderbridge.com/img/Jim876633/b438803222ca42fa8dac40a7ed9ca514.png)
+合併後：
+
+```mermaid
+graph LR
+    C1((C1)) --> C2((C2)) --> C3((C3))
+    main{{main}} -.-> C3
+    feature{{feature}} -.-> C3
+```
+
+2. 無快轉分支（non fast-forward）
+
+分岔之後兩邊都有新的 commit，沒辦法只移動指標，git 會多產生一個 **merge commit** 把兩條線接起來。
+
+合併前：
+
+```mermaid
+graph LR
+    C1((C1)) --> C2((C2))
+    C1 --> C3((C3)) --> C4((C4))
+    main{{main}} -.-> C2
+    feature{{feature}} -.-> C4
+```
+
+合併後：
+
+```mermaid
+graph LR
+    C1((C1)) --> C2((C2)) --> M((M))
+    C1 --> C3((C3)) --> C4((C4)) --> M
+    main{{main}} -.-> M
+    feature{{feature}} -.-> C4
+```
 
 ## 專案遠端指令
 

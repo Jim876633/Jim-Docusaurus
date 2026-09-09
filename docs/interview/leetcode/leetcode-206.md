@@ -56,9 +56,7 @@ var reverseList = function (head) {
 
 ## 結果 & 討論
 
-![](https://static.coderbridge.com/img/Jim876633/0005d568878e4d178738d69749ae0070.jpg)
-
-1. 每次 while 都重新建立新的 nodeList ，耗效能。
+1. 每次 while 都重新建立一個新的 ListNode，多花了 O(n) 的額外記憶體。
 
 ## 其他人解法
 
@@ -77,4 +75,6 @@ var reverseList = function (head) {
 };
 ```
 
-![](https://static.coderbridge.com/img/Jim876633/5e956ac9470f4010af7b8fa5ad5e47c8.jpg)
+這個寫法只調整既有節點的 `next` 指標，完全不配置新的節點，額外空間是 O(1)。兩種寫法的時間複雜度都是 O(n)，差別在空間。
+
+不過實際丟上去跑，兩邊的 Runtime 都顯示 0 ms，因為這題的測資太短，量不出時間差，要看的是記憶體那一欄。

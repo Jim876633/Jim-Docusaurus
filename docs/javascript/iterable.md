@@ -6,7 +6,7 @@ tags: [javascript, coderbridge]
 
 是不是曾經看過下面的報錯：
 
-![](https://static.coderbridge.com/img/Jim876633/56dd86676c8a476a890cb4fb743cd1b3.jpg)
+![Uncaught TypeError: is not iterable 的錯誤訊息](/img/javascript/iterable/not-iterable.jpg)
 
 甚麼是 iterable？？好像蠻常看到，但又不知道是甚麼。
 
@@ -28,7 +28,7 @@ Iterable 直翻的話是**可被迭代的**，光看翻譯還是不知道是甚�
 - DOM Elements
 
 不知道甚麼是 Map 跟 Set 可以看這篇 [
-Set & Map - 變形的 Array & Object ?](https://jim1105.coderbridge.io/2022/09/28/set-map-array-object/)。
+Set & Map - 變形的 Array & Object ?](./set-map.md)。
 
 而有些函式則規定傳入的參數必須是 Iterable：
 
@@ -50,7 +50,7 @@ Set & Map - 變形的 Array & Object ?](https://jim1105.coderbridge.io/2022/09/2
 但有時候需要訪問 Object 裡面的元素怎麼辦？這時候就可以用 Javascript 提供的方法，將 Object 轉成 Array 或是 Map 就可以進行迭代了。
 
 Object 轉 Array 的方法：[
-Object get keys and values method](https://jim1105.coderbridge.io/2022/09/16/object-get-key-and-value/)
+Object get keys and values method](./object-key-value.md)
 
 至於迭代是怎麼做的？更深層的原理之後再慢慢補上～～
 

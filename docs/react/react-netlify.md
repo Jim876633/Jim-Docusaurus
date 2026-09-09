@@ -6,12 +6,27 @@ tags: [react, netlify, coderbridge]
 
 ## Problem 1
 
-![](https://static.coderbridge.com/img/Jim876633/9095ef3bc97a478f81d1c9568b9fb301.jpg)
+Netlify 部署時 build 失敗，log 大概長這樣：
+
+```bash
+Treating warnings as errors because process.env.CI = true.
+Most CI servers set it automatically.
+Failed to compile.
+```
 
 ## Solution 1
 
-Deploy 失敗，是 CI（Continuous Integration）的問題，把 `CI=` 加在 package.json 裡的 `react-scripts build` 的前面就解決了。
-![](https://static.coderbridge.com/img/Jim876633/bf94caa22c24481dbd88d3880e2e3a6e.jpg)
+Deploy 失敗，是 CI（Continuous Integration）的問題。Netlify 會自動把環境變數 `CI` 設成 `true`，而 `react-scripts build` 看到 `CI=true` 就會把所有 warning 當成 error，只要有一個 ESLint warning 就整個 build 失敗。
+
+把 `CI=` 加在 package.json 裡的 `react-scripts build` 前面，等於把 `CI` 蓋成空字串，就解決了：
+
+```json
+{
+  "scripts": {
+    "build": "CI= react-scripts build"
+  }
+}
+```
 
 ## Problem 2
 
