@@ -13,8 +13,14 @@ const config = {
   url: "https://jimhuang.dev",
   baseUrl: "/",
   onBrokenLinks: "warn",
-  onBrokenMarkdownLinks: "warn",
   favicon: "/img/favicon-32x32.png",
+  markdown: {
+    mermaid: true,
+    hooks: {
+      onBrokenMarkdownLinks: "warn",
+    },
+  },
+  themes: ["@docusaurus/theme-mermaid"],
   deploymentBranch: "gh-pages",
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
