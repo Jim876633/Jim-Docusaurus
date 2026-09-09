@@ -82,7 +82,7 @@ export const createStore = ((createState) =>
   createState ? createStoreImpl(createState) : createStoreImpl) as CreateStore;
 ```
 
-一樣回傳了一個 `createStoreImpl` 的 fucntion：
+一樣回傳了一個 `createStoreImpl` 的 function：
 
 ```ts {4-5,20,29-33}
 const createStoreImpl: CreateStoreImpl = (createState) => {
@@ -338,7 +338,7 @@ export function useStore(api) {
 
 ## zustand 架構模式
 
-Zustand 的在 [Flux inspired practice](https://docs.pmnd.rs/zustand/guides/flux-inspired-practice) 有提到：
+Zustand 的在 [Flux inspired practice](https://zustand.docs.pmnd.rs/learn/guides/flux-inspired-practice) 有提到：
 
 > Although Zustand is an unopinionated library, we do recommend a few patterns. These are inspired by practices originally found in Flux, and more recently Redux, so if you are coming from another library, you should feel right at home.
 

@@ -172,7 +172,7 @@ for (let el of arr) {
 }
 ```
 
-值得一提的是，`for...of` 遍歷的不只是陣列，只要是 **iterable 物件** 都可以遍歷，不知道 iterable 物件，可以參考 [甚麼是 iterable？](https://jim1105.coderbridge.io/2022/10/01/what-is-iterable/)。
+值得一提的是，`for...of` 遍歷的不只是陣列，只要是 **iterable 物件** 都可以遍歷，不知道 iterable 物件，可以參考 [甚麼是 iterable？](./iterable.md)。
 
 ## 總結
 
