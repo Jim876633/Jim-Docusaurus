@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkmy_website=self.webpackChunkmy_website||[]).push([["7496"],{9601(e,s,a){a.d(s,{A:()=>u});var t=a(4848);a(6540);var n=a(53),r=a(5310);function u({permalink:e,label:s,count:a}){return(0,t.jsxs)(r.A,{href:e,className:(0,n.A)("tag_d0Lz",a?"tagWithCount_vddX":"tagRegular_bmnp"),children:[s,a&&(0,t.jsx)("span",{children:a})]})}}}]);

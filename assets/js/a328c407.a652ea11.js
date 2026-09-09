@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkmy_website=self.webpackChunkmy_website||[]).push([["6612"],{5417(e){e.exports=JSON.parse('{"categoryGeneratedIndex":{"title":"AI","slug":"/category/ai","permalink":"/category/ai","sidebar":"tutorialSidebar","navigation":{"previous":{"title":"Intro","permalink":"/"},"next":{"title":"RAG \u4ECB\u7D39","permalink":"/ai/rag"}}}}')}}]);
